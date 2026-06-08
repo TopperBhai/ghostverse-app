@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, type ReactElement } from "react";
-import { Bell, Users, MessageSquare, Star, Check, CheckCheck } from "lucide-react";
+import { Bell, Users, MessageSquare, Star, Check, CheckCheck, Trash2 } from "lucide-react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 
 interface Notification {
@@ -76,6 +76,16 @@ export default function NotificationsPage() {
     }
   };
 
+  const deleteNotification = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await fetch(`/api/notifications?id=${id}`, { method: "DELETE" });
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+    }
+  };
+
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
     const now = new Date();
@@ -138,7 +148,7 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={notif.id}
-                  className={`w-full flex items-start gap-3 px-4 md:px-6 py-4 text-left transition-all hover:bg-white/[0.025] page-enter ${
+                  className={`group w-full flex items-start gap-3 px-4 md:px-6 py-4 text-left transition-all hover:bg-white/[0.025] page-enter ${
                     !notif.read ? "bg-phantom-500/[0.04]" : ""
                   }`}
                   style={{ animationDelay: `${Math.min(i, 15) * 0.03}s` }}
@@ -203,9 +213,18 @@ export default function NotificationsPage() {
                       </div>
                     )}
                   </div>
-                  <span className="text-[10px] text-ghost-600 flex-shrink-0 mt-1 whitespace-nowrap">
-                    {formatTime(notif.createdAt)}
-                  </span>
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0 mt-1">
+                    <span className="text-[10px] text-ghost-600 whitespace-nowrap">
+                      {formatTime(notif.createdAt)}
+                    </span>
+                    <button
+                      onClick={(e) => deleteNotification(notif.id, e)}
+                      className="p-1.5 rounded-lg text-ghost-600 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+                      title="Delete notification"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               );
             })}
