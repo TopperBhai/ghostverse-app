@@ -266,7 +266,7 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
             {otherUser?.avatar ? (
               <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full object-cover" />
             ) : (
-              <Phone className="w-12 h-12 text-phantom-300" />
+              <span className="text-4xl font-black text-ghost-300">{otherUser?.displayName?.charAt(0).toUpperCase()}</span>
             )}
           </div>
           <h2 className="text-2xl font-bold text-white mb-1">{otherUser?.displayName ?? "Someone"}</h2>
@@ -290,7 +290,7 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
               {otherUser?.avatar ? (
                 <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full object-cover" />
               ) : (
-                <User className="w-4 h-4 text-ghost-400" />
+                <span className="text-sm font-bold text-ghost-300">{otherUser?.displayName?.charAt(0).toUpperCase()}</span>
               )}
             </div>
             <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${callAccepted ? "bg-green-500 animate-pulse" : "bg-yellow-400 animate-pulse"}`} />
@@ -330,7 +330,9 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
             {otherUser?.avatar ? (
               <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full rounded-full object-cover" />
             ) : (
-              <User className="w-4 h-4 text-ghost-400" />
+              <div className="w-full h-full rounded-full bg-ghost-800 flex items-center justify-center text-xs font-bold text-ghost-300">
+                {otherUser?.displayName?.charAt(0).toUpperCase()}
+              </div>
             )}
           </button>
           <div>
@@ -376,7 +378,9 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
                     {otherUser?.avatar ? (
                       <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full object-cover rounded-full" />
                     ) : (
-                      <User className="w-4 h-4 text-ghost-400" />
+                      <div className="w-full h-full rounded-full bg-ghost-800 flex items-center justify-center text-lg font-bold text-ghost-300">
+                        {otherUser?.displayName?.charAt(0).toUpperCase()}
+                      </div>
                     )}
                   </button>
                 )}
