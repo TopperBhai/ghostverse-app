@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/custom-hooks/useAuth";
 import { Users, Inbox, Send, Plus, Ghost, MessageSquare, X, Check } from "lucide-react";
 import type { ApiResponse } from "@/types";
 

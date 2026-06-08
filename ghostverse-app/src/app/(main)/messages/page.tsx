@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/custom-hooks/useAuth";
 import Link from "next/link";
 import { MessageSquare, Edit } from "lucide-react";
 import type { ApiResponse } from "@/types";

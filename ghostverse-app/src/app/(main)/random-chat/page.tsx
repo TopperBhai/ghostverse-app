@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSocket } from "@/hooks/useSocket";
-import { useAuth } from "@/hooks/useAuth";
-import { useWebRTC } from "@/hooks/useWebRTC";
+import { useSocket } from "@/custom-hooks/useSocket";
+import { useAuth } from "@/custom-hooks/useAuth";
+import { useWebRTC } from "@/custom-hooks/useWebRTC";
 import { Mic, Radio, User as UserIcon, Ghost, SkipForward } from "lucide-react";
 
 export default function RandomVoiceChatPage() {

@@ -140,8 +140,17 @@ export interface ServerToClientEvents {
   "mystery:message": (message: { content: string; matchId: string }) => void;
   "mystery:revealed": (data: { matchId: string; user: SafeUser }) => void;
 
-  // General
-  "error": (data: { message: string }) => void;
+  // WebRTC Signaling
+  "webrtc:call-request": (data: { callerId: string }) => void;
+  "webrtc:call-accept": (data: { receiverId: string }) => void;
+  "webrtc:call-decline": (data: { receiverId: string }) => void;
+  "webrtc:end-call": () => void;
+  "webrtc:offer": (data: { offer: any; senderId: string }) => void;
+  "webrtc:answer": (data: { answer: any; senderId: string }) => void;
+  "webrtc:ice-candidate": (data: { candidate: any; senderId: string }) => void;
+
+  // Random Voice Matchmaking
+  "random-voice:match": (data: { peerId: string; isCaller: boolean; roomId: string }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -177,6 +186,19 @@ export interface ClientToServerEvents {
   // User Status
   "user:online": (data?: { userId: string }) => void;
   "user:offline": (data?: { userId: string }) => void;
+
+  // WebRTC Signaling
+  "webrtc:call-request": (data: { receiverId: string; callerId: string }) => void;
+  "webrtc:call-accept": (data: { callerId: string; receiverId: string }) => void;
+  "webrtc:call-decline": (data: { callerId: string; receiverId: string }) => void;
+  "webrtc:end-call": (data: { peerId: string }) => void;
+  "webrtc:offer": (data: { receiverId: string; senderId: string; offer: any }) => void;
+  "webrtc:answer": (data: { receiverId: string; senderId: string; answer: any }) => void;
+  "webrtc:ice-candidate": (data: { receiverId: string; senderId: string; candidate: any }) => void;
+
+  // Random Voice Matchmaking
+  "random-voice:join": (data: { userId: string }) => void;
+  "random-voice:leave": (data: { userId: string }) => void;
 }
 
 // ============================================================

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider } from "@/custom-hooks/useAuth";
 
 export const metadata: Metadata = {
   title: "GhostVerse — Anonymous Social Platform",

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback, use } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useSocket } from "@/hooks/useSocket";
-import { useWebRTC } from "@/hooks/useWebRTC";
+import { useAuth } from "@/custom-hooks/useAuth";
+import { useSocket } from "@/custom-hooks/useSocket";
+import { useWebRTC } from "@/custom-hooks/useWebRTC";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Phone, User, MessageSquare, Check, CheckCheck, Mic } from "lucide-react";
