@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useAuth } from "@/custom-hooks/useAuth";
-import { useSocket } from "@/custom-hooks/useSocket";
+import { useAuth } from "@/custom-hooks/use-auth";
+import { useSocket } from "@/custom-hooks/use-socket";
 import { Globe, Hand } from "lucide-react";
 import type { WorldChatMessage } from "@/types";
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/custom-hooks/useAuth";
+import { useAuth } from "@/custom-hooks/use-auth";
 import { Ghost, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function RegisterPage() {

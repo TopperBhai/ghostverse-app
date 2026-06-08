@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useSocket } from "./useSocket";
-import { useAuth } from "./useAuth";
+import { useSocket } from "./use-socket";
+import { useAuth } from "./use-auth";
 
 const ICE_SERVERS = {
   iceServers: [
