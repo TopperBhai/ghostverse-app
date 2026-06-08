@@ -3,10 +3,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../lib/firebase-admin";
 import { getAuthUser } from "../../../lib/auth";
-import { FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
 import type { ApiResponse, HauntPost } from "../../../types";
 import { extractMentions, notifyMentionedUsers } from "../../../lib/mentions";
+import { updateGamification } from "../../../lib/gamification";
 
 // GET: Fetch latest haunts
 export async function GET(request: NextRequest) {
@@ -135,6 +135,9 @@ export async function POST(request: NextRequest) {
         content
       ).catch(err => console.error("Mention notification error in haunts:", err));
     }
+
+    // Update Gamification
+    updateGamification(userData.id, "HAUNT").catch(err => console.error("Gamification error in haunts:", err));
 
     return NextResponse.json<ApiResponse<HauntPost>>({
       success: true,

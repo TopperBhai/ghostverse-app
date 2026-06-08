@@ -1,14 +1,13 @@
 // GhostVerse — World Chat API (In-Memory Optimized)
 // World Chat messages are now stored in server RAM (socket server), NOT Firebase.
 // This saves ~90% of Firebase reads and writes.
-// Firebase is only used to verify auth & check mute status on POST.
-
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../lib/firebase-admin";
 import { getAuthUser } from "../../../lib/auth";
 import { v4 as uuidv4 } from "uuid";
 import type { ApiResponse, WorldChatMessage } from "../../../types";
 import { extractMentions, notifyMentionedUsers } from "../../../lib/mentions";
+import { updateGamification } from "../../../lib/gamification";
 
 // GET: Return empty — client now receives history via socket `world:history` event
 export async function GET(request: NextRequest) {
@@ -100,6 +99,9 @@ export async function POST(request: NextRequest) {
         content
       ).catch(err => console.error("Mention notification error in world-chat:", err));
     }
+
+    // Update Gamification
+    updateGamification(user.id, "CHAT").catch(err => console.error("Gamification error in world-chat:", err));
 
     // NOTE: No Firebase write! The message is stored in server RAM via socket event.
     return NextResponse.json<ApiResponse<WorldChatMessage>>(

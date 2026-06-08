@@ -8,6 +8,19 @@ export type ReactionType = "HELPFUL" | "FUNNY" | "SMART" | "LEGEND";
 export type NotificationType = "FRIEND_REQUEST" | "FRIEND_ACCEPTED" | "NEW_MESSAGE" | "MENTION" | "COMMUNITY_ACTIVITY";
 export type Mood = "HAPPY" | "BORED" | "LONELY" | "MOTIVATED" | "SAD" | "EXCITED";
 export type Interest = "GAMING" | "CODING" | "STARTUPS" | "ANIME" | "MOVIES" | "MUSIC" | "FITNESS" | "RELATIONSHIPS" | "ART" | "TRAVEL" | "FOOD" | "SCIENCE" | "PHILOSOPHY" | "SPORTS" | "BOOKS";
+export type PetStatus = "RADIANT" | "HAPPY" | "HUNGRY" | "FADED";
+
+export interface GhostPet {
+  level: number;
+  xp: number;
+  status: PetStatus;
+}
+
+export interface Gamification {
+  hauntStreak: number;
+  lastActiveAt: string | Date | null;
+  pet: GhostPet;
+}
 
 
 // ============================================================
@@ -58,6 +71,7 @@ export interface UserProfile {
     mood: string | null;
     reputationScore: number;
   } | null;
+  gamification?: Gamification;
   friendsCount: number;
   viewerFriendshipStatus?: ViewerFriendshipStatus;
 }
@@ -73,6 +87,7 @@ export interface SafeUser {
   lastSeen: Date;
   createdAt: Date;
   lastUpvoteGivenAt?: Date | null;
+  gamification?: Gamification;
 }
 
 

@@ -2,6 +2,7 @@
 
 import { useAuth } from "../../../../custom-hooks/use-auth";
 import { useSocket } from "../../../../custom-hooks/use-socket";
+import { GhostPet } from "../../../components/GhostPet";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Bell, Users, MessageSquare, Star, Check, CheckCheck, Ghost, Search, MapPin, CalendarDays, ExternalLink, Activity, ArrowLeft, MoreHorizontal, MessageCircle, Map, Sparkles, Zap, Image as ImageIcon, Camera, Pencil, X, ShieldCheck, UserPlus, Clock, Smile, Loader2, Save } from "lucide-react";
@@ -473,6 +474,51 @@ export default function ProfilePage() {
           <p className="text-ghost-300 text-sm leading-relaxed mb-5 max-w-2xl">{profile.bio}</p>
         )}
 
+        {/* Gamification / Ghost Pet Chamber */}
+        {profile.gamification && (
+          <div className="bg-ghost-900/40 border border-ghost-800/60 rounded-2xl p-4 sm:p-6 mb-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 relative overflow-hidden group">
+            {/* Ambient glow */}
+            <div className={`absolute -top-10 -right-10 w-32 h-32 blur-3xl opacity-20 rounded-full ${profile.gamification.pet.status === "RADIANT" ? "bg-phantom-500" : "bg-ghost-500"}`} />
+            
+            <div className="relative bg-ghost-950/50 rounded-xl p-4 border border-white/5 shadow-inner">
+              <GhostPet status={profile.gamification.pet.status} level={profile.gamification.pet.level} size="lg" />
+            </div>
+            
+            <div className="flex-1 text-center sm:text-left z-10">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-3 mb-2">
+                <div>
+                  <h3 className="text-lg font-black text-ghost-100 flex items-center gap-2 justify-center sm:justify-start">
+                    Ghost Pet
+                    <span className="text-xs bg-ghost-800 text-ghost-300 px-2 py-0.5 rounded-full border border-ghost-700">Lvl {profile.gamification.pet.level}</span>
+                  </h3>
+                  <p className="text-xs text-ghost-500 mt-1 capitalize font-medium">{profile.gamification.pet.status.toLowerCase()}</p>
+                </div>
+                {profile.gamification.hauntStreak > 0 && (
+                  <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/30 text-orange-400 px-3 py-1.5 rounded-lg font-bold shadow-[0_0_10px_rgba(249,115,22,0.1)]">
+                    <span className="animate-pulse">🔥</span> 
+                    <span>{profile.gamification.hauntStreak} Day Streak</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-4">
+                <div className="flex items-center justify-between text-xs text-ghost-400 mb-1.5 font-medium">
+                  <span>{profile.gamification.pet.xp} XP</span>
+                  <span>{profile.gamification.pet.level * 500} XP for next level</span>
+                </div>
+                <div className="h-2 w-full bg-ghost-950 rounded-full overflow-hidden border border-white/5">
+                  <div 
+                    className="h-full bg-gradient-to-r from-phantom-600 to-phantom-400 rounded-full transition-all duration-1000 relative"
+                    style={{ width: `${Math.min(100, Math.max(0, (profile.gamification.pet.xp / (profile.gamification.pet.level * 500)) * 100))}%` }}
+                  >
+                    <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Quick stats grid */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 sm:gap-4 mt-6">
           {/* Reputation Stat */}
@@ -517,7 +563,6 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
-        </div>
       </div>
 
       {/* ── Divider ── */}

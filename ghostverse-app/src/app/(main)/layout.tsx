@@ -187,7 +187,14 @@ export default function MainLayout({
               <p className="text-sm font-medium text-ghost-100 truncate">
                 {user.displayName}
               </p>
-              <p className="text-xs text-ghost-500 truncate">@{user.username}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <p className="text-[10px] text-ghost-500 truncate">@{user.username}</p>
+                {user.gamification && user.gamification.hauntStreak > 0 && (
+                  <span className="text-[9px] bg-orange-500/10 text-orange-400 px-1 rounded flex items-center gap-0.5 font-bold border border-orange-500/20">
+                    🔥 {user.gamification.hauntStreak}
+                  </span>
+                )}
+              </div>
             </div>
             <Settings className="w-4 h-4 text-ghost-500 flex-shrink-0" />
           </button>
@@ -246,6 +253,12 @@ export default function MainLayout({
               </span>
             )}
           </Link>
+          {user.gamification && user.gamification.hauntStreak > 0 && (
+            <div className="flex items-center gap-1 bg-orange-500/10 text-orange-400 px-2 py-1 rounded-lg border border-orange-500/20 shadow-sm ml-1">
+              <span className="text-sm">🔥</span>
+              <span className="text-xs font-bold">{user.gamification.hauntStreak}</span>
+            </div>
+          )}
         </header>
 
         {/* Page content — extra bottom padding on mobile for bottom nav */}

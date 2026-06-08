@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getGhostLevel } from "../../lib/levels";
+import { GhostPet } from "./GhostPet";
 
 interface ProfileCardProps {
   username: string;
@@ -33,6 +34,7 @@ interface FullProfile {
     mood: string | null;
     reputationScore: number;
   } | null;
+  gamification?: import("../../types").Gamification;
 }
 
 const INTEREST_COLORS: Record<string, string> = {
@@ -259,7 +261,27 @@ export function UserProfileCard({
                 </p>
               )}
 
-              <div className="h-px bg-ghost-800 mb-3" />
+              {/* Gamification / Ghost Pet Chamber */}
+              {profile.gamification && (
+                <div className="bg-ghost-900/50 border border-ghost-800/60 rounded-xl p-3 mb-3 flex items-center justify-between group hover:border-phantom-500/30 transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <GhostPet status={profile.gamification.pet.status} level={profile.gamification.pet.level} size="sm" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-ghost-500 font-bold mb-0.5">Ghost Pet · Lvl {profile.gamification.pet.level}</div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-ghost-100">{profile.gamification.pet.xp} XP</span>
+                        {profile.gamification.hauntStreak > 0 && (
+                          <span className="text-[10px] flex items-center gap-0.5 bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded font-bold">
+                            🔥 {profile.gamification.hauntStreak} Day Streak
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Stats grid */}
               <div className="grid grid-cols-3 gap-2 mb-3">
