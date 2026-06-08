@@ -368,14 +368,16 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
                   <button
                     className="avatar avatar-sm flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-phantom-500/60 transition-all mb-4"
                     onClick={() => {
-                      if (otherUserId) {
-                        const parts = conversationId.split("_");
-                        const otherId = parts.find(id => id !== user?.id) || "";
-                        setSelectedUser({ userId: otherId, username: otherId, displayName: "User", avatar: null });
+                      if (otherUserId && otherUser) {
+                        setSelectedUser({ userId: otherUserId, username: otherUser.username, displayName: otherUser.displayName, avatar: otherUser.avatar });
                       }
                     }}
                   >
-                    <User className="w-4 h-4 text-ghost-400" />
+                    {otherUser?.avatar ? (
+                      <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full object-cover rounded-full" />
+                    ) : (
+                      <User className="w-4 h-4 text-ghost-400" />
+                    )}
                   </button>
                 )}
                 <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
