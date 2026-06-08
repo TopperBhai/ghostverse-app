@@ -215,7 +215,7 @@ export function useWebRTC() {
 
   const declineCall = () => {
     if (!socket || !callerId) return;
-    socket.emit("webrtc:call-decline", { receiverId: callerId, callerId: user?.id });
+    socket.emit("webrtc:call-decline", { receiverId: callerId, callerId: user?.id ?? "" });
     setIsReceivingCall(false);
     setCallerId(null);
   };
