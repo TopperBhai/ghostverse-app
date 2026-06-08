@@ -5,7 +5,7 @@ import { useAuth } from "../../custom-hooks/use-auth";
 import { useRouter } from "next/navigation";
 import {
   UserPlus, MessageSquare, X, Users, CalendarDays,
-  Sparkles, Ghost, ShieldCheck, UserCheck, Clock
+  Sparkles, Ghost, ShieldCheck, UserCheck, Clock, Zap
 } from "lucide-react";
 import Link from "next/link";
 import { getGhostLevel } from "../../lib/levels";
@@ -56,6 +56,9 @@ export function UserProfileCard({
   const [profile, setProfile] = useState<FullProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [friendState, setFriendState] = useState<"none" | "loading" | "sent" | "friends">("none");
+  const [repState, setRepState] = useState<"idle" | "loading" | "given" | "error">("idle");
+  const [repError, setRepError] = useState<string | null>(null);
+  const [canGiveRep, setCanGiveRep] = useState(true);
 
   const isOwnProfile = authUser?.id === userId;
 
@@ -93,10 +96,18 @@ export function UserProfileCard({
           }
         }
       } catch {}
-      finally { setLoading(false); }
+      finally { setLoading(false); };
     };
     fetchProfile();
   }, [username]);
+
+  // Check if viewer can give rep (24h limit)
+  useEffect(() => {
+    if (!authUser?.lastUpvoteGivenAt) { setCanGiveRep(true); return; }
+    const last = new Date(authUser.lastUpvoteGivenAt).getTime();
+    const diff = Date.now() - last;
+    setCanGiveRep(diff >= 24 * 60 * 60 * 1000);
+  }, [authUser]);
 
   const handleAddFriend = async () => {
     if (!authUser) return;
@@ -119,6 +130,27 @@ export function UserProfileCard({
     const convId = [authUser.id, userId].sort().join("_");
     router.push(`/messages/${convId}`);
     onClose();
+  };
+
+  const handleGiveRep = async () => {
+    if (!authUser || repState !== "idle" || !canGiveRep) return;
+    setRepState("loading");
+    setRepError(null);
+    try {
+      const res = await fetch(`/api/users/${username}/give-rep`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setRepState("given");
+        setCanGiveRep(false);
+      } else {
+        setRepState("error");
+        setRepError(data.error || "Failed to give rep");
+        setTimeout(() => { setRepState("idle"); setRepError(null); }, 3000);
+      }
+    } catch {
+      setRepState("error");
+      setTimeout(() => { setRepState("idle"); }, 3000);
+    }
   };
 
   const joinDate = profile
@@ -162,7 +194,7 @@ export function UserProfileCard({
           </div>
           {/* Action buttons */}
           {!isOwnProfile && authUser && (
-            <div className="flex gap-2 mt-10">
+            <div className="flex flex-wrap gap-2 mt-10">
               <button
                 onClick={handleMessage}
                 className="btn-secondary text-xs px-3 py-1.5 gap-1.5"
@@ -181,6 +213,23 @@ export function UserProfileCard({
                 ) : (
                   <><UserPlus className="w-3.5 h-3.5" /> Add</>
                 )}
+              </button>
+              <button
+                onClick={handleGiveRep}
+                disabled={!canGiveRep || repState !== "idle"}
+                title={!canGiveRep ? "You already gave rep today — come back in 24h" : repError || "Give Reputation"}
+                className={`text-xs px-3 py-1.5 gap-1.5 rounded-xl font-bold border transition-all flex items-center ${
+                  repState === "given"
+                    ? "bg-success/10 border-success/30 text-success cursor-default"
+                    : repState === "error"
+                    ? "bg-error/10 border-error/30 text-neon-red cursor-default"
+                    : !canGiveRep
+                    ? "bg-ghost-800/30 border-ghost-700/30 text-ghost-600 cursor-not-allowed opacity-60"
+                    : "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                {repState === "given" ? "Rep Given!" : repState === "loading" ? "..." : !canGiveRep ? "Repped" : "Give Rep"}
               </button>
             </div>
           )}

@@ -131,6 +131,47 @@ export interface Confession {
 }
 
 // ============================================================
+// HAUNT FEED TYPES
+// ============================================================
+
+export type HauntReactionType = "SPOOKY" | "FIRE" | "DEAD" | "ICONIC";
+
+export interface HauntReaction {
+  type: HauntReactionType;
+  count: number;
+  reactedBy: string[]; // user IDs
+}
+
+export interface HauntReply {
+  id: string;
+  content: string;
+  createdAt: Date;
+  author: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatar: string | null;
+    reputationScore?: number;
+  };
+}
+
+export interface HauntPost {
+  id: string;
+  content: string;
+  createdAt: Date;
+  author: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatar: string | null;
+    reputationScore?: number;
+  };
+  reactions: HauntReaction[];
+  replyCount: number;
+  replies?: HauntReply[];
+}
+
+// ============================================================
 // SOCKET EVENT TYPES
 // ============================================================
 

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import { useSocket } from "../../../custom-hooks/use-socket";
-import { Globe, Hand, Trash2, Send, Pencil, Ghost } from "lucide-react";
+import { Globe, Hand, Trash2, Send, Pencil } from "lucide-react";
 import type { WorldChatMessage } from "../../../types";
 import { UserProfileCard } from "../../components/UserProfileCard";
 import { getGhostLevel } from "../../../lib/levels";
@@ -20,10 +20,6 @@ export default function WorldChatPage() {
     userId: string; username: string; displayName: string; avatar: string | null;
   } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [hasVotedNow, setHasVotedNow] = useState(false);
-
-  const lastUpvoteTime = user?.lastUpvoteGivenAt ? new Date(user.lastUpvoteGivenAt).getTime() : 0;
-  const canUpvote = !hasVotedNow && (Date.now() - lastUpvoteTime >= 24 * 60 * 60 * 1000);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -161,43 +157,6 @@ export default function WorldChatPage() {
     if (socket) socket.emit("world:delete-message" as any, { messageId: msgId });
   };
 
-  const handleUpvote = async (msg: WorldChatMessage) => {
-    if (!user || msg.sender.id === user.id) return;
-    if (!canUpvote) return;
-    const isUpvoted = msg.upvotedBy?.includes(user.id);
-    if (isUpvoted) return;
-
-    // Optimistic UI update
-    setHasVotedNow(true);
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === msg.id
-          ? { ...m, upvotes: (m.upvotes || 0) + 1, upvotedBy: [...(m.upvotedBy || []), user.id] }
-          : m
-      )
-    );
-
-    // Emit via socket for realtime UI updates
-    if (socket) {
-      socket.emit("world:upvote" as any, { messageId: msg.id, userId: user.id });
-    }
-
-    // Call API to actually update DB
-    try {
-      const res = await fetch(`/api/world-chat/${msg.id}/upvote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senderId: msg.sender.id }),
-      });
-      if (!res.ok) {
-        // Revert on failure
-        setHasVotedNow(false);
-      }
-    } catch (err) {
-      console.error("Failed to upvote message", err);
-      setHasVotedNow(false);
-    }
-  };
 
   const formatTime = (date: Date | string) =>
     new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -316,33 +275,6 @@ export default function WorldChatPage() {
                       </button>
                     </div>
                   )}
-
-                  {/* Upvote for others — shown on hover or if already upvoted */}
-                  {!isOwn && (hoveredMsg === msg.id || (msg.upvotes && msg.upvotes > 0)) && (
-                    <button
-                      onClick={() => handleUpvote(msg)}
-                      disabled={msg.upvotedBy?.includes(user?.id || "") || !canUpvote}
-                      className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold transition-all border ${
-                        msg.upvotedBy?.includes(user?.id || "")
-                          ? "bg-phantom-500/20 text-phantom-400 border-phantom-500/30 cursor-default"
-                          : !canUpvote
-                          ? "bg-ghost-800/20 text-ghost-600 border-ghost-700/20 cursor-not-allowed opacity-40"
-                          : "bg-ghost-800/60 text-ghost-500 border-white/5 hover:bg-phantom-500/20 hover:text-phantom-400 hover:border-phantom-500/30"
-                      }`}
-                      title={!canUpvote ? "You can upvote again in 24 hours" : msg.upvotedBy?.includes(user?.id || "") ? "Upvoted" : "Give Rep"}
-                    >
-                      <Ghost className="w-3 h-3" />
-                      {msg.upvotes ? msg.upvotes : ""}
-                    </button>
-                  )}
-
-                  {/* Own message upvote display */}
-                  {isOwn && msg.upvotes && msg.upvotes > 0 ? (
-                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-phantom-500/15 text-phantom-400 border border-phantom-500/20 cursor-default" title="Reputation earned">
-                      <Ghost className="w-3 h-3" />
-                      {msg.upvotes}
-                    </div>
-                  ) : null}
 
                   {/* Bubble / Edit input */}
                   {editingMsg?.id === msg.id ? (

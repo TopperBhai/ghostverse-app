@@ -4,10 +4,11 @@ import { useAuth } from "../../custom-hooks/use-auth";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy } from "lucide-react";
+import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy, Zap } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/world-chat", icon: Globe, label: "World Chat" },
+  { href: "/haunts", icon: Zap, label: "Haunts" },
   { href: "/random-chat", icon: Dices, label: "Random Voice" },
   { href: "/messages", icon: MessageSquare, label: "Messages" },
   { href: "/friends", icon: Users, label: "Friends" },
@@ -20,9 +21,9 @@ const NAV_ITEMS = [
 // Mobile bottom nav shows only top 5 (most used)
 const MOBILE_NAV = [
   { href: "/world-chat", icon: Globe, label: "World" },
+  { href: "/haunts", icon: Zap, label: "Haunts" },
   { href: "/messages", icon: MessageSquare, label: "Messages" },
   { href: "/friends", icon: Users, label: "Friends" },
-  { href: "/confessions", icon: VenetianMask, label: "Confessions" },
   { href: "/notifications", icon: Bell, label: "Alerts" },
 ];
 
