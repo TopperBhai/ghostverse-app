@@ -58,6 +58,8 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
   useEffect(() => {
     if (audioRef.current && remoteStream) {
       audioRef.current.srcObject = remoteStream;
+      // Explicitly play it, as browsers sometimes require it even with autoPlay
+      audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
     }
   }, [remoteStream]);
 

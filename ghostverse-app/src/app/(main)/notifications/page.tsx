@@ -136,13 +136,16 @@ export default function NotificationsPage() {
             {notifications.map((notif, i) => {
               const icon = TYPE_ICON[notif.type] ?? TYPE_ICON.default;
               return (
-                <button
+              return (
+                <div
                   key={notif.id}
-                  onClick={() => markRead(notif.id)}
                   className={`w-full flex items-start gap-3 px-4 md:px-6 py-4 text-left transition-all hover:bg-white/[0.025] page-enter ${
                     !notif.read ? "bg-phantom-500/[0.04]" : ""
                   }`}
                   style={{ animationDelay: `${Math.min(i, 15) * 0.03}s` }}
+                  onClick={() => markRead(notif.id)}
+                  role="button"
+                  tabIndex={0}
                 >
                   <div className={`w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center mt-0.5 border ${
                     !notif.read 
@@ -163,11 +166,48 @@ export default function NotificationsPage() {
                     <p className="text-xs text-ghost-500 line-clamp-2 leading-relaxed">
                       {notif.content}
                     </p>
+                    
+                    {notif.type === "FRIEND_REQUEST" && notif.data?.friendshipId && (
+                      <div className="flex gap-2 mt-3">
+                        <button 
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              const res = await fetch("/api/friends/action", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ friendshipId: notif.data!.friendshipId, action: "ACCEPT" })
+                              });
+                              if (res.ok) markRead(notif.id);
+                            } catch {}
+                          }}
+                          className="bg-primary/20 text-primary hover:bg-primary hover:text-white px-3 py-1 rounded-md text-xs font-semibold transition-colors"
+                        >
+                          Accept
+                        </button>
+                        <button 
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              const res = await fetch("/api/friends/action", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ friendshipId: notif.data!.friendshipId, action: "REJECT" })
+                              });
+                              if (res.ok) markRead(notif.id);
+                            } catch {}
+                          }}
+                          className="bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white px-3 py-1 rounded-md text-xs font-semibold transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <span className="text-[10px] text-ghost-600 flex-shrink-0 mt-1 whitespace-nowrap">
                     {formatTime(notif.createdAt)}
                   </span>
-                </button>
+                </div>
               );
             })}
           </div>
