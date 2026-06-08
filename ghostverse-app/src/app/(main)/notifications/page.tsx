@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactElement } from "react";
 import { Bell, Users, MessageSquare, Star, Check, CheckCheck } from "lucide-react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 
@@ -14,7 +14,7 @@ interface Notification {
   data?: Record<string, unknown>;
 }
 
-const TYPE_ICON: Record<string, JSX.Element> = {
+const TYPE_ICON: Record<string, ReactElement> = {
   FRIEND_REQUEST: <Users className="w-4 h-4 text-blue-400" />,
   FRIEND_ACCEPTED: <Users className="w-4 h-4 text-green-400" />,
   NEW_MESSAGE: <MessageSquare className="w-4 h-4 text-phantom-400" />,
