@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GhostVerse Admin Panel</title>
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: #18181b;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --border: #27272a;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        h1 { margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        h1 span { color: var(--primary); }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media(min-width: 768px) {
+            .grid { grid-template-columns: 2fr 1fr; }
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .card-header h2 { margin: 0; font-size: 18px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th { color: var(--text-muted); font-weight: 600; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-active { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .badge-banned { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-muted { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        
+        .badge-user { background: rgba(161, 161, 170, 0.2); color: var(--text-muted); }
+        .badge-admin { background: rgba(139, 92, 246, 0.2); color: var(--primary); }
+
+        button {
+            background-color: var(--border);
+            color: var(--text-main);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        button:hover { background-color: #3f3f46; }
+        button.btn-danger { background-color: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        button.btn-danger:hover { background-color: var(--danger); color: white; }
+        button.btn-warning { background-color: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        button.btn-warning:hover { background-color: var(--warning); color: white; }
+        button.btn-success { background-color: rgba(16, 185, 129, 0.2); color: var(--success); }
+        button.btn-success:hover { background-color: var(--success); color: white; }
+
+        .actions { display: flex; gap: 8px; }
+
+        .chat-container {
+            max-height: 500px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-msg {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .chat-author { font-weight: bold; color: var(--primary); }
+
+        #error-box {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid var(--danger);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1><span>GhostVerse</span> Admin Panel</h1>
+            <div id="admin-info">Loading admin status...</div>
+        </header>
+
+        <div id="error-box"></div>
+
+        <div class="grid">
+            <!-- Users List -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Manage Users</h2>
+                    <button onclick="fetchUsers()">Refresh</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr><td colspan="5" style="text-align: center;">Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- World Chat Monitoring -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>World Chat Monitor</h2>
+                    <button onclick="fetchWorldChat()">Refresh</button>
+                </div>
+                <div class="chat-container" id="chat-container">
+                    <div style="text-align: center; color: var(--text-muted);">Loading chat...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check admin authorization on load
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/auth/me');
+                const data = await res.json();
+                
+                if (!res.ok || !data.success) {
+                    showError("You are not logged in. Please log in to GhostVerse first.");
+                    return false;
+                }
+
+                if (data.data.role !== 'ADMIN') {
+                    showError("Access Denied. You must be an ADMIN to view this panel.");
+                    document.getElementById('admin-info').innerHTML = `<span class="badge badge-banned">Unauthorized</span>`;
+                    return false;
+                }
+
+                document.getElementById('admin-info').innerHTML = `Welcome, <b>${data.data.username}</b> <span class="badge badge-admin">ADMIN</span>`;
+                return true;
+            } catch (err) {
+                showError("Failed to authenticate.");
+                return false;
+            }
+        }
+
+        function showError(msg) {
+            const box = document.getElementById('error-box');
+            box.textContent = msg;
+            box.style.display = 'block';
+        }
+
+        async function fetchUsers() {
+            const tbody = document.getElementById('users-tbody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading...</td></tr>';
+            
+            try {
+                const res = await fetch('/api/admin/users');
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error(data.error);
+
+                tbody.innerHTML = '';
+                data.data.forEach(user => {
+                    const statusClass = user.status === 'ACTIVE' ? 'badge-active' : (user.status === 'BANNED' ? 'badge-banned' : 'badge-muted');
+                    const roleClass = user.role === 'ADMIN' ? 'badge-admin' : 'badge-user';
+                    const date = new Date(user.createdAt).toLocaleDateString();
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <b>${user.displayName}</b><br>
+                                <span style="color: var(--text-muted); font-size: 11px;">@${user.username}</span>
+                            </td>
+                            <td><span class="badge ${roleClass}">${user.role}</span></td>
+                            <td><span class="badge ${statusClass}">${user.status}</span></td>
+                            <td>${date}</td>
+                            <td class="actions">
+                                ${user.status !== 'BANNED' ? `<button class="btn-danger" onclick="updateUserStatus('${user.id}', 'BAN')">Ban</button>` : ''}
+                                ${user.status !== 'MUTED' && user.status !== 'BANNED' ? `<button class="btn-warning" onclick="updateUserStatus('${user.id}', 'MUTE')">Mute</button>` : ''}
+                                ${user.status !== 'ACTIVE' ? `<button class="btn-success" onclick="updateUserStatus('${user.id}', 'ACTIVE')">Unban/Unmute</button>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="5" style="color: red; text-align: center;">Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        async function updateUserStatus(userId, action) {
+            if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+            try {
+                const res = await fetch('/api/admin/users', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, action })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    fetchUsers();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Request failed');
+            }
+        }
+
+        async function fetchWorldChat() {
+            const container = document.getElementById('chat-container');
+            container.innerHTML = '<div style="text-align: center; color: var(--text-muted);">Loading...</div>';
+            
+            try {
+                const res = await fetch('/api/world-chat?limit=50');
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error(data.error);
+
+                container.innerHTML = '';
+                // Since world chat GET returns oldest first (for UI), we might want to reverse it for admin panel
+                const messages = data.data.reverse();
+                
+                messages.forEach(msg => {
+                    const date = new Date(msg.createdAt).toLocaleString();
+                    container.innerHTML += `
+                        <div class="chat-msg">
+                            <div class="chat-header">
+                                <span class="chat-author">@${msg.sender.username}</span>
+                                <span>${date}</span>
+                            </div>
+                            <div>${msg.content}</div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                container.innerHTML = `<div style="color: red; text-align: center;">Error: ${err.message}</div>`;
+            }
+        }
+
+        // Initialize
+        async function init() {
+            const isAuth = await checkAuth();
+            if (isAuth) {
+                fetchUsers();
+                fetchWorldChat();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

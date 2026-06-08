@@ -16,25 +16,30 @@ import {
   ArrowLeft,
   ShieldCheck,
   Sparkles,
+  X,
+  Save,
+  Loader2,
 } from "lucide-react";
 import type { UserProfile, ApiResponse } from "../../../../types";
 
 const MOOD_ICONS: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
-  HAPPY:     { icon: <Smile className="w-5 h-5" />,   label: "Happy",     color: "text-yellow-400" },
-  BORED:     { icon: <Ghost className="w-5 h-5" />,   label: "Bored",     color: "text-ghost-400"  },
-  LONELY:    { icon: <Ghost className="w-5 h-5" />,   label: "Lonely",    color: "text-blue-400"   },
-  MOTIVATED: { icon: <Sparkles className="w-5 h-5" />,label: "Motivated", color: "text-orange-400" },
-  SAD:       { icon: <Ghost className="w-5 h-5" />,   label: "Sad",       color: "text-blue-500"   },
-  EXCITED:   { icon: <Sparkles className="w-5 h-5" />,label: "Excited",   color: "text-fuchsia-400"},
+  HAPPY: { icon: <Smile className="w-5 h-5" />, label: "Happy", color: "text-yellow-400" },
+  BORED: { icon: <Ghost className="w-5 h-5" />, label: "Bored", color: "text-ghost-400" },
+  LONELY: { icon: <Ghost className="w-5 h-5" />, label: "Lonely", color: "text-blue-400" },
+  MOTIVATED: { icon: <Sparkles className="w-5 h-5" />, label: "Motivated", color: "text-orange-400" },
+  SAD: { icon: <Ghost className="w-5 h-5" />, label: "Sad", color: "text-blue-500" },
+  EXCITED: { icon: <Sparkles className="w-5 h-5" />, label: "Excited", color: "text-fuchsia-400" },
 };
 
 const INTEREST_COLORS: Record<string, string> = {
   GAMING: "#8B5CF6", CODING: "#10B981", STARTUPS: "#F59E0B",
-  ANIME: "#EC4899",  MOVIES: "#EF4444", MUSIC: "#3B82F6",
-  FITNESS: "#14B8A6",RELATIONSHIPS: "#F43F5E", ART: "#A855F7",
+  ANIME: "#EC4899", MOVIES: "#EF4444", MUSIC: "#3B82F6",
+  FITNESS: "#14B8A6", RELATIONSHIPS: "#F43F5E", ART: "#A855F7",
   TRAVEL: "#06B6D4", FOOD: "#F97316", SCIENCE: "#6366F1",
   PHILOSOPHY: "#8B5CF6", SPORTS: "#22C55E", BOOKS: "#D97706",
 };
+
+const ALL_INTERESTS = Object.keys(INTEREST_COLORS);
 
 export default function ProfilePage() {
   const { user: authUser, refreshUser } = useAuth();
@@ -42,12 +47,22 @@ export default function ProfilePage() {
   const params = useParams();
   const router = useRouter();
   const username = params.username as string;
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarHover, setAvatarHover] = useState(false);
   const [friendState, setFriendState] = useState<"none" | "loading" | "sent">("none");
   const [friendMsg, setFriendMsg] = useState<{ type: string; text: string } | null>(null);
+
+  // Edit modal state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editDisplayName, setEditDisplayName] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [editMood, setEditMood] = useState("");
+  const [editInterests, setEditInterests] = useState<string[]>([]);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
 
   const isOwnProfile = authUser?.username === username;
 
@@ -70,6 +85,80 @@ export default function ProfilePage() {
       fetchProfile();
     }
   }, [username, isOwnProfile, authUser]);
+
+  const openEditModal = () => {
+    if (!profile) return;
+    setEditDisplayName(profile.displayName || "");
+    setEditBio(profile.bio || "");
+    setEditMood(profile.profile?.mood || "");
+    setEditInterests(profile.profile?.interests || []);
+    setEditError("");
+    setEditOpen(true);
+  };
+
+  const toggleInterest = (interest: string) => {
+    setEditInterests(prev =>
+      prev.includes(interest) ? prev.filter(i => i !== interest) : [...prev, interest]
+    );
+  };
+
+  const saveProfile = async () => {
+    if (!editDisplayName.trim()) {
+      setEditError("Display name cannot be empty.");
+      return;
+    }
+    setEditSaving(true);
+    setEditError("");
+    try {
+      const userRes = await fetch("/api/auth/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          displayName: editDisplayName.trim(),
+          bio: editBio.trim() || null,
+        }),
+      });
+
+      const profileRes = await fetch("/api/auth/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mood: editMood || null,
+          interests: editInterests,
+        }),
+      });
+
+      if (userRes.ok) {
+        await refreshUser();
+        setProfile(prev => prev ? {
+          ...prev,
+          displayName: editDisplayName.trim(),
+          bio: editBio.trim() || null,
+          profile: {
+            ...(prev.profile || {}),
+            mood: editMood || undefined,
+            interests: editInterests,
+          } as any,
+        } : prev);
+
+        if (socket && authUser) {
+          socket.emit("user:profile-update", {
+            userId: authUser.id,
+            avatar: authUser.avatar,
+            displayName: editDisplayName.trim(),
+          });
+        }
+        setEditOpen(false);
+      } else {
+        const data = await userRes.json();
+        setEditError(data.error || "Failed to save profile.");
+      }
+    } catch {
+      setEditError("An error occurred. Please try again.");
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -162,6 +251,112 @@ export default function ProfilePage() {
   return (
     <div className="min-h-[calc(100vh-56px)] md:min-h-screen overflow-y-auto bg-ghost-950">
 
+      {/* ── Edit Profile Modal ── */}
+      {editOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="glass-card w-full max-w-md max-h-[90vh] overflow-y-auto p-6 animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-ghost-100 flex items-center gap-2">
+                <Pencil className="w-5 h-5 text-phantom-400" /> Edit Profile
+              </h2>
+              <button onClick={() => setEditOpen(false)} className="btn-ghost w-8 h-8 rounded-full">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-5">
+              {/* Display Name */}
+              <div>
+                <label className="block text-xs font-bold text-ghost-400 uppercase tracking-widest mb-2">Display Name</label>
+                <input
+                  type="text"
+                  value={editDisplayName}
+                  onChange={e => setEditDisplayName(e.target.value)}
+                  maxLength={30}
+                  className="glass-input text-sm py-2.5"
+                  placeholder="Your display name"
+                />
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block text-xs font-bold text-ghost-400 uppercase tracking-widest mb-2">Bio</label>
+                <textarea
+                  value={editBio}
+                  onChange={e => setEditBio(e.target.value)}
+                  maxLength={160}
+                  rows={3}
+                  className="glass-input text-sm py-2.5 resize-none"
+                  placeholder="Tell the world about yourself..."
+                />
+                <p className="text-right text-xs text-ghost-600 mt-1">{editBio.length}/160</p>
+              </div>
+
+              {/* Mood */}
+              <div>
+                <label className="block text-xs font-bold text-ghost-400 uppercase tracking-widest mb-2">Mood</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(MOOD_ICONS).map(([key, val]) => (
+                    <button
+                      key={key}
+                      onClick={() => setEditMood(editMood === key ? "" : key)}
+                      className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                        editMood === key
+                          ? "bg-phantom-500/20 border-phantom-500/60 text-phantom-300"
+                          : "bg-ghost-900/40 border-ghost-800 text-ghost-400 hover:border-ghost-600"
+                      }`}
+                    >
+                      <span className={val.color}>{val.icon}</span>
+                      {val.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Interests */}
+              <div>
+                <label className="block text-xs font-bold text-ghost-400 uppercase tracking-widest mb-2">
+                  Interests ({editInterests.length} selected)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {ALL_INTERESTS.map(interest => {
+                    const selected = editInterests.includes(interest);
+                    const color = INTEREST_COLORS[interest];
+                    return (
+                      <button
+                        key={interest}
+                        onClick={() => toggleInterest(interest)}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all"
+                        style={{
+                          borderColor: selected ? `${color}80` : "#3f3f46",
+                          backgroundColor: selected ? `${color}20` : "transparent",
+                          color: selected ? color : "#71717a",
+                        }}
+                      >
+                        {interest.charAt(0) + interest.slice(1).toLowerCase()}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {editError && (
+                <p className="text-sm text-neon-red bg-error/10 px-3 py-2 rounded-lg">{editError}</p>
+              )}
+
+              <button
+                onClick={saveProfile}
+                disabled={editSaving}
+                className="btn-primary w-full py-3 gap-2"
+              >
+                {editSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {editSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Hero Banner ── */}
       <div className="relative h-36 md:h-52 w-full overflow-hidden">
         {/* Animated gradient banner */}
@@ -236,7 +431,7 @@ export default function ProfilePage() {
             {/* Action buttons */}
             <div className="flex gap-2 flex-wrap">
               {isOwnProfile ? (
-                <button className="btn-secondary text-sm px-4 py-2 gap-2 whitespace-nowrap">
+                <button onClick={openEditModal} className="btn-secondary text-sm px-4 py-2 gap-2 whitespace-nowrap">
                   <Pencil className="w-4 h-4" /> Edit Profile
                 </button>
               ) : (
@@ -265,6 +460,12 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {friendMsg && (
+          <p className={`text-xs mb-3 font-medium ${friendMsg.type === "success" ? "text-success" : "text-neon-red"}`}>
+            {friendMsg.text}
+          </p>
+        )}
 
         {/* Bio */}
         {profile.bio && (
