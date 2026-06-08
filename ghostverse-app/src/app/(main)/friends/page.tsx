@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import { Users, Inbox, Send, Plus, Ghost, MessageSquare, X, Check } from "lucide-react";
-import type { ApiResponse } from "@/types";
+import type { ApiResponse } from "../../../types";
 
 interface FriendData {
   id: string;

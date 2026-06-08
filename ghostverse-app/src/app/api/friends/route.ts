@@ -1,9 +1,9 @@
 // GhostVerse — Friends API (Firebase)
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase-admin";
-import { getAuthUser } from "@/lib/auth";
+import { db } from "../../../lib/firebase-admin";
+import { getAuthUser } from "../../../lib/auth";
 import { v4 as uuidv4 } from "uuid";
-import type { ApiResponse } from "@/types";
+import type { ApiResponse } from "../../../types";
 
 export async function GET() {
   try {

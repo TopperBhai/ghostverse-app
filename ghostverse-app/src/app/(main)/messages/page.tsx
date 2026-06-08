@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import Link from "next/link";
 import { MessageSquare, Edit } from "lucide-react";
-import type { ApiResponse } from "@/types";
+import type { ApiResponse } from "../../../types";
 
 interface Conversation {
   id: string;

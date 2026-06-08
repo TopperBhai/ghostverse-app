@@ -1,8 +1,8 @@
 // GhostVerse — User Profile API (Firebase)
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase-admin";
-import { getAuthUser } from "@/lib/auth";
-import type { ApiResponse, UserProfile } from "@/types";
+import { db } from "../../../../lib/firebase-admin";
+import { getAuthUser } from "../../../../lib/auth";
+import type { ApiResponse, UserProfile } from "../../../../types";
 
 export async function GET(
   _request: NextRequest,

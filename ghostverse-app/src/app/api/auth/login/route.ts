@@ -1,9 +1,9 @@
 // GhostVerse — Login API (Firebase)
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase-admin";
-import { signToken, setAuthCookie } from "@/lib/auth";
+import { db } from "../../../../lib/firebase-admin";
+import { signToken, setAuthCookie } from "../../../../lib/auth";
 import bcrypt from "bcryptjs";
-import type { ApiResponse } from "@/types";
+import type { ApiResponse } from "../../../../types";
 
 export async function POST(request: NextRequest) {
   try {

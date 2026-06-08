@@ -3,7 +3,6 @@ const path = require('path');
 
 function getRelativePath(fromPath, toPath) {
     let rel = path.relative(path.dirname(fromPath), toPath);
-    // Replace backslashes with forward slashes for imports
     rel = rel.replace(/\\/g, '/');
     if (!rel.startsWith('.')) {
         rel = './' + rel;
@@ -21,13 +20,23 @@ function processDirectory(dir) {
             let content = fs.readFileSync(fullPath, 'utf8');
             let updated = false;
 
-            // Find all imports matching @/custom-hooks/
-            const regex = /from\s+["']@\/custom-hooks\/([^"']+)["']/g;
-            content = content.replace(regex, (match, hookName) => {
-                const targetHookDir = path.join(__dirname, 'src', 'custom-hooks');
-                const relPath = getRelativePath(fullPath, targetHookDir);
+            // Find all imports matching @/something
+            const regex = /from\s+["']@\/([^"']+)["']/g;
+            content = content.replace(regex, (match, importPath) => {
+                const targetDir = path.join(__dirname, 'src', path.dirname(importPath));
+                const targetFile = path.basename(importPath);
+                
+                let relPath = getRelativePath(fullPath, targetDir);
+                // If it's importing from just "@/types", path.dirname is "."
+                if (importPath === 'types') {
+                     const typesDir = path.join(__dirname, 'src');
+                     relPath = getRelativePath(fullPath, typesDir);
+                     updated = true;
+                     return `from "${relPath}/types"`;
+                }
+
                 updated = true;
-                return `from "${relPath}/${hookName}"`;
+                return `from "${relPath}/${targetFile}"`;
             });
 
             if (updated) {

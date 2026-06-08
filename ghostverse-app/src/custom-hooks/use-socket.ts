@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "./use-auth";
-import type { ServerToClientEvents, ClientToServerEvents } from "@/types";
+import type { ServerToClientEvents, ClientToServerEvents } from "../types";
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 

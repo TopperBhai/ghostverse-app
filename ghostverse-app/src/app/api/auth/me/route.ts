@@ -1,8 +1,8 @@
 // GhostVerse — Me API (Firebase)
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase-admin";
-import { getAuthUser } from "@/lib/auth";
-import type { ApiResponse } from "@/types";
+import { db } from "../../../../lib/firebase-admin";
+import { getAuthUser } from "../../../../lib/auth";
+import type { ApiResponse } from "../../../../types";
 
 export async function GET(request: NextRequest) {
   try {

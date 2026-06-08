@@ -16,7 +16,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import type { UserProfile, ApiResponse } from "@/types";
+import type { UserProfile, ApiResponse } from "../../../../types";
 
 const MOOD_ICONS: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
   HAPPY:     { icon: <Smile className="w-5 h-5" />,   label: "Happy",     color: "text-yellow-400" },

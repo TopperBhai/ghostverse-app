@@ -4,7 +4,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import type { JWTPayload } from "@/types";
+import type { JWTPayload } from "../types";
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "ghostverse-super-secret-key-change-in-production"

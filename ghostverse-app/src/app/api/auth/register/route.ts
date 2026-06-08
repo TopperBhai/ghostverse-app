@@ -1,11 +1,11 @@
 // GhostVerse — Register API (Firebase)
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase-admin";
-import { signToken, setAuthCookie } from "@/lib/auth";
+import { db } from "../../../../lib/firebase-admin";
+import { signToken, setAuthCookie } from "../../../../lib/auth";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
-import type { ApiResponse } from "@/types";
-import type { UserRole } from "@/types";
+import type { ApiResponse } from "../../../../types";
+import type { UserRole } from "../../../../types";
 
 export async function POST(request: NextRequest) {
   try {

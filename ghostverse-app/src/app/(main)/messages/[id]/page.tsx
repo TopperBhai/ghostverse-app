@@ -7,7 +7,7 @@ import { useWebRTC } from "../../../../custom-hooks/use-webrtc";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Phone, User, MessageSquare, Check, CheckCheck, Mic } from "lucide-react";
-import type { ApiResponse } from "@/types";
+import type { ApiResponse } from "../../../../types";
 
 interface Message {
   id: string;
