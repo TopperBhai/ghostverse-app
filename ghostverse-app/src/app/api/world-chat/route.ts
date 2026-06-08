@@ -23,8 +23,42 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .get();
 
-    const messages = snapshot.docs.map(doc => doc.data() as WorldChatMessage);
+    let messages = snapshot.docs.map(doc => doc.data() as WorldChatMessage);
     
+    // Extract unique sender IDs to fetch their latest profiles
+    const uniqueSenderIds = [...new Set(messages.map(m => m.sender.id))];
+    
+    if (uniqueSenderIds.length > 0) {
+      // Fetch all unique senders in parallel
+      const userDocs = await Promise.all(
+        uniqueSenderIds.map(id => db.collection("users").doc(id).get())
+      );
+      
+      const userMap = new Map();
+      userDocs.forEach(doc => {
+        if (doc.exists) {
+          userMap.set(doc.id, doc.data());
+        }
+      });
+      
+      // Override the stored sender with the latest profile data
+      messages = messages.map(msg => {
+        const latestUser = userMap.get(msg.sender.id);
+        if (latestUser) {
+          return {
+            ...msg,
+            sender: {
+              ...msg.sender,
+              avatar: latestUser.avatar ?? null,
+              displayName: latestUser.displayName ?? msg.sender.displayName,
+              username: latestUser.username ?? msg.sender.username,
+            }
+          };
+        }
+        return msg;
+      });
+    }
+
     // Sort chronologically for the frontend
     messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
