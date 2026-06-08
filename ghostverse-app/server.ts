@@ -44,6 +44,8 @@ app.prepare().then(() => {
 
   // Make io accessible to API routes via global
   (globalThis as Record<string, unknown>).__socketIO = io;
+  // Make online users count accessible to API routes
+  (globalThis as Record<string, unknown>).__getOnlineUsersCount = () => onlineUsers.size;
 
   io.on("connection", (socket) => {
     console.log(`👻 User connected: ${socket.id}`);

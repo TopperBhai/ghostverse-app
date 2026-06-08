@@ -39,6 +39,8 @@
             padding: 20px 0;
             border-bottom: 1px solid var(--border);
             margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         h1 { margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
@@ -69,6 +71,8 @@
             margin-bottom: 15px;
             border-bottom: 1px solid var(--border);
             padding-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .card-header h2 { margin: 0; font-size: 18px; }
@@ -114,6 +118,8 @@
         }
 
         button:hover { background-color: #3f3f46; }
+        button.btn-primary { background-color: var(--primary); color: white; }
+        button.btn-primary:hover { background-color: var(--primary-hover); }
         button.btn-danger { background-color: rgba(239, 68, 68, 0.2); color: var(--danger); }
         button.btn-danger:hover { background-color: var(--danger); color: white; }
         button.btn-warning { background-color: rgba(245, 158, 11, 0.2); color: var(--warning); }
@@ -121,7 +127,7 @@
         button.btn-success { background-color: rgba(16, 185, 129, 0.2); color: var(--success); }
         button.btn-success:hover { background-color: var(--success); color: white; }
 
-        .actions { display: flex; gap: 8px; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
         .chat-container {
             max-height: 500px;
@@ -158,6 +164,50 @@
             display: none;
             border: 1px solid var(--danger);
         }
+
+        .stat-boxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-box .number { font-size: 28px; font-weight: bold; color: var(--primary); margin: 5px 0; }
+        .stat-box .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        .form-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .form-group input { 
+            flex: 1; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            border: 1px solid var(--border); 
+            background: var(--bg-dark); 
+            color: white; 
+            font-family: inherit; 
+        }
+
+        /* TABS */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .tab { padding: 8px 16px; cursor: pointer; border-radius: 6px; font-weight: bold; color: var(--text-muted); }
+        .tab.active { background: var(--primary); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .ticket {
+            background: var(--bg-dark); border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 10px;
+        }
+        .ticket-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .ticket-status { font-weight: bold; }
+        .ticket-status.open { color: var(--warning); }
+        .ticket-status.closed { color: var(--success); }
     </style>
 </head>
 <body>
@@ -165,48 +215,96 @@
     <div class="container">
         <header>
             <h1><span>GhostVerse</span> Admin Panel</h1>
-            <div id="admin-info">Loading admin status...</div>
+            <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <button id="maintenance-toggle" onclick="toggleMaintenance()" class="btn-warning">Maintenance Mode: Loading...</button>
+                <div id="admin-info">Loading admin status...</div>
+            </div>
         </header>
 
         <div id="error-box"></div>
 
-        <div class="grid">
-            <!-- Users List -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>Manage Users</h2>
-                    <button onclick="fetchUsers()">Refresh</button>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Joined</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-tbody">
-                        <tr><td colspan="5" style="text-align: center;">Loading users...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="stat-boxes" id="stat-boxes">
+            <div class="stat-box"><div class="label">Total Users</div><div class="number" id="stat-total-users">-</div></div>
+            <div class="stat-box"><div class="label">Online Users</div><div class="number" id="stat-online-users">-</div></div>
+            <div class="stat-box"><div class="label">Total Tickets</div><div class="number" id="stat-total-tickets">-</div></div>
+        </div>
 
-            <!-- World Chat Monitoring -->
-            <div class="card">
-                <div class="card-header">
-                    <h2>World Chat Monitor</h2>
-                    <button onclick="fetchWorldChat()">Refresh</button>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('users-tab', this)">Users & Settings</div>
+            <div class="tab" onclick="switchTab('tickets-tab', this); fetchTickets();">Support Tickets</div>
+        </div>
+
+        <div id="users-tab" class="tab-content active">
+            <div class="grid">
+                <!-- Users List -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Manage Users</h2>
+                        <button onclick="fetchUsers()">Refresh</button>
+                    </div>
+
+                    <!-- Ban/Action by Username Form -->
+                    <div class="form-group" style="padding: 10px; background: var(--bg-dark); border-radius: 8px; border: 1px solid var(--border);">
+                        <input type="text" id="target-username" placeholder="Enter username...">
+                        <button class="btn-danger" onclick="actionByUsername('BAN')">Ban</button>
+                        <button class="btn-danger" onclick="actionByUsername('DELETE')" style="background: var(--danger);">Delete</button>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-tbody">
+                                <tr><td colspan="5" style="text-align: center;">Loading users...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="chat-container" id="chat-container">
-                    <div style="text-align: center; color: var(--text-muted);">Loading chat...</div>
+
+                <!-- World Chat Monitoring -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>World Chat Monitor</h2>
+                        <button onclick="fetchWorldChat()">Refresh</button>
+                    </div>
+                    <div class="chat-container" id="chat-container">
+                        <div style="text-align: center; color: var(--text-muted);">Loading chat...</div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div id="tickets-tab" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Support Tickets</h2>
+                    <button onclick="fetchTickets()">Refresh</button>
+                </div>
+                <div id="tickets-container">
+                    <div style="text-align: center; color: var(--text-muted);">Loading tickets...</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
+        let isMaintenanceMode = false;
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
         // Check admin authorization on load
         async function checkAuth() {
             try {
@@ -238,6 +336,63 @@
             box.style.display = 'block';
         }
 
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/admin/stats');
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('stat-total-users').textContent = data.data.totalUsers;
+                    document.getElementById('stat-online-users').textContent = data.data.onlineUsers;
+                }
+            } catch (e) {
+                console.error("Failed to fetch stats", e);
+            }
+        }
+
+        async function fetchSettings() {
+            try {
+                const res = await fetch('/api/admin/settings');
+                const data = await res.json();
+                if (data.success) {
+                    isMaintenanceMode = data.data.maintenanceMode || false;
+                    updateMaintenanceBtn();
+                }
+            } catch (e) {
+                console.error("Failed to fetch settings", e);
+            }
+        }
+
+        function updateMaintenanceBtn() {
+            const btn = document.getElementById('maintenance-toggle');
+            if (isMaintenanceMode) {
+                btn.textContent = "Maintenance Mode: ON (Turn OFF)";
+                btn.className = "btn-danger";
+            } else {
+                btn.textContent = "Maintenance Mode: OFF (Turn ON)";
+                btn.className = "btn-success";
+            }
+        }
+
+        async function toggleMaintenance() {
+            const newState = !isMaintenanceMode;
+            if (!confirm(`Are you sure you want to turn Maintenance Mode ${newState ? 'ON' : 'OFF'}?`)) return;
+            try {
+                const res = await fetch('/api/admin/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ maintenanceMode: newState })
+                });
+                if (res.ok) {
+                    isMaintenanceMode = newState;
+                    updateMaintenanceBtn();
+                } else {
+                    alert("Failed to update settings");
+                }
+            } catch (e) {
+                alert("Request failed");
+            }
+        }
+
         async function fetchUsers() {
             const tbody = document.getElementById('users-tbody');
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Loading...</td></tr>';
@@ -264,9 +419,10 @@
                             <td><span class="badge ${statusClass}">${user.status}</span></td>
                             <td>${date}</td>
                             <td class="actions">
-                                ${user.status !== 'BANNED' ? `<button class="btn-danger" onclick="updateUserStatus('${user.id}', 'BAN')">Ban</button>` : ''}
+                                ${user.status !== 'BANNED' ? `<button class="btn-warning" onclick="updateUserStatus('${user.id}', 'BAN')">Ban</button>` : ''}
                                 ${user.status !== 'MUTED' && user.status !== 'BANNED' ? `<button class="btn-warning" onclick="updateUserStatus('${user.id}', 'MUTE')">Mute</button>` : ''}
                                 ${user.status !== 'ACTIVE' ? `<button class="btn-success" onclick="updateUserStatus('${user.id}', 'ACTIVE')">Unban/Unmute</button>` : ''}
+                                <button class="btn-danger" style="background:var(--danger);color:white;" onclick="updateUserStatus('${user.id}', 'DELETE')">Delete</button>
                             </td>
                         </tr>
                     `;
@@ -277,7 +433,11 @@
         }
 
         async function updateUserStatus(userId, action) {
-            if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+            if (action === 'DELETE') {
+                if (!confirm(`DANGER: Are you absolutely sure you want to permanently DELETE this user? This cannot be undone.`)) return;
+            } else {
+                if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+            }
             try {
                 const res = await fetch('/api/admin/users', {
                     method: 'PATCH',
@@ -287,6 +447,36 @@
                 const data = await res.json();
                 if (res.ok) {
                     fetchUsers();
+                    fetchStats();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Request failed');
+            }
+        }
+
+        async function actionByUsername(action) {
+            const username = document.getElementById('target-username').value.trim();
+            if (!username) return alert("Please enter a username");
+            
+            if (action === 'DELETE') {
+                if (!confirm(`DANGER: Are you absolutely sure you want to permanently DELETE @${username}?`)) return;
+            } else {
+                if (!confirm(`Are you sure you want to ${action} @${username}?`)) return;
+            }
+            try {
+                const res = await fetch('/api/admin/users', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ targetUsername: username, action })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById('target-username').value = '';
+                    fetchUsers();
+                    fetchStats();
+                    alert("Success");
                 } else {
                     alert('Error: ' + data.error);
                 }
@@ -306,7 +496,6 @@
                 if (!res.ok) throw new Error(data.error);
 
                 container.innerHTML = '';
-                // Since world chat GET returns oldest first (for UI), we might want to reverse it for admin panel
                 const messages = data.data.reverse();
                 
                 messages.forEach(msg => {
@@ -326,10 +515,87 @@
             }
         }
 
+        async function fetchTickets() {
+            const container = document.getElementById('tickets-container');
+            container.innerHTML = '<div style="text-align: center; color: var(--text-muted);">Loading tickets...</div>';
+            
+            try {
+                const res = await fetch('/api/admin/tickets');
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error(data.error);
+
+                container.innerHTML = '';
+                document.getElementById('stat-total-tickets').textContent = data.data.length;
+
+                if (data.data.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; color: var(--text-muted);">No tickets found.</div>';
+                    return;
+                }
+
+                data.data.forEach(ticket => {
+                    const date = new Date(ticket.createdAt).toLocaleString();
+                    const statusClass = ticket.status === 'OPEN' ? 'open' : 'closed';
+                    
+                    container.innerHTML += `
+                        <div class="ticket">
+                            <div class="ticket-header">
+                                <div>
+                                    <span class="chat-author">@${ticket.username}</span> 
+                                    <span style="color:var(--text-muted);font-size:12px;margin-left:10px;">${date}</span>
+                                </div>
+                                <span class="ticket-status ${statusClass}">${ticket.status}</span>
+                            </div>
+                            <h3 style="margin: 0 0 10px 0; font-size: 16px;">${ticket.subject}</h3>
+                            <p style="margin: 0 0 15px 0; font-size: 14px; color: var(--text-main); white-space: pre-wrap;">${ticket.description}</p>
+                            
+                            ${ticket.status === 'OPEN' ? `
+                                <div style="display:flex;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                                    <input type="text" id="reply-${ticket.id}" placeholder="Type reply here..." style="flex:1;padding:8px;border-radius:6px;background:var(--bg-dark);color:white;border:1px solid var(--border);">
+                                    <button class="btn-primary" onclick="replyTicket('${ticket.id}')">Reply & Close</button>
+                                </div>
+                            ` : `
+                                <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                                    <span style="color:var(--primary);font-weight:bold;">Admin Reply:</span>
+                                    <p style="margin:5px 0 0 0;font-size:14px;color:var(--text-muted);">${ticket.reply}</p>
+                                </div>
+                            `}
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                container.innerHTML = `<div style="color: red; text-align: center;">Error: ${err.message}</div>`;
+            }
+        }
+
+        async function replyTicket(ticketId) {
+            const replyInput = document.getElementById(`reply-${ticketId}`);
+            if (!replyInput.value.trim()) return alert("Reply cannot be empty");
+
+            try {
+                const res = await fetch('/api/admin/tickets', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticketId, reply: replyInput.value.trim(), action: 'CLOSE' })
+                });
+                
+                if (res.ok) {
+                    fetchTickets();
+                } else {
+                    const data = await res.json();
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Request failed');
+            }
+        }
+
         // Initialize
         async function init() {
             const isAuth = await checkAuth();
             if (isAuth) {
+                fetchStats();
+                fetchSettings();
                 fetchUsers();
                 fetchWorldChat();
             }

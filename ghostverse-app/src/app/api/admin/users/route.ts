@@ -52,11 +52,29 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { userId, action } = body;
+    let { userId, action, targetUsername } = body;
 
-    if (!userId || !action) {
+    if (!action) {
       return NextResponse.json<ApiResponse>(
-        { success: false, error: "userId and action are required" },
+        { success: false, error: "Action is required" },
+        { status: 400 }
+      );
+    }
+
+    if (targetUsername) {
+      const userQuery = await db.collection("users").where("username", "==", targetUsername.toLowerCase()).limit(1).get();
+      if (userQuery.empty) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: "User not found by username" },
+          { status: 404 }
+        );
+      }
+      userId = userQuery.docs[0].id;
+    }
+
+    if (!userId) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: "userId or targetUsername is required" },
         { status: 400 }
       );
     }
@@ -64,6 +82,31 @@ export async function PATCH(request: NextRequest) {
     let newStatus = "ACTIVE";
     if (action === "BAN") newStatus = "BANNED";
     if (action === "MUTE") newStatus = "MUTED";
+
+    if (action === "DELETE") {
+      // Clean up the user entirely
+      const userRef = db.collection("users").doc(userId);
+      
+      // Delete profile data subcollection
+      const profileDoc = await userRef.collection("data").doc("profile").get();
+      if (profileDoc.exists) await profileDoc.ref.delete();
+      
+      // Delete friendships (where sender or receiver)
+      const sentFriends = await db.collection("friendships").where("senderId", "==", userId).get();
+      const recvFriends = await db.collection("friendships").where("receiverId", "==", userId).get();
+      const batch = db.batch();
+      sentFriends.docs.forEach(doc => batch.delete(doc.ref));
+      recvFriends.docs.forEach(doc => batch.delete(doc.ref));
+      
+      // Delete user
+      batch.delete(userRef);
+      await batch.commit();
+
+      return NextResponse.json<ApiResponse>({
+        success: true,
+        message: `User deleted permanently`,
+      });
+    }
 
     await db.collection("users").doc(userId).update({ status: newStatus });
 

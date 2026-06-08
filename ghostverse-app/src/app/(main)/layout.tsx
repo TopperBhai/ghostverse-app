@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/friends", icon: Users, label: "Friends" },
   { href: "/confessions", icon: VenetianMask, label: "Confessions" },
   { href: "/notifications", icon: Bell, label: "Notifications" },
+  { href: "/support", icon: MessageSquare, label: "Support & Report" },
 ];
 
 // Mobile bottom nav shows only top 5 (most used)
