@@ -60,7 +60,9 @@ export interface UserProfile extends SafeUser {
     reputationScore: number;
   } | null;
   friendsCount: number;
+  viewerFriendshipStatus?: FriendshipStatus | "NONE";
 }
+
 
 // ============================================================
 // CHAT TYPES

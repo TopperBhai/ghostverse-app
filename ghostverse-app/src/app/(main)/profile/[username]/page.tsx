@@ -4,22 +4,7 @@ import { useAuth } from "../../../../custom-hooks/use-auth";
 import { useSocket } from "../../../../custom-hooks/use-socket";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import {
-  Camera,
-  UserPlus,
-  MessageSquare,
-  Pencil,
-  Ghost,
-  CalendarDays,
-  Users,
-  Smile,
-  ArrowLeft,
-  ShieldCheck,
-  Sparkles,
-  X,
-  Save,
-  Loader2,
-} from "lucide-react";
+import { Bell, Users, MessageSquare, Star, Check, CheckCheck, Ghost, Search, MapPin, CalendarDays, ExternalLink, Activity, ArrowLeft, MoreHorizontal, MessageCircle, Map, Sparkles, Zap, Image as ImageIcon, Camera, Pencil, X, ShieldCheck, UserPlus, Clock, Smile, Loader2, Save } from "lucide-react";
 import type { UserProfile, ApiResponse } from "../../../../types";
 
 const MOOD_ICONS: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
@@ -52,7 +37,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarHover, setAvatarHover] = useState(false);
-  const [friendState, setFriendState] = useState<"none" | "loading" | "sent">("none");
+  const [friendState, setFriendState] = useState<"none" | "loading" | "sent" | "accepted" | "pending" | "rejected" | "friends">("none");
   const [friendMsg, setFriendMsg] = useState<{ type: string; text: string } | null>(null);
 
   // Edit modal state
@@ -74,8 +59,13 @@ export default function ProfilePage() {
       const fetchProfile = async () => {
         try {
           const res = await fetch(`/api/users/${username}`);
-          const data: ApiResponse<UserProfile> = await res.json();
-          if (data.success && data.data) setProfile(data.data);
+          const data = await res.json();
+          if (data.success) {
+            setProfile(data.data);
+            if (data.data.viewerFriendshipStatus && data.data.viewerFriendshipStatus !== "NONE") {
+              setFriendState(data.data.viewerFriendshipStatus.toLowerCase() as any);
+            }
+          }
         } catch (err) {
           console.error("Failed to fetch profile:", err);
         } finally {
@@ -436,14 +426,24 @@ export default function ProfilePage() {
                 </button>
               ) : (
                 <>
-                  <button
-                    onClick={handleAddFriend}
-                    disabled={friendState === "loading" || friendState === "sent"}
-                    className="btn-primary text-sm px-4 py-2 gap-2 whitespace-nowrap disabled:opacity-70"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    {friendState === "sent" ? "Request Sent!" : friendState === "loading" ? "Sending..." : "Add Friend"}
-                  </button>
+                  {friendState === "accepted" ? (
+                    <button className="btn-secondary text-sm px-4 py-2 gap-2 whitespace-nowrap cursor-default pointer-events-none opacity-80">
+                      <CheckCheck className="w-4 h-4 text-success" /> Friends
+                    </button>
+                  ) : friendState === "pending" || friendState === "sent" ? (
+                    <button className="btn-secondary text-sm px-4 py-2 gap-2 whitespace-nowrap cursor-default pointer-events-none opacity-80">
+                      <Clock className="w-4 h-4 text-warning" /> Pending
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleAddFriend}
+                      disabled={friendState === "loading"}
+                      className="btn-primary text-sm px-4 py-2 gap-2 whitespace-nowrap disabled:opacity-70"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      {friendState === "loading" ? "Sending..." : "Add Friend"}
+                    </button>
+                  )}
                   <button
                     className="btn-secondary text-sm px-4 py-2 gap-2 whitespace-nowrap"
                     onClick={() => {

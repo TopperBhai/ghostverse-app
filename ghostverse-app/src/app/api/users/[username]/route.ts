@@ -50,6 +50,27 @@ export async function GET(
 
     const friendsCount = sentFriends.data().count + recvFriends.data().count;
 
+    // Check viewer friendship status
+    let viewerFriendshipStatus: "NONE" | "PENDING" | "ACCEPTED" | "REJECTED" = "NONE";
+    if (authUser.userId !== userData.id) {
+      // Look for a friendship document where the logged in user is either sender or receiver
+      const friendshipQuery1 = await db.collection("friendships")
+        .where("senderId", "==", authUser.userId)
+        .where("receiverId", "==", userData.id)
+        .get();
+        
+      const friendshipQuery2 = await db.collection("friendships")
+        .where("senderId", "==", userData.id)
+        .where("receiverId", "==", authUser.userId)
+        .get();
+
+      if (!friendshipQuery1.empty) {
+        viewerFriendshipStatus = friendshipQuery1.docs[0].data().status;
+      } else if (!friendshipQuery2.empty) {
+        viewerFriendshipStatus = friendshipQuery2.docs[0].data().status;
+      }
+    }
+
     const userProfile: UserProfile = {
       id: userData.id,
       username: userData.username,
@@ -62,7 +83,9 @@ export async function GET(
       lastSeen: userData.lastSeen,
       profile: profileData as any,
       friendsCount,
+      viewerFriendshipStatus,
     };
+
 
     return NextResponse.json<ApiResponse<UserProfile>>({
       success: true,
