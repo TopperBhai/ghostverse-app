@@ -6,7 +6,7 @@
     "dev": "next dev --webpack",
     "dev:server": "tsx watch --ignore .next server.ts",
     "build": "next build --webpack",
-    "start": "next start",
+    "start": "tsx server.ts",
     "lint": "eslint"
   },
   "dependencies": {
