@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
       lastUpvoteGivenAt: user.lastUpvoteGivenAt,
       profile: profileData,
       friendsCount,
+      gamification: user.gamification,
     };
 
     return NextResponse.json<ApiResponse>({

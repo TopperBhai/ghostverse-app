@@ -136,8 +136,8 @@ export async function POST(request: NextRequest) {
       ).catch(err => console.error("Mention notification error in haunts:", err));
     }
 
-    // Update Gamification
-    updateGamification(userData.id, "HAUNT").catch(err => console.error("Gamification error in haunts:", err));
+    // Update gamification
+    await updateGamification(userData.id, "HAUNT");
 
     return NextResponse.json<ApiResponse<HauntPost>>({
       success: true,

@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update Gamification
-    updateGamification(user.id, "CHAT").catch(err => console.error("Gamification error in world-chat:", err));
+    await updateGamification(user.id, "CHAT");
 
     // NOTE: No Firebase write! The message is stored in server RAM via socket event.
     return NextResponse.json<ApiResponse<WorldChatMessage>>(
