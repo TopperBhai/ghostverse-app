@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     // Fetch top 50 users ranked by reputationScore
     const snapshot = await db.collection("users")
-      .orderBy("reputationScore", "desc")
+      .orderBy("profile.reputationScore", "desc")
       .limit(50)
       .get();
 
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         username: data.username,
         displayName: data.displayName,
         avatar: data.avatar || null,
-        reputationScore: data.reputationScore || 0,
+        reputationScore: data.profile?.reputationScore || 0,
       };
     });
 
