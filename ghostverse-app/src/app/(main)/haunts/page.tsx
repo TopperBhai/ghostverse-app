@@ -10,6 +10,8 @@ import {
   Loader2, Sparkles, RefreshCw
 } from "lucide-react";
 import Link from "next/link";
+import { MentionInput } from "../../components/MentionInput";
+import { FormattedText } from "../../components/FormattedText";
 
 const REACTIONS: { type: HauntReactionType; emoji: string; label: string }[] = [
   { type: "SPOOKY", emoji: "👻", label: "Spooky" },
@@ -145,8 +147,8 @@ function HauntCard({
       </div>
 
       {/* Content */}
-      <p className="text-ghost-100 text-sm leading-relaxed mb-4 whitespace-pre-wrap break-words">
-        {haunt.content}
+      <p className="text-ghost-100 text-sm leading-relaxed mb-4">
+        <FormattedText content={haunt.content} onInspect={onInspect} />
       </p>
 
       {/* Reactions row */}
@@ -229,7 +231,9 @@ function HauntCard({
                     </button>
                     <span className="text-[10px] text-ghost-600">{formatRelativeTime(reply.createdAt)}</span>
                   </div>
-                  <p className="text-xs text-ghost-300 leading-relaxed">{reply.content}</p>
+                  <p className="text-xs text-ghost-300 leading-relaxed">
+                    <FormattedText content={reply.content} onInspect={onInspect} />
+                  </p>
                 </div>
               </div>
             ))
@@ -237,14 +241,19 @@ function HauntCard({
 
           {/* Reply input */}
           <form onSubmit={submitReply} className="flex items-center gap-2 mt-2">
-            <input
-              type="text"
-              value={replyInput}
-              onChange={(e) => setReplyInput(e.target.value)}
-              maxLength={280}
-              placeholder="Write an echo..."
-              className="flex-1 bg-ghost-900/60 border border-ghost-800 text-ghost-100 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-phantom-500/60 transition-colors placeholder:text-ghost-600"
-            />
+            <div className="flex-1">
+              <MentionInput
+                value={replyInput}
+                onChange={setReplyInput}
+                maxLength={280}
+                placeholder="Write an echo..."
+                className="w-full bg-ghost-900/60 border border-ghost-800 text-ghost-100 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-phantom-500/60 transition-colors placeholder:text-ghost-600"
+                onSubmit={() => {
+                  const e = { preventDefault: () => {} } as React.FormEvent;
+                  submitReply(e);
+                }}
+              />
+            </div>
             <button
               type="submit"
               disabled={!replyInput.trim() || submittingReply}
@@ -318,15 +327,21 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
 
         {/* Body */}
         <form onSubmit={submit} className="p-5 space-y-4">
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            maxLength={280}
-            rows={5}
-            placeholder="What's haunting you right now?"
-            className="w-full bg-ghost-950/50 border border-ghost-800/50 text-ghost-100 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-phantom-500/60 transition-colors resize-none placeholder:text-ghost-600 leading-relaxed"
-          />
+          <div className="w-full">
+            <MentionInput
+              isTextArea
+              value={content}
+              onChange={setContent}
+              maxLength={280}
+              rows={5}
+              placeholder="What's haunting you right now?"
+              className="w-full bg-ghost-950/50 border border-ghost-800/50 text-ghost-100 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-phantom-500/60 transition-colors resize-none placeholder:text-ghost-600 leading-relaxed"
+              onSubmit={() => {
+                const e = { preventDefault: () => {} } as React.FormEvent;
+                submit(e);
+              }}
+            />
+          </div>
 
           {error && (
             <p className="text-xs text-neon-red bg-error/10 px-3 py-2 rounded-lg">{error}</p>

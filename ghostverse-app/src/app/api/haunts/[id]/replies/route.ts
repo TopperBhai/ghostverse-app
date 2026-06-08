@@ -5,6 +5,7 @@ import { getAuthUser } from "../../../../../lib/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
 import type { ApiResponse, HauntReply } from "../../../../../types";
+import { extractMentions, notifyMentionedUsers } from "../../../../../lib/mentions";
 
 // GET: Fetch replies for a haunt
 export async function GET(
@@ -119,6 +120,19 @@ export async function POST(
     batch.set(hauntRef.collection("replies").doc(replyId), reply);
     batch.update(hauntRef, { replyCount: FieldValue.increment(1) });
     await batch.commit();
+
+    // Parse mentions and send notifications asynchronously
+    const mentions = extractMentions(content);
+    if (mentions.length > 0) {
+      notifyMentionedUsers(
+        mentions,
+        userData.id,
+        userData.username,
+        userData.displayName,
+        "/haunts",
+        content
+      ).catch(err => console.error("Mention notification error in haunt replies:", err));
+    }
 
     return NextResponse.json<ApiResponse<HauntReply>>({
       success: true,

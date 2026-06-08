@@ -7,6 +7,8 @@ import { Globe, Hand, Trash2, Send, Pencil } from "lucide-react";
 import type { WorldChatMessage } from "../../../types";
 import { UserProfileCard } from "../../components/UserProfileCard";
 import { getGhostLevel } from "../../../lib/levels";
+import { MentionInput } from "../../components/MentionInput";
+import { FormattedText } from "../../components/FormattedText";
 
 export default function WorldChatPage() {
   const { user } = useAuth();
@@ -279,15 +281,11 @@ export default function WorldChatPage() {
                   {/* Bubble / Edit input */}
                   {editingMsg?.id === msg.id ? (
                     <div className="flex flex-col gap-2 min-w-[200px] max-w-xs bg-ghost-800 p-2.5 rounded-2xl border border-white/10 shadow-lg">
-                      <input
-                        type="text"
+                      <MentionInput
                         value={editingMsg.content}
-                        onChange={(e) => setEditingMsg({ ...editingMsg, content: e.target.value })}
+                        onChange={(val) => setEditingMsg({ ...editingMsg, content: val })}
                         className="bg-ghost-900/80 border border-ghost-700 text-ghost-100 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-phantom-500 transition-colors"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") saveEdit();
-                          if (e.key === "Escape") setEditingMsg(null);
-                        }}
+                        onSubmit={saveEdit}
                         autoFocus
                       />
                       <div className="flex justify-end gap-2">
@@ -297,7 +295,7 @@ export default function WorldChatPage() {
                     </div>
                   ) : (
                     <div className={`message-bubble ${isOwn ? "message-bubble-sent" : "message-bubble-received"}`}>
-                      {msg.content}
+                      <FormattedText content={msg.content} onInspect={setSelectedUser} />
                     </div>
                   )}
                 </div>
@@ -310,14 +308,17 @@ export default function WorldChatPage() {
 
       {/* Input */}
       <div className="px-3 md:px-4 pb-3 pt-2 flex-shrink-0">
-        <form onSubmit={sendMessage} className="flex items-center gap-2">
-          <input
-            type="text"
+        <form onSubmit={sendMessage} className="flex items-end gap-2">
+          <MentionInput
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="glass-input focus-ring flex-1 text-sm py-3"
+            onChange={setInputValue}
+            className="glass-input focus-ring flex-1 text-sm py-3 px-4 w-full"
             placeholder="Type a message to the world..."
             maxLength={500}
+            onSubmit={() => {
+              const e = { preventDefault: () => {} } as React.FormEvent;
+              sendMessage(e);
+            }}
           />
           <button
             type="submit"

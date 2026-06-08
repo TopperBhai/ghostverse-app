@@ -6,6 +6,7 @@ import { getAuthUser } from "../../../lib/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
 import type { ApiResponse, HauntPost } from "../../../types";
+import { extractMentions, notifyMentionedUsers } from "../../../lib/mentions";
 
 // GET: Fetch latest haunts
 export async function GET(request: NextRequest) {
@@ -121,6 +122,19 @@ export async function POST(request: NextRequest) {
     };
 
     await db.collection("haunts").doc(hauntId).set(haunt);
+
+    // Parse mentions and send notifications asynchronously
+    const mentions = extractMentions(content);
+    if (mentions.length > 0) {
+      notifyMentionedUsers(
+        mentions,
+        userData.id,
+        userData.username,
+        userData.displayName,
+        "/haunts",
+        content
+      ).catch(err => console.error("Mention notification error in haunts:", err));
+    }
 
     return NextResponse.json<ApiResponse<HauntPost>>({
       success: true,

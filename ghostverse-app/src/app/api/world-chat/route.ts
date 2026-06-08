@@ -8,6 +8,7 @@ import { db } from "../../../lib/firebase-admin";
 import { getAuthUser } from "../../../lib/auth";
 import { v4 as uuidv4 } from "uuid";
 import type { ApiResponse, WorldChatMessage } from "../../../types";
+import { extractMentions, notifyMentionedUsers } from "../../../lib/mentions";
 
 // GET: Return empty — client now receives history via socket `world:history` event
 export async function GET(request: NextRequest) {
@@ -85,6 +86,20 @@ export async function POST(request: NextRequest) {
         reputationScore: user.reputationScore || 0,
       },
     };
+
+    // Parse mentions and send notifications asynchronously
+    const mentions = extractMentions(content);
+    if (mentions.length > 0) {
+      // Don't await to not block the chat response
+      notifyMentionedUsers(
+        mentions,
+        user.id,
+        user.username,
+        user.displayName,
+        "/world-chat",
+        content
+      ).catch(err => console.error("Mention notification error in world-chat:", err));
+    }
 
     // NOTE: No Firebase write! The message is stored in server RAM via socket event.
     return NextResponse.json<ApiResponse<WorldChatMessage>>(
