@@ -6,7 +6,7 @@ import { useSocket } from "../../../../custom-hooks/use-socket";
 import { useWebRTC } from "../../../../custom-hooks/use-webrtc";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Phone, User, MessageSquare, Check, CheckCheck, Mic, Trash2, Send } from "lucide-react";
+import { Phone, User, MessageSquare, Check, CheckCheck, Mic, Trash2, Send, Pencil } from "lucide-react";
 import type { ApiResponse } from "../../../../types";
 import { UserProfileCard } from "../../../components/UserProfileCard";
 
@@ -16,6 +16,7 @@ interface Message {
   content: string;
   createdAt: string;
   read: boolean;
+  isEdited?: boolean;
 }
 
 export default function MessageThreadPage({ params }: { params: Promise<{ id: string }> }) {
@@ -40,6 +41,7 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
   const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [hoveredMsg, setHoveredMsg] = useState<string | null>(null);
+  const [editingMsg, setEditingMsg] = useState<{ id: string; content: string } | null>(null);
   const [selectedUser, setSelectedUser] = useState<{ userId: string; username: string; displayName: string; avatar: string | null } | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -93,24 +95,35 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
       setMessages((prev) => [...prev, message as unknown as Message]);
     });
 
-    socket.on("dm:typing", (data) => {
-      if (data.userId === otherUserId) {
-        setIsTyping(true);
-      }
-    });
+      socket.on("dm:read", (data) => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.senderId === user.id && !msg.read
+              ? { ...msg, read: true }
+              : msg
+          )
+        );
+      });
 
-    socket.on("dm:stop-typing", (data) => {
-      if (data.userId === otherUserId) {
-        setIsTyping(false);
-      }
-    });
+      socket.on("dm:message-edited", (data) => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === data.messageId ? { ...msg, content: data.content, isEdited: true } : msg
+          )
+        );
+      });
+    }
 
     return () => {
-      socket.off("dm:message");
-      socket.off("dm:typing");
-      socket.off("dm:stop-typing");
+      if (socket) {
+        socket.off("dm:message");
+        socket.off("dm:typing");
+        socket.off("dm:stop-typing");
+        socket.off("dm:read");
+        socket.off("dm:message-edited");
+      }
     };
-  }, [socket, otherUserId]);
+  }, [socket, otherUserId, user?.id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -172,6 +185,28 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
       await fetch(`/api/messages/${conversationId}/${msgId}`, { method: "DELETE" });
     } catch {
       console.error("Failed to delete message");
+    }
+  };
+
+  const saveEdit = async () => {
+    if (!editingMsg || !editingMsg.content.trim()) return;
+    const { id, content } = editingMsg;
+    setEditingMsg(null);
+
+    // Optimistic update
+    setMessages((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, content, isEdited: true } : m))
+    );
+
+    try {
+      await fetch(`/api/messages/${conversationId}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      if (socket) socket.emit("dm:edit-message", { receiverId: otherUserId, messageId: id, content });
+    } catch {
+      console.error("Failed to edit message");
     }
   };
 
@@ -289,21 +324,53 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
                   </button>
                 )}
                 <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
-                  <div className={`message-bubble text-sm py-2 px-3 ${isOwn ? "message-bubble-sent" : "message-bubble-received"}`}>
-                    {msg.content}
-                  </div>
+                  {editingMsg?.id === msg.id ? (
+                    <div className="flex flex-col gap-2 min-w-[200px] bg-ghost-800 p-2 rounded-xl border border-white/10 mb-1">
+                      <input
+                        type="text"
+                        value={editingMsg.content}
+                        onChange={(e) => setEditingMsg({ ...editingMsg, content: e.target.value })}
+                        className="bg-ghost-900 border border-ghost-700 text-ghost-100 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-phantom-500"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveEdit();
+                          if (e.key === "Escape") setEditingMsg(null);
+                        }}
+                        autoFocus
+                      />
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => setEditingMsg(null)} className="text-[10px] text-ghost-400 hover:text-ghost-200">Cancel</button>
+                        <button onClick={saveEdit} className="text-[10px] text-phantom-400 hover:text-phantom-300 font-bold">Save</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={`message-bubble text-sm py-2 px-3 ${isOwn ? "message-bubble-sent" : "message-bubble-received"}`}>
+                      {msg.content}
+                    </div>
+                  )}
+
                   <div className={`flex items-center gap-1 mt-1 px-1 ${isOwn ? "flex-row-reverse" : ""}`}>
                     <span className="text-[9px] text-ghost-600 flex items-center">
-                      {formatTime(msg.createdAt)} {isOwn && (msg.read ? <CheckCheck className="w-3 h-3 ml-1" /> : <Check className="w-3 h-3 ml-1" />)}
+                      {formatTime(msg.createdAt)}
+                      {msg.isEdited && <span className="mx-1 text-ghost-500">(edited)</span>}
+                      {isOwn && (msg.read ? <CheckCheck className="w-3 h-3 ml-1 text-phantom-500" /> : <Check className="w-3 h-3 ml-1" />)}
                     </span>
                     {isOwn && (
-                      <button
-                        onClick={() => deleteMessage(msg.id)}
-                        className={`p-0.5 rounded text-ghost-600 hover:text-neon-red hover:bg-error/10 transition-all ${hoveredMsg === msg.id ? "opacity-100" : "opacity-0"}`}
-                        title="Delete message"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                      <div className={`flex items-center gap-1 transition-opacity duration-200 ${hoveredMsg === msg.id ? "opacity-100" : "opacity-0"}`}>
+                        <button
+                          onClick={() => setEditingMsg({ id: msg.id, content: msg.content })}
+                          className="p-0.5 rounded text-ghost-600 hover:text-phantom-400 hover:bg-phantom-500/10 transition-all"
+                          title="Edit message"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => deleteMessage(msg.id)}
+                          className="p-0.5 rounded text-ghost-600 hover:text-neon-red hover:bg-error/10 transition-all"
+                          title="Delete message"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

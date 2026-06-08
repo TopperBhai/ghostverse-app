@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import { useSocket } from "../../../custom-hooks/use-socket";
-import { Globe, Hand, Trash2, Send } from "lucide-react";
+import { Globe, Hand, Trash2, Send, Pencil } from "lucide-react";
 import type { WorldChatMessage } from "../../../types";
 import { UserProfileCard } from "../../components/UserProfileCard";
 
@@ -14,6 +14,7 @@ export default function WorldChatPage() {
   const [inputValue, setInputValue] = useState("");
   const [onlineCount, setOnlineCount] = useState(0);
   const [hoveredMsg, setHoveredMsg] = useState<string | null>(null);
+  const [editingMsg, setEditingMsg] = useState<{ id: string; content: string } | null>(null);
   const [selectedUser, setSelectedUser] = useState<{
     userId: string; username: string; displayName: string; avatar: string | null;
   } | null>(null);
@@ -50,9 +51,18 @@ export default function WorldChatPage() {
       setOnlineCount(count);
     });
 
+    socket.on("world:message-edited", (data) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === data.messageId ? { ...m, content: data.content, isEdited: true } : m
+        )
+      );
+    });
+
     return () => {
       socket.off("world:message");
       socket.off("world:online-count");
+      socket.off("world:message-edited");
       socket.emit("world:leave");
     };
   }, [socket]);
@@ -91,6 +101,28 @@ export default function WorldChatPage() {
     }
 
     if (socket) socket.emit("world:send-message", { content });
+  };
+
+  const saveEdit = async () => {
+    if (!editingMsg || !editingMsg.content.trim()) return;
+    const { id, content } = editingMsg;
+    setEditingMsg(null);
+
+    // Optimistic update
+    setMessages((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, content, isEdited: true } : m))
+    );
+
+    try {
+      await fetch(`/api/world-chat/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      if (socket) socket.emit("world:edit-message", { messageId: id, content });
+    } catch {
+      console.error("Failed to edit message");
+    }
   };
 
   const deleteMessage = async (msgId: string) => {
@@ -188,26 +220,56 @@ export default function WorldChatPage() {
                     {msg.sender.displayName}
                   </button>
                   <span className="text-[10px] text-ghost-600 hidden sm:inline">@{msg.sender.username}</span>
-                  <span className="text-[10px] text-ghost-600">{formatTime(msg.createdAt)}</span>
+                  <span className="text-[10px] text-ghost-600 flex items-center">
+                    {formatTime(msg.createdAt)}
+                    {msg.isEdited && <span className="ml-1 text-[9px] text-ghost-500">(edited)</span>}
+                  </span>
                 </div>
 
                 <div className="flex items-end gap-2">
                   {/* Delete button (own messages only) */}
                   {isOwn && (
-                    <button
-                      onClick={() => deleteMessage(msg.id)}
-                      className={`flex-shrink-0 p-1 rounded-lg text-ghost-600 hover:text-neon-red hover:bg-error/10 transition-all ${
-                        hoveredMsg === msg.id ? "opacity-100" : "opacity-0"
-                      }`}
-                      title="Delete message"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className={`flex items-center gap-1 transition-opacity duration-200 ${hoveredMsg === msg.id ? "opacity-100" : "opacity-0"}`}>
+                      <button
+                        onClick={() => setEditingMsg({ id: msg.id, content: msg.content })}
+                        className="flex-shrink-0 p-1 rounded-lg text-ghost-600 hover:text-phantom-400 hover:bg-phantom-500/10 transition-all"
+                        title="Edit message"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => deleteMessage(msg.id)}
+                        className="flex-shrink-0 p-1 rounded-lg text-ghost-600 hover:text-neon-red hover:bg-error/10 transition-all"
+                        title="Delete message"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   )}
 
-                  <div className={`message-bubble ${isOwn ? "message-bubble-sent" : "message-bubble-received"}`}>
-                    {msg.content}
-                  </div>
+                  {editingMsg?.id === msg.id ? (
+                    <div className="flex flex-col gap-2 min-w-[200px] bg-ghost-800 p-2 rounded-xl border border-white/10">
+                      <input
+                        type="text"
+                        value={editingMsg.content}
+                        onChange={(e) => setEditingMsg({ ...editingMsg, content: e.target.value })}
+                        className="bg-ghost-900 border border-ghost-700 text-ghost-100 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-phantom-500"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveEdit();
+                          if (e.key === "Escape") setEditingMsg(null);
+                        }}
+                        autoFocus
+                      />
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => setEditingMsg(null)} className="text-[10px] text-ghost-400 hover:text-ghost-200">Cancel</button>
+                        <button onClick={saveEdit} className="text-[10px] text-phantom-400 hover:text-phantom-300 font-bold">Save</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={`message-bubble ${isOwn ? "message-bubble-sent" : "message-bubble-received"}`}>
+                      {msg.content}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

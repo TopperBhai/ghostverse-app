@@ -82,10 +82,24 @@ app.prepare().then(() => {
       });
     });
 
+    socket.on("world:edit-message", (data) => {
+      io.to("world-chat").emit("world:message-edited", {
+        messageId: data.messageId,
+        content: data.content,
+      });
+    });
+
     // ── Direct Messages ──
     socket.on("dm:send-message", (data) => {
       // Send to the specific user's room using the provided full message
       io.to(`user:${data.receiverId}`).emit("dm:message", data.message);
+    });
+
+    socket.on("dm:edit-message", (data) => {
+      io.to(`user:${data.receiverId}`).emit("dm:message-edited", {
+        messageId: data.messageId,
+        content: data.content,
+      });
     });
 
     socket.on("dm:typing", (data) => {

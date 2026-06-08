@@ -48,3 +48,63 @@ export async function DELETE(
     );
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const { id: messageId } = await params;
+    const body = await request.json();
+    const { content } = body;
+
+    if (!content || content.trim().length === 0) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: "Message content is required" },
+        { status: 400 }
+      );
+    }
+
+    const docRef = db.collection("world_messages").doc(messageId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: "Message not found" },
+        { status: 404 }
+      );
+    }
+
+    const data = doc.data() as any;
+
+    // Only allow editing of own messages
+    if (data.sender?.id !== authUser.userId) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: "Cannot edit another user's message" },
+        { status: 403 }
+      );
+    }
+
+    await docRef.update({
+      content: content.trim(),
+      isEdited: true,
+    });
+
+    return NextResponse.json<ApiResponse>({ success: true });
+  } catch (error) {
+    console.error("World chat PATCH error:", error);
+    return NextResponse.json<ApiResponse>(
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+

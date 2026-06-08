@@ -76,6 +76,7 @@ export interface ChatMessage {
     displayName: string;
     avatar: string | null;
   };
+  isEdited?: boolean;
 }
 
 export interface WorldChatMessage extends ChatMessage {}
@@ -121,9 +122,11 @@ export interface ServerToClientEvents {
   "world:online-count": (count: number) => void;
   "world:user-joined": (user: { username: string; displayName: string }) => void;
   "world:user-left": (user: { username: string }) => void;
+  "world:message-edited": (data: { messageId: string; content: string }) => void;
 
   // Direct Messages
   "dm:message": (message: DirectMessage) => void;
+  "dm:message-edited": (data: { messageId: string; content: string }) => void;
   "dm:typing": (data: { userId: string; username: string }) => void;
   "dm:stop-typing": (data: { userId: string }) => void;
   "dm:read": (data: { messageId: string; readAt: Date }) => void;
@@ -168,9 +171,11 @@ export interface ClientToServerEvents {
   "world:join": () => void;
   "world:leave": () => void;
   "world:send-message": (data: { content: string }) => void;
+  "world:edit-message": (data: { messageId: string; content: string }) => void;
 
   // Direct Messages
   "dm:send-message": (data: { receiverId: string; message: DirectMessage }) => void;
+  "dm:edit-message": (data: { receiverId: string; messageId: string; content: string }) => void;
   "dm:typing": (data: { receiverId: string }) => void;
   "dm:stop-typing": (data: { receiverId: string }) => void;
   "dm:mark-read": (data: { messageId: string }) => void;
