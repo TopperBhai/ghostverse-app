@@ -95,24 +95,35 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
       setMessages((prev) => [...prev, message as unknown as Message]);
     });
 
-      socket.on("dm:read", (data) => {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.senderId === user.id && !msg.read
-              ? { ...msg, read: true }
-              : msg
-          )
-        );
-      });
+    socket.on("dm:typing", (data) => {
+      if (data.userId === otherUserId) {
+        setIsTyping(true);
+      }
+    });
 
-      socket.on("dm:message-edited", (data) => {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === data.messageId ? { ...msg, content: data.content, isEdited: true } : msg
-          )
-        );
-      });
-    }
+    socket.on("dm:stop-typing", (data) => {
+      if (data.userId === otherUserId) {
+        setIsTyping(false);
+      }
+    });
+
+    socket.on("dm:read", (data) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.senderId === user?.id && !msg.read
+            ? { ...msg, read: true }
+            : msg
+        )
+      );
+    });
+
+    socket.on("dm:message-edited", (data) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === data.messageId ? { ...msg, content: data.content, isEdited: true } : msg
+        )
+      );
+    });
 
     return () => {
       if (socket) {
