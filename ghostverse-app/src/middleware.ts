@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api/socketio") ||
-    pathname.includes(".")
+    (pathname.includes(".") && !pathname.endsWith("admin.html"))
   ) {
     return NextResponse.next();
   }
