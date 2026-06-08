@@ -68,22 +68,13 @@ app.prepare().then(() => {
     });
 
     socket.on("world:send-message", (data) => {
-      // Message persistence happens in API route; socket just broadcasts
-      io.to("world-chat").emit("world:message", {
-        id: `temp-${Date.now()}`,
-        content: data.content,
-        createdAt: new Date(),
-        sender: {
-          id: socket.id,
-          username: "anonymous",
-          displayName: "Anonymous",
-          avatar: null,
-        },
-      });
+      // Broadcast the exact message object received from the sender to everyone else
+      socket.broadcast.to("world-chat").emit("world:message", data);
     });
 
     socket.on("world:edit-message", (data) => {
-      io.to("world-chat").emit("world:message-edited", {
+      // Broadcast the edit to everyone else
+      socket.broadcast.to("world-chat").emit("world:message-edited", {
         messageId: data.messageId,
         content: data.content,
       });

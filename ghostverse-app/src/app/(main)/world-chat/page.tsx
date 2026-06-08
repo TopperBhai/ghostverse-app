@@ -95,12 +95,11 @@ export default function WorldChatPage() {
       // Replace optimistic with real ID
       if (data.success && data.data) {
         setMessages((prev) => prev.map((m) => m.id === optimisticMsg.id ? data.data : m));
+        if (socket) socket.emit("world:send-message", data.data);
       }
     } catch (err) {
       console.error("Failed to send message:", err);
     }
-
-    if (socket) socket.emit("world:send-message", { content });
   };
 
   const saveEdit = async () => {

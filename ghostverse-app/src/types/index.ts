@@ -170,7 +170,7 @@ export interface ClientToServerEvents {
   // World Chat
   "world:join": () => void;
   "world:leave": () => void;
-  "world:send-message": (data: { content: string }) => void;
+  "world:send-message": (data: WorldChatMessage) => void;
   "world:edit-message": (data: { messageId: string; content: string }) => void;
 
   // Direct Messages
