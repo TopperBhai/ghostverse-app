@@ -105,6 +105,7 @@ export interface ChatMessage {
     displayName: string;
     avatar: string | null;
     reputationScore?: number;
+    gamificationLevel?: number;
   };
   isEdited?: boolean;
 }

@@ -109,7 +109,7 @@ export default function WorldChatPage() {
       id: `local-${Date.now()}`,
       content,
       createdAt: new Date(),
-      sender: { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar, reputationScore: user.profile?.reputationScore },
+      sender: { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar, reputationScore: user.profile?.reputationScore, gamificationLevel: user.gamification?.pet?.level || 1 },
     };
     setMessages((prev) => [...prev, optimisticMsg]);
 
@@ -262,6 +262,9 @@ export default function WorldChatPage() {
                     </button>
                     <span className={`flex items-center ${level.color} opacity-80`} title={level.title}>
                       {level.badge}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-[#27272a] border border-[#3f3f46] text-[10px] font-black tracking-wide text-[#e4e4e7] flex items-center justify-center shadow-sm leading-none">
+                      Lvl {msg.sender.gamificationLevel || 1}
                     </span>
                     <span className="text-[10px] text-ghost-600 leading-none">
                       {formatTime(msg.createdAt)}

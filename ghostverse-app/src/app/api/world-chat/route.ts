@@ -83,6 +83,7 @@ export async function POST(request: NextRequest) {
         displayName: user.displayName,
         avatar: user.avatar,
         reputationScore: user.reputationScore || 0,
+        gamificationLevel: user.gamification?.pet?.level || 1,
       },
     };
 
