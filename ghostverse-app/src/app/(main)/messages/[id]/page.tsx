@@ -215,7 +215,7 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
-      if (socket) socket.emit("dm:edit-message", { receiverId: otherUserId, messageId: id, content });
+      if (socket && otherUserId) socket.emit("dm:edit-message", { receiverId: otherUserId, messageId: id, content });
     } catch {
       console.error("Failed to edit message");
     }
