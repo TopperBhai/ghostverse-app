@@ -3,48 +3,7 @@
 import { useState } from "react";
 import { VenetianMask, SquarePen, Ghost, Heart, MessageSquare, Flag } from "lucide-react";
 
-const SAMPLE_CONFESSIONS = [
-  {
-    id: "1",
-    content: "I've been pretending to like my coworker's jokes for 2 years just to keep the peace. They're honestly the worst comedian ever. 😭",
-    likes: 234,
-    comments: 45,
-    time: "2h ago",
-    liked: false,
-  },
-  {
-    id: "2",
-    content: "I secretly taught myself to code at night while everyone thinks I'm sleeping. Just landed my first freelance gig and nobody knows. 🤫",
-    likes: 567,
-    comments: 89,
-    time: "4h ago",
-    liked: true,
-  },
-  {
-    id: "3",
-    content: "I order food delivery and hide in the bathroom pretending I'm not home so the driver just leaves it at the door. Social anxiety is real. 😅",
-    likes: 892,
-    comments: 124,
-    time: "6h ago",
-    liked: false,
-  },
-  {
-    id: "4",
-    content: "Been talking to someone on here for 3 months. I think I'm falling for them but we're both anonymous. Should I reveal myself? 💔",
-    likes: 1243,
-    comments: 287,
-    time: "8h ago",
-    liked: false,
-  },
-  {
-    id: "5",
-    content: "I wake up at 4am every day to study before anyone else in my house is awake. They think I'm just 'naturally smart' lol. Hard work pays off 📚",
-    likes: 456,
-    comments: 67,
-    time: "12h ago",
-    liked: true,
-  },
-];
+const SAMPLE_CONFESSIONS: any[] = [];
 
 export default function ConfessionsPage() {
   const [confessions, setConfessions] = useState(SAMPLE_CONFESSIONS);
