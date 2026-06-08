@@ -171,7 +171,7 @@ export default function FriendsPage() {
               <div className="space-y-2">
                 {activeList.map((friend) => (
                   <div key={friend.friendshipId} className="glass-card p-4 flex items-center gap-4 animate-fade-in">
-                    <div className={`avatar ${friend.status === "online" && activeTab === "friends" ? "avatar-online" : ""}`}>
+                    <div className={`avatar avatar-md relative flex-shrink-0 ${friend.status === "online" && activeTab === "friends" ? "avatar-online" : ""}`}>
                       {friend.avatar ? (
                         <img src={friend.avatar} alt={friend.displayName} className="w-full h-full rounded-full object-cover" />
                       ) : (

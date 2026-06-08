@@ -43,6 +43,7 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
   const [hoveredMsg, setHoveredMsg] = useState<string | null>(null);
   const [editingMsg, setEditingMsg] = useState<{ id: string; content: string } | null>(null);
   const [selectedUser, setSelectedUser] = useState<{ userId: string; username: string; displayName: string; avatar: string | null } | null>(null);
+  const [otherUser, setOtherUser] = useState<{ displayName: string; username: string; avatar: string | null } | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>(null);
@@ -86,6 +87,27 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Fetch the other user's profile (for call UI + header)
+  useEffect(() => {
+    if (!otherUserId) return;
+    const fetchOtherUser = async () => {
+      try {
+        const res = await fetch(`/api/users/by-id/${otherUserId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data) {
+            setOtherUser({
+              displayName: data.data.displayName,
+              username: data.data.username,
+              avatar: data.data.avatar,
+            });
+          }
+        }
+      } catch {}
+    };
+    fetchOtherUser();
+  }, [otherUserId]);
 
   // Socket setup
   useEffect(() => {
@@ -238,11 +260,15 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
       {/* Ringing Overlay */}
       {isReceivingCall && (
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 animate-fade-in">
-          <div className="w-24 h-24 bg-phantom-500/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
-            <Phone className="w-12 h-12 text-phantom-300" />
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-phantom-500/40 shadow-2xl mb-6 animate-pulse bg-ghost-800 flex items-center justify-center">
+            {otherUser?.avatar ? (
+              <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full object-cover" />
+            ) : (
+              <Phone className="w-12 h-12 text-phantom-300" />
+            )}
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Incoming Call...</h2>
-          <p className="text-ghost-400 mb-10">Someone is calling you</p>
+          <h2 className="text-2xl font-bold text-white mb-1">{otherUser?.displayName ?? "Someone"}</h2>
+          <p className="text-ghost-400 mb-10">Incoming voice call...</p>
           <div className="flex gap-6">
             <button onClick={declineCall} className="w-16 h-16 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)]">
               <Phone className="w-6 h-6 rotate-[135deg]" />
@@ -256,15 +282,20 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
 
       {/* Active Call / Calling Overlay */}
       {(isCalling || callAccepted) && !isReceivingCall && (
-        <div className="absolute top-0 left-0 right-0 bg-phantom-900/90 backdrop-blur-md border-b border-phantom-500/30 z-40 p-4 flex items-center justify-between animate-slide-down shadow-xl">
+        <div className="absolute top-0 left-0 right-0 bg-phantom-900/90 backdrop-blur-md border-b border-phantom-500/30 z-40 p-3 flex items-center justify-between animate-slide-down shadow-xl">
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${callAccepted ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`} />
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-ghost-800 flex items-center justify-center flex-shrink-0">
+              {otherUser?.avatar ? (
+                <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-4 h-4 text-ghost-400" />
+              )}
+            </div>
+            <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${callAccepted ? "bg-green-500 animate-pulse" : "bg-yellow-400 animate-pulse"}`} />
             <div>
-              <p className="text-sm font-bold text-white">
-                {callAccepted ? "Call in progress" : "Calling..."}
-              </p>
+              <p className="text-sm font-bold text-white">{otherUser?.displayName ?? "User"}</p>
               <p className="text-[10px] text-phantom-200">
-                {callAccepted ? "Connected securely via WebRTC" : "Waiting for answer"}
+                {callAccepted ? "Connected · Voice Call" : "Calling..."}
               </p>
             </div>
           </div>
@@ -286,11 +317,22 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
           <Link href="/messages" className="text-ghost-400 hover:text-ghost-200 p-2 md:hidden">
             ←
           </Link>
-          <div className="avatar avatar-sm bg-ghost-800 flex items-center justify-center">
-            <User className="w-4 h-4 text-ghost-400" />
-          </div>
+          <button
+            className="avatar avatar-sm flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-phantom-500/60 transition-all"
+            onClick={() => {
+              if (otherUserId && otherUser) {
+                setSelectedUser({ userId: otherUserId, username: otherUser.username, displayName: otherUser.displayName, avatar: otherUser.avatar });
+              }
+            }}
+          >
+            {otherUser?.avatar ? (
+              <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full rounded-full object-cover" />
+            ) : (
+              <User className="w-4 h-4 text-ghost-400" />
+            )}
+          </button>
           <div>
-            <h1 className="text-sm font-bold text-ghost-100">Private Chat</h1>
+            <h1 className="text-sm font-bold text-ghost-100">{otherUser?.displayName ?? "Private Chat"}</h1>
             {isTyping && <p className="text-[10px] text-phantom-400 italic">Typing...</p>}
           </div>
         </div>

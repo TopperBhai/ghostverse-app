@@ -7,12 +7,14 @@ import { useAuth } from "./use-auth";
 const ICE_SERVERS = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
     { urls: "stun:global.stun.twilio.com:3478" },
   ],
 };
 
 export function useWebRTC() {
-  const { socket, isConnected } = useSocket();
+  const { socket } = useSocket();
   const { user } = useAuth();
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -21,32 +23,57 @@ export function useWebRTC() {
   const [isReceivingCall, setIsReceivingCall] = useState(false);
   const [callerId, setCallerId] = useState<string | null>(null);
   const [callAccepted, setCallAccepted] = useState(false);
-  const [peerId, setPeerId] = useState<string | null>(null); // the user we are talking to
+  const [peerId, setPeerId] = useState<string | null>(null);
 
   const peerRef = useRef<RTCPeerConnection | null>(null);
+  // Buffer ICE candidates that arrive before remoteDescription is set
+  const iceCandidateQueue = useRef<RTCIceCandidateInit[]>([]);
 
-  // Initialize Media Devices
   const getMedia = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
       setLocalStream(stream);
       return stream;
     } catch (err) {
-      console.error("Failed to get local stream", err);
+      console.error("Failed to get microphone access", err);
+      alert("Microphone access denied. Please allow microphone to use voice call.");
       return null;
     }
   }, []);
 
-  // Cleanup WebRTC connection
+  const createPeerConnection = useCallback((targetId: string) => {
+    if (!socket || !user) return null;
+    const pc = new RTCPeerConnection(ICE_SERVERS);
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("webrtc:ice-candidate", {
+          receiverId: targetId,
+          senderId: user.id,
+          candidate: event.candidate.toJSON(),
+        });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      if (event.streams && event.streams[0]) {
+        setRemoteStream(event.streams[0]);
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      console.log("RTC connection state:", pc.connectionState);
+    };
+
+    return pc;
+  }, [socket, user]);
+
   const cleanup = useCallback(() => {
-    if (peerRef.current) {
-      peerRef.current.close();
-      peerRef.current = null;
-    }
-    if (localStream) {
-      localStream.getTracks().forEach((track) => track.stop());
-      setLocalStream(null);
-    }
+    peerRef.current?.close();
+    peerRef.current = null;
+    iceCandidateQueue.current = [];
+    localStream?.getTracks().forEach((t) => t.stop());
+    setLocalStream(null);
     setRemoteStream(null);
     setIsCalling(false);
     setIsReceivingCall(false);
@@ -58,105 +85,99 @@ export function useWebRTC() {
   useEffect(() => {
     if (!socket || !user) return;
 
-    socket.on("webrtc:call-request", (data: any) => {
-      setIsReceivingCall(true);
-      setCallerId(data.callerId);
-    });
-
+    // ── CALLER receives: callee accepted ──
     socket.on("webrtc:call-accept", async (data: any) => {
+      // data.callerId = the person who answered (callee)
+      const calleeId = data.callerId; // confusingly named in server — it's the callee's userId
+      setPeerId(calleeId);
       setCallAccepted(true);
-      setPeerId(data.receiverId);
-      
+      setIsCalling(false);
+
       const stream = await getMedia();
-      if (!stream) return;
+      if (!stream || !user) return;
 
-      peerRef.current = new RTCPeerConnection(ICE_SERVERS);
-      
-      stream.getTracks().forEach((track) => {
-        peerRef.current?.addTrack(track, stream);
-      });
+      const pc = createPeerConnection(calleeId);
+      if (!pc) return;
+      peerRef.current = pc;
 
-      peerRef.current.ontrack = (event) => {
-        setRemoteStream(event.streams[0]);
-      };
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
-      peerRef.current.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit("webrtc:ice-candidate", {
-            receiverId: data.receiverId,
-            senderId: user.id,
-            candidate: event.candidate,
-          });
-        }
-      };
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
 
-      const offer = await peerRef.current.createOffer();
-      await peerRef.current.setLocalDescription(offer);
-      
       socket.emit("webrtc:offer", {
-        receiverId: data.receiverId,
+        receiverId: calleeId,
         senderId: user.id,
         offer,
       });
     });
 
-    socket.on("webrtc:call-decline", () => {
-      cleanup();
-      alert("Call declined");
-    });
-
+    // ── CALLEE receives: an offer ──
     socket.on("webrtc:offer", async (data: any) => {
+      const callerId = data.senderId;
+      setPeerId(callerId);
       setCallAccepted(true);
-      setPeerId(data.senderId);
-
-      peerRef.current = new RTCPeerConnection(ICE_SERVERS);
 
       const stream = await getMedia();
+      if (!user) return;
+
+      const pc = createPeerConnection(callerId);
+      if (!pc) return;
+      peerRef.current = pc;
+
       if (stream) {
-        stream.getTracks().forEach((track) => {
-          peerRef.current?.addTrack(track, stream);
-        });
+        stream.getTracks().forEach((track) => pc.addTrack(track, stream));
       }
 
-      peerRef.current.ontrack = (event) => {
-        setRemoteStream(event.streams[0]);
-      };
+      await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
 
-      peerRef.current.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit("webrtc:ice-candidate", {
-            receiverId: data.senderId,
-            senderId: user.id,
-            candidate: event.candidate,
-          });
-        }
-      };
+      // Flush queued ICE candidates
+      for (const c of iceCandidateQueue.current) {
+        await pc.addIceCandidate(new RTCIceCandidate(c));
+      }
+      iceCandidateQueue.current = [];
 
-      await peerRef.current.setRemoteDescription(new RTCSessionDescription(data.offer));
-      const answer = await peerRef.current.createAnswer();
-      await peerRef.current.setLocalDescription(answer);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
 
       socket.emit("webrtc:answer", {
-        receiverId: data.senderId,
+        receiverId: callerId,
         senderId: user.id,
         answer,
       });
     });
 
+    // ── CALLER receives: answer from callee ──
     socket.on("webrtc:answer", async (data: any) => {
       if (peerRef.current) {
         await peerRef.current.setRemoteDescription(new RTCSessionDescription(data.answer));
+
+        // Flush queued ICE candidates
+        for (const c of iceCandidateQueue.current) {
+          await peerRef.current.addIceCandidate(new RTCIceCandidate(c));
+        }
+        iceCandidateQueue.current = [];
       }
     });
 
     socket.on("webrtc:ice-candidate", async (data: any) => {
-      if (peerRef.current && data.candidate) {
-        try {
-          await peerRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
-        } catch (e) {
-          console.error("Error adding ice candidate", e);
-        }
+      if (!data.candidate) return;
+      if (peerRef.current && peerRef.current.remoteDescription) {
+        await peerRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+      } else {
+        // Buffer until remote description is set
+        iceCandidateQueue.current.push(data.candidate);
       }
+    });
+
+    socket.on("webrtc:call-request", (data: any) => {
+      setIsReceivingCall(true);
+      setCallerId(data.callerId);
+    });
+
+    socket.on("webrtc:call-decline", () => {
+      cleanup();
+      alert("Call was declined.");
     });
 
     socket.on("webrtc:end-call", () => {
@@ -172,8 +193,9 @@ export function useWebRTC() {
       socket.off("webrtc:ice-candidate");
       socket.off("webrtc:end-call");
     };
-  }, [socket, user, getMedia, cleanup]);
+  }, [socket, user, getMedia, createPeerConnection, cleanup]);
 
+  // Caller initiates
   const callUser = (receiverId: string) => {
     if (!socket || !user) return;
     setIsCalling(true);
@@ -181,15 +203,19 @@ export function useWebRTC() {
     socket.emit("webrtc:call-request", { receiverId, callerId: user.id });
   };
 
+  // Callee answers
   const answerCall = () => {
     if (!socket || !user || !callerId) return;
     setIsReceivingCall(false);
-    socket.emit("webrtc:call-accept", { receiverId: user.id, callerId });
+    setCallAccepted(true);
+    // Tell the caller we accepted; use our own id as "callerId" so caller knows who answered
+    socket.emit("webrtc:call-accept", { callerId: user.id, receiverId: callerId });
+    setPeerId(callerId);
   };
 
   const declineCall = () => {
-    if (!socket || !user || !callerId) return;
-    socket.emit("webrtc:call-decline", { receiverId: user.id, callerId });
+    if (!socket || !callerId) return;
+    socket.emit("webrtc:call-decline", { receiverId: callerId, callerId: user?.id });
     setIsReceivingCall(false);
     setCallerId(null);
   };
