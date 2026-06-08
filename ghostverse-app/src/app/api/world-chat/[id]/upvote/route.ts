@@ -5,10 +5,7 @@ import { getAuthUser } from "../../../../../lib/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import type { ApiResponse } from "../../../../../types";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
