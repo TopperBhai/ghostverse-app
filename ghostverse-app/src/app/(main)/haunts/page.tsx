@@ -7,7 +7,7 @@ import { getGhostLevel } from "../../../lib/levels";
 import { UserProfileCard } from "../../components/UserProfileCard";
 import {
   Ghost, MessageCircle, Send, X, Plus, ChevronDown, ChevronUp,
-  Loader2, Sparkles, RefreshCw
+  Loader2, Sparkles, RefreshCw, Trash2
 } from "lucide-react";
 import Link from "next/link";
 import { MentionInput } from "../../components/MentionInput";
@@ -38,13 +38,17 @@ function formatRelativeTime(date: Date | string): string {
 function HauntCard({
   haunt,
   currentUserId,
+  currentUserRole,
   onInspect,
   onReactionUpdate,
+  onDelete,
 }: {
   haunt: HauntPost;
   currentUserId: string;
+  currentUserRole?: string;
   onInspect: (user: { userId: string; username: string; displayName: string; avatar: string | null }) => void;
   onReactionUpdate: (hauntId: string, reactions: HauntPost["reactions"]) => void;
+  onDelete?: (hauntId: string) => void;
 }) {
   const [showReplies, setShowReplies] = useState(false);
   const [replies, setReplies] = useState<HauntReply[]>([]);
@@ -52,6 +56,25 @@ function HauntCard({
   const [replyInput, setReplyInput] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
   const [pendingReaction, setPendingReaction] = useState<HauntReactionType | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this haunt?")) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/haunts/${haunt.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success && onDelete) {
+        onDelete(haunt.id);
+      } else {
+        alert(data.error || "Failed to delete haunt");
+        setIsDeleting(false);
+      }
+    } catch {
+      alert("Network error");
+      setIsDeleting(false);
+    }
+  };
 
   const level = getGhostLevel(haunt.author.reputationScore || 0);
 
@@ -144,6 +167,18 @@ function HauntCard({
           </div>
           <span className="text-[11px] text-ghost-600">{formatRelativeTime(haunt.createdAt)}</span>
         </div>
+        
+        {/* DELETE BUTTON */}
+        {(currentUserId === haunt.author.id || currentUserRole === "ADMIN") && (
+          <button 
+            onClick={handleDelete} 
+            disabled={isDeleting}
+            className="text-ghost-600 hover:text-neon-red transition-colors p-1.5 rounded-lg hover:bg-neon-red/10 ml-2"
+            title="Delete Haunt"
+          >
+            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          </button>
+        )}
       </div>
 
       {/* Content */}
@@ -404,6 +439,10 @@ export default function HauntsPage() {
     setHaunts((prev) => prev.map((h) => h.id === hauntId ? { ...h, reactions } : h));
   };
 
+  const handleDeleteHaunt = (hauntId: string) => {
+    setHaunts((prev) => prev.filter((h) => h.id !== hauntId));
+  };
+
   return (
     <div className="flex-1 overflow-y-auto w-full">
       {/* Header */}
@@ -447,8 +486,10 @@ export default function HauntsPage() {
               key={haunt.id}
               haunt={haunt}
               currentUserId={user?.id || ""}
+              currentUserRole={user?.role}
               onInspect={setSelectedUser}
               onReactionUpdate={handleReactionUpdate}
+              onDelete={handleDeleteHaunt}
             />
           ))
         )}

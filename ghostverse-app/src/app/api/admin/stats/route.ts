@@ -22,11 +22,19 @@ export async function GET(request: NextRequest) {
     const getOnlineUsersCount = (globalThis as any).__getOnlineUsersCount as (() => number) | undefined;
     const onlineUsers = getOnlineUsersCount ? getOnlineUsersCount() : 0;
 
+    const hauntsCountQuery = await db.collection("haunts").count().get();
+    const totalHaunts = hauntsCountQuery.data().count;
+
+    const friendshipsQuery = await db.collection("friendships").count().get();
+    const totalFriendships = friendshipsQuery.data().count;
+
     return NextResponse.json<ApiResponse>({
       success: true,
       data: {
         totalUsers,
         onlineUsers,
+        totalHaunts,
+        totalFriendships,
       },
     });
   } catch (error) {
