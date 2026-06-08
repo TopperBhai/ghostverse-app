@@ -261,24 +261,35 @@ export function UserProfileCard({
 
               <div className="h-px bg-ghost-800 mb-3" />
 
-              {/* Stats row */}
-              <div className="flex flex-wrap items-center gap-4 text-xs text-ghost-500 mb-3">
-                <span className="flex items-center gap-1" title="Reputation Score">
-                  <span className={`flex items-center gap-1 ${getGhostLevel(profile.profile?.reputationScore || 0).color}`}>
-                    {getGhostLevel(profile.profile?.reputationScore || 0).badge}
-                    <strong className="font-bold text-xs">{profile.profile?.reputationScore || 0}</strong>
-                  </span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5" />
-                  <strong className="text-ghost-300">{profile.friendsCount}</strong> friends
-                </span>
-                {joinDate && (
-                  <span className="flex items-center gap-1">
-                    <CalendarDays className="w-3.5 h-3.5" />
-                    {joinDate}
-                  </span>
-                )}
+              {/* Stats grid */}
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="bg-ghost-900/50 border border-ghost-800/60 rounded-lg p-2 flex flex-col items-center text-center">
+                  <span className="text-[9px] uppercase tracking-wider text-ghost-500 font-bold mb-1">Reputation</span>
+                  <div className={`flex flex-col items-center gap-0.5 ${getGhostLevel(profile.profile?.reputationScore || 0).color}`}>
+                    <span className="font-black text-sm">{profile.profile?.reputationScore || 0}</span>
+                    {getGhostLevel(profile.profile?.reputationScore || 0).badge && (
+                      <div className="scale-75 origin-center -mt-1">
+                        {getGhostLevel(profile.profile?.reputationScore || 0).badge}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-ghost-900/50 border border-ghost-800/60 rounded-lg p-2 flex flex-col items-center text-center">
+                  <span className="text-[9px] uppercase tracking-wider text-ghost-500 font-bold mb-1">Network</span>
+                  <div className="flex flex-col items-center gap-0.5 text-ghost-100">
+                    <span className="font-black text-sm">{profile.friendsCount}</span>
+                    <span className="text-[9px] text-ghost-500 font-medium">Friends</span>
+                  </div>
+                </div>
+
+                <div className="bg-ghost-900/50 border border-ghost-800/60 rounded-lg p-2 flex flex-col items-center text-center">
+                  <span className="text-[9px] uppercase tracking-wider text-ghost-500 font-bold mb-1">Joined</span>
+                  <div className="flex flex-col items-center gap-0.5 text-ghost-300">
+                    <CalendarDays className="w-3.5 h-3.5 text-ghost-500 mb-0.5" />
+                    <span className="text-[10px] font-medium leading-none">{joinDate || "N/A"}</span>
+                  </div>
+                </div>
               </div>
 
               {/* Interests */}

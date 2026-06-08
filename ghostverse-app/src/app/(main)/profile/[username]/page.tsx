@@ -473,38 +473,50 @@ export default function ProfilePage() {
           <p className="text-ghost-300 text-sm leading-relaxed mb-5 max-w-2xl">{profile.bio}</p>
         )}
 
-        {/* Quick stats bar */}
-        <div className="flex items-center gap-4 sm:gap-6 flex-wrap text-sm mt-4">
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-phantom-400" />
-            <span className="font-bold text-ghost-100">{profile.friendsCount}</span>
-            <span className="text-ghost-500">Friends</span>
-          </div>
-          
-          <div className="w-px h-4 bg-ghost-800 hidden sm:block" />
-          
-          <div className="flex items-center gap-2" title="Reputation Score">
-            <span className={`flex items-center gap-1.5 font-bold ${getGhostLevel(profile.profile?.reputationScore || 0).color}`}>
-              {getGhostLevel(profile.profile?.reputationScore || 0).badge}
-              {!getGhostLevel(profile.profile?.reputationScore || 0).badge && <span>{profile.profile?.reputationScore || 0} Rep</span>}
-              {getGhostLevel(profile.profile?.reputationScore || 0).badge && <span className="text-sm">{profile.profile?.reputationScore || 0}</span>}
-            </span>
+        {/* Quick stats grid */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 sm:gap-4 mt-6">
+          {/* Reputation Stat */}
+          <div className="bg-ghost-900/50 border border-ghost-800/60 rounded-xl px-4 py-2.5 flex flex-col justify-center min-w-[120px]">
+            <span className="text-[10px] uppercase tracking-wider text-ghost-500 font-bold mb-0.5">Reputation</span>
+            <div className={`flex items-center gap-1.5 font-black text-lg ${getGhostLevel(profile.profile?.reputationScore || 0).color}`}>
+              <Zap className="w-4 h-4 fill-current opacity-80" />
+              <span>{profile.profile?.reputationScore || 0}</span>
+              {getGhostLevel(profile.profile?.reputationScore || 0).badge && (
+                <div className="ml-1 scale-90 origin-left">
+                  {getGhostLevel(profile.profile?.reputationScore || 0).badge}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="w-px h-4 bg-ghost-800 hidden sm:block" />
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-ghost-500" />
-            <span className="text-ghost-500">Joined {joinDate}</span>
+          {/* Friends Stat */}
+          <div className="bg-ghost-900/50 border border-ghost-800/60 rounded-xl px-4 py-2.5 flex flex-col justify-center min-w-[120px]">
+            <span className="text-[10px] uppercase tracking-wider text-ghost-500 font-bold mb-0.5">Network</span>
+            <div className="flex items-center gap-1.5 font-black text-lg text-ghost-100">
+              <Users className="w-4 h-4 text-phantom-400" />
+              <span>{profile.friendsCount}</span>
+              <span className="text-xs font-semibold text-ghost-500 ml-0.5">friends</span>
+            </div>
           </div>
-          {mood && (
-            <>
-              <div className="w-px h-4 bg-ghost-800 hidden sm:block" />
-              <div className={`flex items-center gap-2 ${mood.color}`}>
-                {mood.icon}
-                <span className="font-medium text-sm">{mood.label}</span>
-              </div>
-            </>
-          )}
+
+          {/* Join Date */}
+          <div className="bg-ghost-900/50 border border-ghost-800/60 rounded-xl px-4 py-2.5 flex flex-col justify-center min-w-[120px]">
+            <span className="text-[10px] uppercase tracking-wider text-ghost-500 font-bold mb-0.5">Joined</span>
+            <div className="flex items-center gap-1.5 font-black text-sm text-ghost-300 mt-0.5">
+              <CalendarDays className="w-4 h-4 text-ghost-500" />
+              <span>{joinDate}</span>
+            </div>
+          </div>
+        </div>
+        {mood && (
+          <div className="mt-4">
+            <span className="text-[10px] uppercase tracking-wider text-ghost-500 font-bold mb-1.5 block">Current Mood</span>
+            <div className={`inline-flex items-center gap-1.5 bg-ghost-800/40 border border-ghost-700/50 px-3 py-1.5 rounded-lg text-sm ${mood.color}`}>
+              {mood.icon}
+              <span className="font-medium text-sm">{mood.label}</span>
+            </div>
+          </div>
+        )}
         </div>
       </div>
 
