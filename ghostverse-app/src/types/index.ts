@@ -101,6 +101,16 @@ export interface Conversation {
   unreadCount: number;
 }
 
+export interface Confession {
+  id: string;
+  content: string;
+  likes: number;
+  comments: number;
+  createdAt: Date;
+  authorId?: string; // Optional if truly anonymous
+  likedBy?: string[]; // Array of user IDs who liked it
+}
+
 // ============================================================
 // SOCKET EVENT TYPES
 // ============================================================
