@@ -157,8 +157,8 @@ export interface ServerToClientEvents {
 
   // WebRTC Signaling
   "webrtc:call-request": (data: { callerId: string }) => void;
-  "webrtc:call-accept": (data: { receiverId: string }) => void;
-  "webrtc:call-decline": (data: { receiverId: string }) => void;
+  "webrtc:call-accept": (data: { callerId: string }) => void;
+  "webrtc:call-decline": (data: { callerId: string }) => void;
   "webrtc:end-call": () => void;
   "webrtc:offer": (data: { offer: any; senderId: string }) => void;
   "webrtc:answer": (data: { answer: any; senderId: string }) => void;
