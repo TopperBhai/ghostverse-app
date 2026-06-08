@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import { useSocket } from "../../../custom-hooks/use-socket";
-import { Globe, Hand } from "lucide-react";
+import { Globe, Hand, Trash2, Send } from "lucide-react";
 import type { WorldChatMessage } from "../../../types";
+import { UserProfileCard } from "../../components/UserProfileCard";
 
 export default function WorldChatPage() {
   const { user } = useAuth();
@@ -12,8 +13,11 @@ export default function WorldChatPage() {
   const [messages, setMessages] = useState<WorldChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [onlineCount, setOnlineCount] = useState(0);
+  const [hoveredMsg, setHoveredMsg] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{
+    userId: string; username: string; displayName: string; avatar: string | null;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -25,9 +29,7 @@ export default function WorldChatPage() {
       try {
         const res = await fetch("/api/world-chat?limit=50");
         const data = await res.json();
-        if (data.success) {
-          setMessages(data.data || []);
-        }
+        if (data.success) setMessages(data.data || []);
       } catch (err) {
         console.error("Failed to load messages:", err);
       }
@@ -38,7 +40,6 @@ export default function WorldChatPage() {
   // Socket listeners
   useEffect(() => {
     if (!socket) return;
-
     socket.emit("world:join");
 
     socket.on("world:message", (message) => {
@@ -56,10 +57,7 @@ export default function WorldChatPage() {
     };
   }, [socket]);
 
-  // Auto-scroll on new messages
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+  useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,71 +71,76 @@ export default function WorldChatPage() {
       id: `local-${Date.now()}`,
       content,
       createdAt: new Date(),
-      sender: {
-        id: user.id,
-        username: user.username,
-        displayName: user.displayName,
-        avatar: user.avatar,
-      },
+      sender: { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar },
     };
     setMessages((prev) => [...prev, optimisticMsg]);
 
-    // Send via API (persists) and socket (broadcasts)
     try {
-      await fetch("/api/world-chat", {
+      const res = await fetch("/api/world-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
+      const data = await res.json();
+      // Replace optimistic with real ID
+      if (data.success && data.data) {
+        setMessages((prev) => prev.map((m) => m.id === optimisticMsg.id ? data.data : m));
+      }
     } catch (err) {
       console.error("Failed to send message:", err);
     }
 
-    if (socket) {
-      socket.emit("world:send-message", { content });
+    if (socket) socket.emit("world:send-message", { content });
+  };
+
+  const deleteMessage = async (msgId: string) => {
+    // Optimistic remove
+    setMessages((prev) => prev.filter((m) => m.id !== msgId));
+    try {
+      await fetch(`/api/world-chat/${msgId}`, { method: "DELETE" });
+    } catch {
+      console.error("Failed to delete message");
     }
   };
 
-  const formatTime = (date: Date | string) => {
-    return new Date(date).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const formatTime = (date: Date | string) =>
+    new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)] md:h-screen">
+    <div className="flex flex-col h-[calc(100vh-112px)] md:h-screen relative">
+      {/* Profile card overlay */}
+      {selectedUser && (
+        <UserProfileCard
+          {...selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
+
       {/* Header */}
-      <div className="glass-nav px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <div className="glass-nav px-4 md:px-6 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
-          <Globe className="w-8 h-8 text-phantom-400" />
+          <div className="w-9 h-9 rounded-xl bg-phantom-600/20 border border-phantom-500/30 flex items-center justify-center">
+            <Globe className="w-5 h-5 text-phantom-400" />
+          </div>
           <div>
-            <h1 className="text-lg font-bold text-ghost-100">World Chat</h1>
+            <h1 className="text-base font-bold text-ghost-100">World Chat</h1>
             <p className="text-xs text-ghost-500">Everyone&apos;s talking here</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${isConnected ? "bg-success animate-pulse" : "bg-error"}`} />
-          <span className="text-sm text-ghost-400">
-            {onlineCount} online
-          </span>
+          <span className="text-xs text-ghost-400">{onlineCount} online</span>
         </div>
       </div>
 
       {/* Messages */}
-      <div
-        ref={chatContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
-      >
+      <div className="flex-1 overflow-y-auto px-3 md:px-4 py-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <Globe className="w-16 h-16 mb-4 text-phantom-500" style={{ animation: "float 3s ease-in-out infinite" }} />
-            <h3 className="text-lg font-semibold text-ghost-200 mb-2">
-              Welcome to World Chat
-            </h3>
+            <Globe className="w-14 h-14 mb-4 text-phantom-500" style={{ animation: "float 3s ease-in-out infinite" }} />
+            <h3 className="text-base font-semibold text-ghost-200 mb-2">Welcome to World Chat</h3>
             <p className="text-ghost-500 text-sm max-w-sm">
-              This is the global chat room. Everyone online can see your messages.
-              Say hello! <Hand className="w-4 h-4 inline" />
+              This is the global chat room. Everyone online can see your messages. Say hello! <Hand className="w-4 h-4 inline" />
             </p>
           </div>
         )}
@@ -147,43 +150,64 @@ export default function WorldChatPage() {
           return (
             <div
               key={msg.id}
-              className={`flex items-start gap-3 ${isOwn ? "flex-row-reverse" : ""} animate-fade-in`}
+              className={`flex items-start gap-2.5 group ${isOwn ? "flex-row-reverse" : ""} animate-fade-in`}
+              onMouseEnter={() => setHoveredMsg(msg.id)}
+              onMouseLeave={() => setHoveredMsg(null)}
             >
-              {/* Avatar */}
-              <div
-                className="avatar avatar-sm flex-shrink-0"
-                title={`@${msg.sender.username}`}
+              {/* Avatar — clickable for profile card */}
+              <button
+                className="avatar avatar-sm flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-phantom-500/60 transition-all"
+                title={`@${msg.sender.username} — view profile`}
+                onClick={() => setSelectedUser({
+                  userId: msg.sender.id,
+                  username: msg.sender.username,
+                  displayName: msg.sender.displayName,
+                  avatar: msg.sender.avatar,
+                })}
               >
                 {msg.sender.avatar ? (
-                  <img
-                    src={msg.sender.avatar}
-                    alt={msg.sender.displayName}
-                    className="w-full h-full rounded-full object-cover"
-                  />
+                  <img src={msg.sender.avatar} alt={msg.sender.displayName} className="w-full h-full rounded-full object-cover" />
                 ) : (
                   msg.sender.displayName.charAt(0)
                 )}
-              </div>
+              </button>
 
-              {/* Message */}
-              <div className={`max-w-[70%] ${isOwn ? "text-right" : ""}`}>
+              {/* Message bubble */}
+              <div className={`max-w-[75%] md:max-w-[65%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
+                {/* Sender name + time */}
                 <div className={`flex items-baseline gap-2 mb-1 ${isOwn ? "flex-row-reverse" : ""}`}>
-                  <span className="text-xs font-semibold text-phantom-400">
+                  <button
+                    className="text-xs font-semibold text-phantom-400 hover:underline cursor-pointer"
+                    onClick={() => setSelectedUser({
+                      userId: msg.sender.id,
+                      username: msg.sender.username,
+                      displayName: msg.sender.displayName,
+                      avatar: msg.sender.avatar,
+                    })}
+                  >
                     {msg.sender.displayName}
-                  </span>
-                  <span className="text-[10px] text-ghost-600">
-                    @{msg.sender.username}
-                  </span>
-                  <span className="text-[10px] text-ghost-600">
-                    {formatTime(msg.createdAt)}
-                  </span>
+                  </button>
+                  <span className="text-[10px] text-ghost-600 hidden sm:inline">@{msg.sender.username}</span>
+                  <span className="text-[10px] text-ghost-600">{formatTime(msg.createdAt)}</span>
                 </div>
-                <div
-                  className={`message-bubble ${
-                    isOwn ? "message-bubble-sent" : "message-bubble-received"
-                  }`}
-                >
-                  {msg.content}
+
+                <div className="flex items-end gap-2">
+                  {/* Delete button (own messages only) */}
+                  {isOwn && (
+                    <button
+                      onClick={() => deleteMessage(msg.id)}
+                      className={`flex-shrink-0 p-1 rounded-lg text-ghost-600 hover:text-neon-red hover:bg-error/10 transition-all ${
+                        hoveredMsg === msg.id ? "opacity-100" : "opacity-0"
+                      }`}
+                      title="Delete message"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  <div className={`message-bubble ${isOwn ? "message-bubble-sent" : "message-bubble-received"}`}>
+                    {msg.content}
+                  </div>
                 </div>
               </div>
             </div>
@@ -193,23 +217,23 @@ export default function WorldChatPage() {
       </div>
 
       {/* Input */}
-      <div className="px-4 pb-4 pt-2 flex-shrink-0">
-        <form onSubmit={sendMessage} className="flex items-center gap-3">
+      <div className="px-3 md:px-4 pb-3 pt-2 flex-shrink-0">
+        <form onSubmit={sendMessage} className="flex items-center gap-2">
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="glass-input focus-ring flex-1"
+            className="glass-input focus-ring flex-1 text-sm py-3"
             placeholder="Type a message to the world..."
             maxLength={500}
-            autoFocus
           />
           <button
             type="submit"
             disabled={!inputValue.trim()}
-            className="btn-primary px-6 py-3"
+            className="btn-primary px-4 py-3 flex items-center gap-2"
           >
-            Send
+            <Send className="w-4 h-4" />
+            <span className="hidden sm:inline">Send</span>
           </button>
         </form>
       </div>

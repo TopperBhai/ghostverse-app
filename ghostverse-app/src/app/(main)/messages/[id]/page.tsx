@@ -6,8 +6,9 @@ import { useSocket } from "../../../../custom-hooks/use-socket";
 import { useWebRTC } from "../../../../custom-hooks/use-webrtc";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Phone, User, MessageSquare, Check, CheckCheck, Mic } from "lucide-react";
+import { Phone, User, MessageSquare, Check, CheckCheck, Mic, Trash2, Send } from "lucide-react";
 import type { ApiResponse } from "../../../../types";
+import { UserProfileCard } from "../../../components/UserProfileCard";
 
 interface Message {
   id: string;
@@ -38,6 +39,8 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [hoveredMsg, setHoveredMsg] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ userId: string; username: string; displayName: string; avatar: string | null } | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>(null);
@@ -163,13 +166,26 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
     }
   };
 
+  const deleteMessage = async (msgId: string) => {
+    setMessages((prev) => prev.filter((m) => m.id !== msgId));
+    try {
+      await fetch(`/api/messages/${conversationId}/${msgId}`, { method: "DELETE" });
+    } catch {
+      console.error("Failed to delete message");
+    }
+  };
+
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)] md:h-screen w-full relative">
+    <div className="flex flex-col h-[calc(100vh-112px)] md:h-screen w-full relative">
+      {/* Profile card popup */}
+      {selectedUser && (
+        <UserProfileCard {...selectedUser} onClose={() => setSelectedUser(null)} />
+      )}
       {/* Remote Audio Player */}
       <audio ref={audioRef} autoPlay />
 
@@ -251,14 +267,45 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
           messages.map((msg) => {
             const isOwn = msg.senderId === user?.id;
             return (
-              <div key={msg.id} className={`flex ${isOwn ? "justify-end" : "justify-start"} animate-fade-in`}>
+              <div
+                key={msg.id}
+                className={`flex items-end gap-2 ${isOwn ? "justify-end" : "justify-start"} animate-fade-in group`}
+                onMouseEnter={() => setHoveredMsg(msg.id)}
+                onMouseLeave={() => setHoveredMsg(null)}
+              >
+                {/* Other user avatar */}
+                {!isOwn && (
+                  <button
+                    className="avatar avatar-sm flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-phantom-500/60 transition-all mb-4"
+                    onClick={() => {
+                      if (otherUserId) {
+                        const parts = conversationId.split("_");
+                        const otherId = parts.find(id => id !== user?.id) || "";
+                        setSelectedUser({ userId: otherId, username: otherId, displayName: "User", avatar: null });
+                      }
+                    }}
+                  >
+                    <User className="w-4 h-4 text-ghost-400" />
+                  </button>
+                )}
                 <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
                   <div className={`message-bubble text-sm py-2 px-3 ${isOwn ? "message-bubble-sent" : "message-bubble-received"}`}>
                     {msg.content}
                   </div>
-                  <span className="text-[9px] text-ghost-600 mt-1 px-1 flex items-center">
-                    {formatTime(msg.createdAt)} {isOwn && (msg.read ? <CheckCheck className="w-3 h-3 ml-1" /> : <Check className="w-3 h-3 ml-1" />)}
-                  </span>
+                  <div className={`flex items-center gap-1 mt-1 px-1 ${isOwn ? "flex-row-reverse" : ""}`}>
+                    <span className="text-[9px] text-ghost-600 flex items-center">
+                      {formatTime(msg.createdAt)} {isOwn && (msg.read ? <CheckCheck className="w-3 h-3 ml-1" /> : <Check className="w-3 h-3 ml-1" />)}
+                    </span>
+                    {isOwn && (
+                      <button
+                        onClick={() => deleteMessage(msg.id)}
+                        className={`p-0.5 rounded text-ghost-600 hover:text-neon-red hover:bg-error/10 transition-all ${hoveredMsg === msg.id ? "opacity-100" : "opacity-0"}`}
+                        title="Delete message"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );

@@ -44,6 +44,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarHover, setAvatarHover] = useState(false);
+  const [friendState, setFriendState] = useState<"none" | "loading" | "sent">("none");
+  const [friendMsg, setFriendMsg] = useState<{ type: string; text: string } | null>(null);
 
   const isOwnProfile = authUser?.username === username;
 
@@ -95,6 +97,29 @@ export default function ProfilePage() {
       console.error("Failed to upload avatar:", err);
     } finally {
       setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleAddFriend = async () => {
+    if (!profile) return;
+    setFriendState("loading");
+    try {
+      const res = await fetch("/api/friends", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: profile.username }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFriendState("sent");
+        setFriendMsg({ type: "success", text: "Friend request sent!" });
+      } else {
+        setFriendState("none");
+        setFriendMsg({ type: "error", text: data.error || "Failed to send request" });
+      }
+    } catch {
+      setFriendState("none");
+      setFriendMsg({ type: "error", text: "An error occurred" });
     }
   };
 
@@ -207,8 +232,13 @@ export default function ProfilePage() {
                 </button>
               ) : (
                 <>
-                  <button className="btn-primary text-sm px-4 py-2 gap-2 whitespace-nowrap">
-                    <UserPlus className="w-4 h-4" /> Add Friend
+                  <button
+                    onClick={handleAddFriend}
+                    disabled={friendState === "loading" || friendState === "sent"}
+                    className="btn-primary text-sm px-4 py-2 gap-2 whitespace-nowrap disabled:opacity-70"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    {friendState === "sent" ? "Request Sent!" : friendState === "loading" ? "Sending..." : "Add Friend"}
                   </button>
                   <button
                     className="btn-secondary text-sm px-4 py-2 gap-2 whitespace-nowrap"
