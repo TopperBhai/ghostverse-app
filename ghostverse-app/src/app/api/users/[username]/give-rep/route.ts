@@ -84,6 +84,10 @@ export async function POST(
 
     await batch.commit();
 
+    // Call Gamification logic so they receive the XP for getting Rep
+    const { updateGamification } = require("../../../../../lib/gamification");
+    await updateGamification(targetUserId, "REP");
+
     return NextResponse.json<ApiResponse>(
       { success: true, message: "Reputation given successfully" },
       { status: 200 }

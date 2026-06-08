@@ -144,6 +144,26 @@ export function UserProfileCard({
       if (data.success) {
         setRepState("given");
         setCanGiveRep(false);
+        // Optimistically update the UI
+        setProfile(prev => prev ? {
+          ...prev,
+          profile: {
+            ...prev.profile,
+            interests: prev.profile?.interests || [],
+            mood: prev.profile?.mood || null,
+            reputationScore: (prev.profile?.reputationScore || 0) + 1
+          },
+          gamification: {
+            ...prev.gamification,
+            hauntStreak: prev.gamification?.hauntStreak || 0,
+            pet: {
+              ...prev.gamification?.pet,
+              status: prev.gamification?.pet?.status || "HAPPY",
+              level: prev.gamification?.pet ? Math.floor((prev.gamification.pet.xp + 100) / 500) + 1 : 1,
+              xp: (prev.gamification?.pet?.xp || 0) + 100
+            }
+          }
+        } : null);
       } else {
         setRepState("error");
         setRepError(data.error || "Failed to give rep");
