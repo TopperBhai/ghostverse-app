@@ -11,7 +11,7 @@ import { MentionInput } from "../../components/MentionInput";
 import { FormattedText } from "../../components/FormattedText";
 
 export default function WorldChatPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { socket, isConnected } = useSocket();
   const [messages, setMessages] = useState<WorldChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -124,6 +124,7 @@ export default function WorldChatPage() {
       if (data.success && data.data) {
         setMessages((prev) => prev.map((m) => m.id === optimisticMsg.id ? data.data : m));
         if (socket) socket.emit("world:send-message", data.data);
+        refreshUser(); // Update XP & Streak locally
       }
     } catch (err) {
       console.error("Failed to send message:", err);

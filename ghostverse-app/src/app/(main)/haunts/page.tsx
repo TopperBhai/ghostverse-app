@@ -373,7 +373,7 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function HauntsPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [haunts, setHaunts] = useState<HauntPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -397,6 +397,7 @@ export default function HauntsPage() {
 
   const handleNewHaunt = (haunt: HauntPost) => {
     setHaunts((prev) => [haunt, ...prev]);
+    refreshUser(); // Update XP & Streak locally
   };
 
   const handleReactionUpdate = (hauntId: string, reactions: HauntPost["reactions"]) => {
