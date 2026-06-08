@@ -185,28 +185,33 @@ export function UserProfileCard({
           <X className="w-4 h-4" />
         </button>
 
-        {/* Avatar */}
-        <div className="px-4 -mt-10 mb-3 flex items-end justify-between">
-          <div className="w-20 h-20 rounded-full border-4 border-ghost-900 bg-ghost-800 flex items-center justify-center text-2xl font-black text-ghost-300 overflow-hidden shadow-xl">
+        {/* Avatar and Actions Container */}
+        <div className="px-4 pt-3 flex justify-between items-start relative">
+          {/* Floating Avatar */}
+          <div className="w-[72px] h-[72px] rounded-full border-4 border-ghost-900 bg-ghost-800 flex items-center justify-center text-2xl font-black text-ghost-300 overflow-hidden shadow-xl absolute -top-9 left-4 z-10">
             {avatar ? (
               <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
             ) : (
               <span className="gradient-text">{displayName.charAt(0)}</span>
             )}
           </div>
+          
+          {/* Spacer to push buttons right */}
+          <div className="w-[72px] shrink-0 mr-2" />
+
           {/* Action buttons */}
-          {!isOwnProfile && authUser && (
-            <div className="flex flex-wrap gap-2 mt-10">
+          {!isOwnProfile && authUser ? (
+            <div className="flex flex-wrap justify-end gap-1.5 flex-1 relative z-10">
               <button
                 onClick={handleMessage}
-                className="btn-secondary text-xs px-3 py-1.5 gap-1.5"
+                className="btn-secondary text-xs px-2.5 py-1.5 gap-1 shadow-sm"
               >
                 <MessageSquare className="w-3.5 h-3.5" /> Message
               </button>
               <button
                 onClick={handleAddFriend}
                 disabled={friendState === "loading" || friendState === "sent" || friendState === "friends"}
-                className="btn-primary text-xs px-3 py-1.5 gap-1.5 disabled:opacity-60"
+                className="btn-primary text-xs px-2.5 py-1.5 gap-1 shadow-sm disabled:opacity-60"
               >
                 {friendState === "sent" ? (
                   <><UserCheck className="w-3.5 h-3.5" /> Pending</>
@@ -220,7 +225,7 @@ export function UserProfileCard({
                 onClick={handleGiveRep}
                 disabled={!canGiveRep || repState !== "idle"}
                 title={!canGiveRep ? "You already gave rep today — come back in 24h" : repError || "Give Reputation"}
-                className={`text-xs px-3 py-1.5 gap-1.5 rounded-xl font-bold border transition-all flex items-center ${
+                className={`text-xs px-2.5 py-1.5 gap-1 rounded-xl font-bold border transition-all flex items-center shadow-sm ${
                   repState === "given"
                     ? "bg-success/10 border-success/30 text-success cursor-default"
                     : repState === "error"
@@ -231,14 +236,16 @@ export function UserProfileCard({
                 }`}
               >
                 <Zap className="w-3.5 h-3.5" />
-                {repState === "given" ? "Rep Given!" : repState === "loading" ? "..." : !canGiveRep ? "Repped" : "Give Rep"}
+                {repState === "given" ? "Repped!" : repState === "loading" ? "..." : !canGiveRep ? "Repped" : "Rep"}
               </button>
             </div>
+          ) : (
+            <div className="h-8" />
           )}
         </div>
 
         {/* Info */}
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-4 mt-1">
           <div className="mb-3">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-ghost-100">{displayName}</h2>
