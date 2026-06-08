@@ -79,7 +79,7 @@ export function GhostPet({ status, level, className = "", size = "md" }: GhostPe
                    Q 35 80, 30 90 
                    Q 25 80, 20 90 
                    Z" />
-                   
+
           {/* Eyes based on expression */}
           {vars.expression === "happy" && (
             <>
