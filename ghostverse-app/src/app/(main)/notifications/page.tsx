@@ -136,7 +136,6 @@ export default function NotificationsPage() {
             {notifications.map((notif, i) => {
               const icon = TYPE_ICON[notif.type] ?? TYPE_ICON.default;
               return (
-              return (
                 <div
                   key={notif.id}
                   className={`w-full flex items-start gap-3 px-4 md:px-6 py-4 text-left transition-all hover:bg-white/[0.025] page-enter ${
@@ -167,7 +166,7 @@ export default function NotificationsPage() {
                       {notif.content}
                     </p>
                     
-                    {notif.type === "FRIEND_REQUEST" && notif.data?.friendshipId && (
+                    {notif.type === "FRIEND_REQUEST" && !!notif.data?.friendshipId && (
                       <div className="flex gap-2 mt-3">
                         <button 
                           onClick={async (e) => {
@@ -176,7 +175,7 @@ export default function NotificationsPage() {
                               const res = await fetch("/api/friends/action", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ friendshipId: notif.data!.friendshipId, action: "ACCEPT" })
+                                body: JSON.stringify({ friendshipId: notif.data!.friendshipId as string, action: "ACCEPT" })
                               });
                               if (res.ok) markRead(notif.id);
                             } catch {}
@@ -192,7 +191,7 @@ export default function NotificationsPage() {
                               const res = await fetch("/api/friends/action", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ friendshipId: notif.data!.friendshipId, action: "REJECT" })
+                                body: JSON.stringify({ friendshipId: notif.data!.friendshipId as string, action: "REJECT" })
                               });
                               if (res.ok) markRead(notif.id);
                             } catch {}

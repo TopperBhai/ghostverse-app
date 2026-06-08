@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "../../../../lib/firebase-admin";
-import { getAuthUser } from "../../../../lib/auth";
+import { db } from "../../../lib/firebase-admin";
+import { getAuthUser } from "../../../lib/auth";
 
 export async function GET() {
   try {
@@ -9,7 +9,7 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Not logged in" });
     }
 
-    await db.collection("users").doc(user.id).update({ role: "ADMIN" });
+    await db.collection("users").doc(user.userId).update({ role: "ADMIN" });
     
     return NextResponse.json({ 
       success: true, 
