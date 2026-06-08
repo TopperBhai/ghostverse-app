@@ -54,6 +54,11 @@ app.prepare().then(() => {
       console.log(`❌ User offline: ${socket.id}`);
     });
 
+    socket.on("user:profile-update", (data) => {
+      // Broadcast to all other users
+      socket.broadcast.emit("user:profile-update", data);
+    });
+
     // ── World Chat ──
     socket.on("world:join", () => {
       socket.join("world-chat");

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "../../../../custom-hooks/use-auth";
+import { useSocket } from "../../../../custom-hooks/use-socket";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
@@ -37,6 +38,7 @@ const INTEREST_COLORS: Record<string, string> = {
 
 export default function ProfilePage() {
   const { user: authUser, refreshUser } = useAuth();
+  const { socket } = useSocket();
   const params = useParams();
   const router = useRouter();
   const username = params.username as string;
@@ -91,6 +93,13 @@ export default function ProfilePage() {
         if (updateRes.ok) {
           setProfile((prev) => (prev ? { ...prev, avatar: avatarUrl } : prev));
           await refreshUser();
+          if (socket && authUser) {
+            socket.emit("user:profile-update", {
+              userId: authUser.id,
+              avatar: avatarUrl,
+              displayName: authUser.displayName,
+            });
+          }
         }
       }
     } catch (err) {

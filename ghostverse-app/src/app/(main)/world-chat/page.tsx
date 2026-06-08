@@ -59,10 +59,27 @@ export default function WorldChatPage() {
       );
     });
 
+    socket.on("user:profile-update", (data) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.sender.id === data.userId
+            ? { ...m, sender: { ...m.sender, avatar: data.avatar, displayName: data.displayName } }
+            : m
+        )
+      );
+      setSelectedUser((prev) => {
+        if (prev && prev.userId === data.userId) {
+          return { ...prev, avatar: data.avatar, displayName: data.displayName };
+        }
+        return prev;
+      });
+    });
+
     return () => {
       socket.off("world:message");
       socket.off("world:online-count");
       socket.off("world:message-edited");
+      socket.off("user:profile-update");
       socket.emit("world:leave");
     };
   }, [socket]);

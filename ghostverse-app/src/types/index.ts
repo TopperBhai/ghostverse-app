@@ -164,6 +164,9 @@ export interface ServerToClientEvents {
 
   // Random Voice Matchmaking
   "random-voice:match": (data: { peerId: string; isCaller: boolean; roomId: string }) => void;
+
+  // Global Profile Update
+  "user:profile-update": (data: { userId: string; avatar: string | null; displayName: string }) => void;
 }
 
 export interface ClientToServerEvents {
@@ -214,6 +217,9 @@ export interface ClientToServerEvents {
   // Random Voice Matchmaking
   "random-voice:join": (data: { userId: string }) => void;
   "random-voice:leave": (data: { userId: string }) => void;
+
+  // Global Profile Update
+  "user:profile-update": (data: { userId: string; avatar: string | null; displayName: string }) => void;
 }
 
 // ============================================================
