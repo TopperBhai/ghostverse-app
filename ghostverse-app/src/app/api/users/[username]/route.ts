@@ -51,7 +51,7 @@ export async function GET(
     const friendsCount = sentFriends.data().count + recvFriends.data().count;
 
     // Check viewer friendship status
-    let viewerFriendshipStatus: "NONE" | "PENDING" | "ACCEPTED" | "REJECTED" = "NONE";
+    let viewerFriendshipStatus: "NONE" | "SENT" | "RECEIVED" | "ACCEPTED" | "REJECTED" = "NONE";
     if (authUser.userId !== userData.id) {
       // Look for a friendship document where the logged in user is either sender or receiver
       const friendshipQuery1 = await db.collection("friendships")
@@ -65,9 +65,11 @@ export async function GET(
         .get();
 
       if (!friendshipQuery1.empty) {
-        viewerFriendshipStatus = friendshipQuery1.docs[0].data().status;
+        const docData = friendshipQuery1.docs[0].data();
+        viewerFriendshipStatus = docData.status === "PENDING" ? "SENT" : docData.status;
       } else if (!friendshipQuery2.empty) {
-        viewerFriendshipStatus = friendshipQuery2.docs[0].data().status;
+        const docData = friendshipQuery2.docs[0].data();
+        viewerFriendshipStatus = docData.status === "PENDING" ? "RECEIVED" : docData.status;
       }
     }
 

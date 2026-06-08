@@ -37,7 +37,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarHover, setAvatarHover] = useState(false);
-  const [friendState, setFriendState] = useState<"none" | "loading" | "sent" | "accepted" | "pending" | "rejected" | "friends">("none");
+  const [friendState, setFriendState] = useState<"none" | "loading" | "sent" | "accepted" | "pending" | "rejected" | "friends" | "received">("none");
   const [friendMsg, setFriendMsg] = useState<{ type: string; text: string } | null>(null);
 
   // Edit modal state
@@ -430,7 +430,7 @@ export default function ProfilePage() {
                     <button className="btn-secondary text-sm px-4 py-2 gap-2 whitespace-nowrap cursor-default pointer-events-none opacity-80">
                       <CheckCheck className="w-4 h-4 text-success" /> Friends
                     </button>
-                  ) : friendState === "pending" || friendState === "sent" ? (
+                  ) : friendState === "pending" || friendState === "sent" || friendState === "received" ? (
                     <button className="btn-secondary text-sm px-4 py-2 gap-2 whitespace-nowrap cursor-default pointer-events-none opacity-80">
                       <Clock className="w-4 h-4 text-warning" /> Pending
                     </button>

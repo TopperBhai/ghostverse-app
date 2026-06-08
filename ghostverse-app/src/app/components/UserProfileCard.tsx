@@ -79,7 +79,17 @@ export function UserProfileCard({
       try {
         const res = await fetch(`/api/users/${username}`);
         const data = await res.json();
-        if (data.success && data.data) setProfile(data.data);
+        if (data.success && data.data) {
+          setProfile(data.data);
+          if (data.data.viewerFriendshipStatus && data.data.viewerFriendshipStatus !== "NONE") {
+            const status = data.data.viewerFriendshipStatus.toLowerCase();
+            if (status === "sent" || status === "received" || status === "pending") {
+              setFriendState("sent");
+            } else if (status === "accepted") {
+              setFriendState("friends");
+            }
+          }
+        }
       } catch {}
       finally { setLoading(false); }
     };
@@ -163,7 +173,7 @@ export function UserProfileCard({
                 className="btn-primary text-xs px-3 py-1.5 gap-1.5 disabled:opacity-60"
               >
                 {friendState === "sent" ? (
-                  <><UserCheck className="w-3.5 h-3.5" /> Sent</>
+                  <><UserCheck className="w-3.5 h-3.5" /> Pending</>
                 ) : friendState === "friends" ? (
                   <><UserCheck className="w-3.5 h-3.5" /> Friends</>
                 ) : (

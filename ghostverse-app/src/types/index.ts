@@ -40,6 +40,27 @@ export interface AuthResponse {
 // USER TYPES (safe — no password hash)
 // ============================================================
 
+export type ViewerFriendshipStatus = "NONE" | "SENT" | "RECEIVED" | "ACCEPTED" | "REJECTED";
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  displayName: string;
+  avatar: string | null;
+  bio: string | null;
+  role: "USER" | "ADMIN";
+  status: "ONLINE" | "OFFLINE" | "MUTED" | "BANNED";
+  createdAt: Date;
+  lastSeen: Date;
+  profile?: {
+    interests: string[];
+    mood: string | null;
+    reputationScore: number;
+  } | null;
+  friendsCount: number;
+  viewerFriendshipStatus?: ViewerFriendshipStatus;
+}
+
 export interface SafeUser {
   id: string;
   username: string;
@@ -50,17 +71,6 @@ export interface SafeUser {
   status: UserStatus;
   lastSeen: Date;
   createdAt: Date;
-}
-
-export interface UserProfile extends SafeUser {
-  profile: {
-    interests: Interest[];
-    mood: Mood | null;
-    country: string | null;
-    reputationScore: number;
-  } | null;
-  friendsCount: number;
-  viewerFriendshipStatus?: FriendshipStatus | "NONE";
 }
 
 
