@@ -247,7 +247,7 @@ input:-webkit-autofill:active {
 }
 
 .bento-card {
-  @apply glass-card relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] hover:border-phantom-500/30 group;
+  @apply bg-ghost-900/60 backdrop-blur-xl border border-ghost-800/50 shadow-xl rounded-2xl relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] hover:border-phantom-500/30 group;
 }
 
 .bento-card::before {
