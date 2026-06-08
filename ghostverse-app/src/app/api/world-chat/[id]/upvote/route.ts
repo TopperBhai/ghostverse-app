@@ -32,10 +32,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check 24-hour limit
+    const voterDoc = await db.collection("users").doc(authUser.userId).get();
+    const voterData = voterDoc.data();
+    if (voterData?.lastUpvoteGivenAt) {
+      const lastUpvote = new Date(voterData.lastUpvoteGivenAt).getTime();
+      const now = Date.now();
+      if (now - lastUpvote < 24 * 60 * 60 * 1000) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: "You can only give 1 reputation point every 24 hours" },
+          { status: 429 }
+        );
+      }
+    }
+
+    const batch = db.batch();
+
     // Update reputation score in the main user document for Leaderboard sorting
-    await db.collection("users").doc(senderId).update({
+    batch.update(db.collection("users").doc(senderId), {
       reputationScore: FieldValue.increment(1)
     });
+
+    // Update lastUpvoteGivenAt for the voter
+    batch.update(db.collection("users").doc(authUser.userId), {
+      lastUpvoteGivenAt: new Date().toISOString()
+    });
+
+    await batch.commit();
 
     // Also update it in the profile subcollection for backward compatibility
     try {

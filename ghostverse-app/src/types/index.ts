@@ -52,6 +52,7 @@ export interface UserProfile {
   status: "ONLINE" | "OFFLINE" | "MUTED" | "BANNED";
   createdAt: Date;
   lastSeen: Date;
+  lastUpvoteGivenAt?: Date | null;
   profile?: {
     interests: string[];
     mood: string | null;
@@ -71,6 +72,7 @@ export interface SafeUser {
   status: UserStatus;
   lastSeen: Date;
   createdAt: Date;
+  lastUpvoteGivenAt?: Date | null;
 }
 
 

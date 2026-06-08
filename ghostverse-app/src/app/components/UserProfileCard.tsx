@@ -8,6 +8,7 @@ import {
   Sparkles, Ghost, ShieldCheck, UserCheck, Clock
 } from "lucide-react";
 import Link from "next/link";
+import { getGhostLevel } from "../../lib/levels";
 
 interface ProfileCardProps {
   username: string;
@@ -30,6 +31,7 @@ interface FullProfile {
   profile?: {
     interests: string[];
     mood: string | null;
+    reputationScore: number;
   } | null;
 }
 
@@ -211,7 +213,13 @@ export function UserProfileCard({
               <div className="h-px bg-ghost-800 mb-3" />
 
               {/* Stats row */}
-              <div className="flex items-center gap-4 text-xs text-ghost-500 mb-3">
+              <div className="flex flex-wrap items-center gap-4 text-xs text-ghost-500 mb-3">
+                <span className="flex items-center gap-1" title="Reputation Score">
+                  <span className={`flex items-center gap-1 ${getGhostLevel(profile.profile?.reputationScore || 0).color}`}>
+                    {getGhostLevel(profile.profile?.reputationScore || 0).badgeIcon}
+                    <strong className="font-bold">{profile.profile?.reputationScore || 0}</strong>
+                  </span>
+                </span>
                 <span className="flex items-center gap-1">
                   <Users className="w-3.5 h-3.5" />
                   <strong className="text-ghost-300">{profile.friendsCount}</strong> friends

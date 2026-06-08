@@ -20,6 +20,10 @@ export default function WorldChatPage() {
     userId: string; username: string; displayName: string; avatar: string | null;
   } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [hasVotedNow, setHasVotedNow] = useState(false);
+
+  const lastUpvoteTime = user?.lastUpvoteGivenAt ? new Date(user.lastUpvoteGivenAt).getTime() : 0;
+  const canUpvote = !hasVotedNow && (Date.now() - lastUpvoteTime >= 24 * 60 * 60 * 1000);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -87,6 +91,7 @@ export default function WorldChatPage() {
       socket.off("world:online-count");
       socket.off("world:message-edited");
       socket.off("world:message-deleted" as any);
+      socket.off("world:message-upvoted" as any);
       socket.off("user:profile-update");
       socket.emit("world:leave");
     };
@@ -106,7 +111,7 @@ export default function WorldChatPage() {
       id: `local-${Date.now()}`,
       content,
       createdAt: new Date(),
-      sender: { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar },
+      sender: { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar, reputationScore: user.profile?.reputationScore },
     };
     setMessages((prev) => [...prev, optimisticMsg]);
 
@@ -158,10 +163,12 @@ export default function WorldChatPage() {
 
   const handleUpvote = async (msg: WorldChatMessage) => {
     if (!user || msg.sender.id === user.id) return;
+    if (!canUpvote) return;
     const isUpvoted = msg.upvotedBy?.includes(user.id);
     if (isUpvoted) return;
 
     // Optimistic UI update
+    setHasVotedNow(true);
     setMessages((prev) =>
       prev.map((m) =>
         m.id === msg.id
@@ -177,13 +184,18 @@ export default function WorldChatPage() {
 
     // Call API to actually update DB
     try {
-      await fetch(`/api/world-chat/${msg.id}/upvote`, {
+      const res = await fetch(`/api/world-chat/${msg.id}/upvote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ senderId: msg.sender.id }),
       });
+      if (!res.ok) {
+        // Revert on failure
+        setHasVotedNow(false);
+      }
     } catch (err) {
       console.error("Failed to upvote message", err);
+      setHasVotedNow(false);
     }
   };
 
@@ -306,13 +318,15 @@ export default function WorldChatPage() {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleUpvote(msg)}
-                        disabled={msg.upvotedBy?.includes(user?.id || "")}
+                        disabled={msg.upvotedBy?.includes(user?.id || "") || !canUpvote}
                         className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ${
                           msg.upvotedBy?.includes(user?.id || "")
                             ? "bg-phantom-500/20 text-phantom-400 border border-phantom-500/30"
+                            : !canUpvote
+                            ? "bg-ghost-800/20 text-ghost-600 cursor-not-allowed opacity-50"
                             : `bg-ghost-800/50 text-ghost-500 hover:bg-phantom-500/20 hover:text-phantom-400 opacity-0 group-hover:opacity-100 ${msg.upvotes ? "opacity-100" : ""}`
                         }`}
-                        title="Give Rep"
+                        title={!canUpvote ? "You can upvote again in 24 hours" : "Give Rep"}
                       >
                         <Ghost className="w-3 h-3" />
                         {msg.upvotes ? msg.upvotes : ""}

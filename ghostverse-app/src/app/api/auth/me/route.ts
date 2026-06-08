@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
       status: user.status,
       createdAt: user.createdAt,
       lastSeen: user.lastSeen,
+      lastUpvoteGivenAt: user.lastUpvoteGivenAt,
       profile: profileData,
       friendsCount,
     };

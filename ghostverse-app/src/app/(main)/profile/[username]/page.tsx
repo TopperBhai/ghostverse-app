@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Bell, Users, MessageSquare, Star, Check, CheckCheck, Ghost, Search, MapPin, CalendarDays, ExternalLink, Activity, ArrowLeft, MoreHorizontal, MessageCircle, Map, Sparkles, Zap, Image as ImageIcon, Camera, Pencil, X, ShieldCheck, UserPlus, Clock, Smile, Loader2, Save } from "lucide-react";
 import type { UserProfile, ApiResponse } from "../../../../types";
+import { getGhostLevel } from "../../../../lib/levels";
 
 const MOOD_ICONS: Record<string, { icon: React.ReactNode; label: string; color: string }> = {
   HAPPY: { icon: <Smile className="w-5 h-5" />, label: "Happy", color: "text-yellow-400" },
@@ -473,12 +474,22 @@ export default function ProfilePage() {
         )}
 
         {/* Quick stats bar */}
-        <div className="flex items-center gap-4 sm:gap-6 flex-wrap text-sm">
+        <div className="flex items-center gap-4 sm:gap-6 flex-wrap text-sm mt-4">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-phantom-400" />
             <span className="font-bold text-ghost-100">{profile.friendsCount}</span>
             <span className="text-ghost-500">Friends</span>
           </div>
+          
+          <div className="w-px h-4 bg-ghost-800 hidden sm:block" />
+          
+          <div className="flex items-center gap-2" title="Reputation Score">
+            <span className={`flex items-center gap-1.5 font-bold ${getGhostLevel(profile.profile?.reputationScore || 0).color}`}>
+              {getGhostLevel(profile.profile?.reputationScore || 0).badgeIcon}
+              <span>{profile.profile?.reputationScore || 0} Rep</span>
+            </span>
+          </div>
+
           <div className="w-px h-4 bg-ghost-800 hidden sm:block" />
           <div className="flex items-center gap-2">
             <CalendarDays className="w-4 h-4 text-ghost-500" />
