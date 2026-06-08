@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import { Users, Inbox, Send, Plus, Ghost, MessageSquare, X, Check } from "lucide-react";
 import type { ApiResponse } from "../../../types";
+import { UserProfileCard } from "../../components/UserProfileCard";
 
 interface FriendData {
   id: string;
@@ -25,6 +26,7 @@ export default function FriendsPage() {
   const [addUsername, setAddUsername] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<{userId: string; username: string; displayName: string; avatar: string | null} | null>(null);
 
   const fetchFriends = async () => {
     try {
@@ -171,15 +173,25 @@ export default function FriendsPage() {
               <div className="space-y-2">
                 {activeList.map((friend) => (
                   <div key={friend.friendshipId} className="glass-card p-4 flex items-center gap-4 animate-fade-in">
-                    <div className={`avatar avatar-md relative flex-shrink-0 ${friend.status === "online" && activeTab === "friends" ? "avatar-online" : ""}`}>
+                    <button 
+                      onClick={() => setSelectedUser({ userId: friend.id, username: friend.username, displayName: friend.displayName, avatar: friend.avatar })}
+                      className={`avatar avatar-md relative flex-shrink-0 hover:ring-2 hover:ring-phantom-500/60 transition-all ${friend.status === "online" && activeTab === "friends" ? "avatar-online" : ""}`}
+                    >
                       {friend.avatar ? (
                         <img src={friend.avatar} alt={friend.displayName} className="w-full h-full rounded-full object-cover" />
                       ) : (
-                        friend.displayName.charAt(0)
+                        <div className="w-full h-full bg-ghost-800 flex items-center justify-center text-ghost-300 font-bold text-lg">
+                          {friend.displayName.charAt(0).toUpperCase()}
+                        </div>
                       )}
-                    </div>
+                    </button>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-ghost-100 text-sm truncate">{friend.displayName}</p>
+                      <button 
+                        onClick={() => setSelectedUser({ userId: friend.id, username: friend.username, displayName: friend.displayName, avatar: friend.avatar })}
+                        className="font-medium text-ghost-100 text-sm truncate hover:underline text-left block"
+                      >
+                        {friend.displayName}
+                      </button>
                       <p className="text-xs text-ghost-500 truncate">@{friend.username}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -246,6 +258,16 @@ export default function FriendsPage() {
             </form>
           </div>
         </div>
+      )}
+      {/* User Profile Modal */}
+      {selectedUser && (
+        <UserProfileCard 
+          userId={selectedUser.userId} 
+          username={selectedUser.username} 
+          displayName={selectedUser.displayName} 
+          avatar={selectedUser.avatar} 
+          onClose={() => setSelectedUser(null)} 
+        />
       )}
     </div>
   );
