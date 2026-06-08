@@ -4,7 +4,7 @@ import { useAuth } from "../../custom-hooks/use-auth";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy, Zap } from "lucide-react";
+import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy, Zap, Shield } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/world-chat", icon: Globe, label: "World Chat" },
@@ -220,6 +220,15 @@ export default function MainLayout({
               >
                 <Settings className="w-4 h-4" /> Account Settings
               </Link>
+              {user.role === "ADMIN" && (
+                <Link
+                  href={`/dashboard`}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-phantom-500/10 text-sm text-phantom-400 font-bold transition-colors mt-1"
+                  onClick={() => setShowUserMenu(false)}
+                >
+                  <Shield className="w-4 h-4" /> Admin Panel
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-error/10 text-sm text-neon-red transition-colors mt-1 border-t border-ghost-800"
