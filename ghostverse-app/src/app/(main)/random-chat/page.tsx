@@ -20,6 +20,8 @@ export default function RandomVoiceChatPage() {
 
   const [isSearching, setIsSearching] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
+  const [peerId, setPeerId] = useState<string | null>(null);
+  const [strangerProfile, setStrangerProfile] = useState<{ displayName: string; username: string; avatar: string | null } | null>(null);
   
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -36,6 +38,7 @@ export default function RandomVoiceChatPage() {
     const handleMatch = (data: { peerId: string, isCaller: boolean }) => {
       setIsSearching(false);
       setMatchFound(true);
+      setPeerId(data.peerId);
 
       if (data.isCaller) {
         // We initiate the call automatically
@@ -51,6 +54,25 @@ export default function RandomVoiceChatPage() {
       socket.off("random-voice:match", handleMatch);
     };
   }, [socket, user, callUser]);
+
+  // Fetch stranger's profile when matched
+  useEffect(() => {
+    if (!peerId) return;
+    const fetchStranger = async () => {
+      try {
+        const res = await fetch(`/api/users/by-id/${peerId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setStrangerProfile(data.data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch stranger:", err);
+      }
+    };
+    fetchStranger();
+  }, [peerId]);
 
   // When receiving the automatic call from the caller
   useEffect(() => {
@@ -76,6 +98,8 @@ export default function RandomVoiceChatPage() {
       endCall();
     }
     setMatchFound(false);
+    setPeerId(null);
+    setStrangerProfile(null);
     startSearch(); // immediately search again
   };
 
@@ -84,6 +108,8 @@ export default function RandomVoiceChatPage() {
       endCall();
     }
     setMatchFound(false);
+    setPeerId(null);
+    setStrangerProfile(null);
     stopSearch();
   };
 
@@ -155,8 +181,12 @@ export default function RandomVoiceChatPage() {
             <div className="flex items-center justify-center gap-8 mb-12">
               {/* You */}
               <div className="flex flex-col items-center">
-                <div className="w-20 h-20 rounded-full bg-ghost-800 border-2 border-phantom-500 flex items-center justify-center mb-3">
-                  <UserIcon className="w-8 h-8 text-ghost-400" />
+                <div className="w-20 h-20 rounded-full bg-ghost-800 border-2 border-phantom-500 flex items-center justify-center mb-3 overflow-hidden">
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt="You" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl font-black text-ghost-300">{user?.displayName?.charAt(0).toUpperCase()}</span>
+                  )}
                 </div>
                 <span className="text-sm font-bold text-ghost-200">You</span>
               </div>
@@ -168,13 +198,19 @@ export default function RandomVoiceChatPage() {
 
               {/* Stranger */}
               <div className="flex flex-col items-center">
-                <div className="w-20 h-20 rounded-full bg-ghost-800 border-2 border-fuchsia-500 flex items-center justify-center mb-3 relative">
+                <div className="w-20 h-20 rounded-full bg-ghost-800 border-2 border-fuchsia-500 flex items-center justify-center mb-3 relative overflow-hidden">
                   {callAccepted && (
                     <div className="absolute -inset-2 border-2 border-fuchsia-500/50 rounded-full animate-[ping_1.5s_ease-in-out_infinite]" />
                   )}
-                  <Ghost className="w-8 h-8 text-fuchsia-400" />
+                  {strangerProfile?.avatar ? (
+                    <img src={strangerProfile.avatar} alt={strangerProfile.displayName} className="w-full h-full object-cover" />
+                  ) : strangerProfile?.displayName ? (
+                    <span className="text-2xl font-black text-ghost-300">{strangerProfile.displayName.charAt(0).toUpperCase()}</span>
+                  ) : (
+                    <Ghost className="w-8 h-8 text-fuchsia-400" />
+                  )}
                 </div>
-                <span className="text-sm font-bold text-ghost-200">Stranger</span>
+                <span className="text-sm font-bold text-ghost-200">{strangerProfile?.displayName ?? "Stranger"}</span>
               </div>
             </div>
 
