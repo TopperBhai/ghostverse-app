@@ -5,11 +5,21 @@ import type { ApiResponse } from "../../../types";
 
 export async function GET(request: NextRequest) {
   try {
-    // Fetch top 50 users ranked by reputationScore
-    const snapshot = await db.collection("users")
-      .orderBy("profile.reputationScore", "desc")
-      .limit(50)
-      .get();
+    const url = new URL(request.url);
+    const type = url.searchParams.get("type") || "reputation"; // 'reputation' or 'streak'
+    
+    let snapshot;
+    if (type === "streak") {
+      snapshot = await db.collection("users")
+        .orderBy("gamification.hauntStreak", "desc")
+        .limit(50)
+        .get();
+    } else {
+      snapshot = await db.collection("users")
+        .orderBy("profile.reputationScore", "desc")
+        .limit(50)
+        .get();
+    }
 
     const users = snapshot.docs.map((doc: any) => {
       const data = doc.data();
@@ -19,6 +29,7 @@ export async function GET(request: NextRequest) {
         displayName: data.displayName,
         avatar: data.avatar || null,
         reputationScore: data.profile?.reputationScore || 0,
+        hauntStreak: data.gamification?.hauntStreak || 0,
       };
     });
 
