@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
         username: user.username,
         displayName: user.displayName,
         avatar: user.avatar,
+        reputationScore: user.reputationScore || 0,
       },
     };
 

@@ -125,6 +125,28 @@ app.prepare().then(() => {
       });
     });
 
+    socket.on("world:upvote" as any, (data: { messageId: string, userId: string }) => {
+      // Update in-memory history
+      const idx = worldChatHistory.findIndex(m => m.id === data.messageId);
+      if (idx !== -1) {
+        const msg = worldChatHistory[idx];
+        const upvotedBy = msg.upvotedBy || [];
+        if (!upvotedBy.includes(data.userId)) {
+          worldChatHistory[idx] = {
+            ...msg,
+            upvotes: (msg.upvotes || 0) + 1,
+            upvotedBy: [...upvotedBy, data.userId]
+          };
+          // Broadcast to everyone
+          io.to("world-chat").emit("world:message-upvoted" as any, {
+            messageId: data.messageId,
+            upvotes: worldChatHistory[idx].upvotes,
+            upvotedBy: worldChatHistory[idx].upvotedBy
+          });
+        }
+      }
+    });
+
     // World chat delete (new event handled server-side)
     socket.on("world:delete-message" as any, (data: { messageId: string }) => {
       // Remove from in-memory history
@@ -195,15 +217,15 @@ app.prepare().then(() => {
         // We have a match!
         const matchedUserId = Array.from(randomVoiceQueue)[0];
         randomVoiceQueue.delete(matchedUserId);
-        
+
         const roomId = `random-${Date.now()}`;
-        
+
         socket.join(roomId);
         const matchedSocketInfo = onlineUsers.get(matchedUserId);
         if (matchedSocketInfo) {
           io.sockets.sockets.get(matchedSocketInfo.socketId)?.join(roomId);
         }
-        
+
         // Tell both they are matched. One will be designated as caller.
         io.to(`user:${myUserId}`).emit("random-voice:match", { peerId: matchedUserId, isCaller: true, roomId });
         io.to(`user:${matchedUserId}`).emit("random-voice:match", { peerId: myUserId, isCaller: false, roomId });
@@ -222,7 +244,7 @@ app.prepare().then(() => {
     // ── Disconnect ──
     socket.on("disconnect", () => {
       console.log(`👻 User disconnected: ${socket.id}`);
-      
+
       // Remove from online mapping
       for (const [userId, info] of onlineUsers.entries()) {
         if (info.socketId === socket.id) {

@@ -3,9 +3,10 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import { useSocket } from "../../../custom-hooks/use-socket";
-import { Globe, Hand, Trash2, Send, Pencil } from "lucide-react";
+import { Globe, Hand, Trash2, Send, Pencil, Ghost } from "lucide-react";
 import type { WorldChatMessage } from "../../../types";
 import { UserProfileCard } from "../../components/UserProfileCard";
+import { getGhostLevel } from "../../../lib/levels";
 
 export default function WorldChatPage() {
   const { user } = useAuth();
@@ -54,6 +55,14 @@ export default function WorldChatPage() {
 
     socket.on("world:message-deleted" as any, (data: { messageId: string }) => {
       setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
+    });
+
+    socket.on("world:message-upvoted" as any, (data: { messageId: string, upvotes: number, upvotedBy: string[] }) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === data.messageId ? { ...m, upvotes: data.upvotes, upvotedBy: data.upvotedBy } : m
+        )
+      );
     });
 
     socket.on("user:profile-update", (data) => {
@@ -147,6 +156,37 @@ export default function WorldChatPage() {
     if (socket) socket.emit("world:delete-message" as any, { messageId: msgId });
   };
 
+  const handleUpvote = async (msg: WorldChatMessage) => {
+    if (!user || msg.sender.id === user.id) return;
+    const isUpvoted = msg.upvotedBy?.includes(user.id);
+    if (isUpvoted) return;
+
+    // Optimistic UI update
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === msg.id
+          ? { ...m, upvotes: (m.upvotes || 0) + 1, upvotedBy: [...(m.upvotedBy || []), user.id] }
+          : m
+      )
+    );
+
+    // Emit via socket for realtime UI updates
+    if (socket) {
+      socket.emit("world:upvote" as any, { messageId: msg.id, userId: user.id });
+    }
+
+    // Call API to actually update DB
+    try {
+      await fetch(`/api/world-chat/${msg.id}/upvote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senderId: msg.sender.id }),
+      });
+    } catch (err) {
+      console.error("Failed to upvote message", err);
+    }
+  };
+
   const formatTime = (date: Date | string) =>
     new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
@@ -221,7 +261,7 @@ export default function WorldChatPage() {
                 {/* Sender name + time */}
                 <div className={`flex items-baseline gap-2 mb-1 ${isOwn ? "flex-row-reverse" : ""}`}>
                   <button
-                    className="text-xs font-semibold text-phantom-400 hover:underline cursor-pointer"
+                    className={`text-xs font-semibold hover:underline cursor-pointer ${getGhostLevel(msg.sender.reputationScore || 0).color}`}
                     onClick={() => setSelectedUser({
                       userId: msg.sender.id,
                       username: msg.sender.username,
@@ -231,7 +271,9 @@ export default function WorldChatPage() {
                   >
                     {msg.sender.displayName}
                   </button>
-                  <span className="text-[10px] text-ghost-600 hidden sm:inline">@{msg.sender.username}</span>
+                  <span className="text-[10px] text-ghost-600 hidden sm:inline" title={getGhostLevel(msg.sender.reputationScore || 0).title}>
+                    {getGhostLevel(msg.sender.reputationScore || 0).badgeIcon} @{msg.sender.username}
+                  </span>
                   <span className="text-[10px] text-ghost-600 flex items-center">
                     {formatTime(msg.createdAt)}
                     {msg.isEdited && <span className="ml-1 text-[9px] text-ghost-500">(edited)</span>}
@@ -258,6 +300,33 @@ export default function WorldChatPage() {
                       </button>
                     </div>
                   )}
+
+                  {/* Upvote button for others */}
+                  {!isOwn && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleUpvote(msg)}
+                        disabled={msg.upvotedBy?.includes(user?.id || "")}
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ${
+                          msg.upvotedBy?.includes(user?.id || "")
+                            ? "bg-phantom-500/20 text-phantom-400 border border-phantom-500/30"
+                            : `bg-ghost-800/50 text-ghost-500 hover:bg-phantom-500/20 hover:text-phantom-400 opacity-0 group-hover:opacity-100 ${msg.upvotes ? "opacity-100" : ""}`
+                        }`}
+                        title="Give Rep"
+                      >
+                        <Ghost className="w-3 h-3" />
+                        {msg.upvotes ? msg.upvotes : ""}
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Upvote display for own messages */}
+                  {isOwn && msg.upvotes && msg.upvotes > 0 ? (
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-phantom-500/20 text-phantom-400 border border-phantom-500/30 cursor-default" title="Reputation received">
+                      <Ghost className="w-3 h-3" />
+                      {msg.upvotes}
+                    </div>
+                  ) : null}
 
                   {editingMsg?.id === msg.id ? (
                     <div className="flex flex-col gap-2 min-w-[200px] bg-ghost-800 p-2 rounded-xl border border-white/10">

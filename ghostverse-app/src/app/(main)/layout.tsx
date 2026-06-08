@@ -4,7 +4,7 @@ import { useAuth } from "../../custom-hooks/use-auth";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X } from "lucide-react";
+import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/world-chat", icon: Globe, label: "World Chat" },
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/messages", icon: MessageSquare, label: "Messages" },
   { href: "/friends", icon: Users, label: "Friends" },
   { href: "/confessions", icon: VenetianMask, label: "Confessions" },
+  { href: "/leaderboard", icon: Trophy, label: "Leaderboard" },
   { href: "/notifications", icon: Bell, label: "Notifications" },
   { href: "/support", icon: MessageSquare, label: "Support & Report" },
 ];

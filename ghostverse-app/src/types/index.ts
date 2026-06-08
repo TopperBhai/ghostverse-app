@@ -77,11 +77,15 @@ export interface ChatMessage {
     username: string;
     displayName: string;
     avatar: string | null;
+    reputationScore?: number;
   };
   isEdited?: boolean;
 }
 
-export interface WorldChatMessage extends ChatMessage {}
+export interface WorldChatMessage extends ChatMessage {
+  upvotes?: number;
+  upvotedBy?: string[];
+}
 
 export interface DirectMessage extends ChatMessage {
   readAt: Date | null;
