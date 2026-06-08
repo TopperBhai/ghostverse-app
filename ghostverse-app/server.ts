@@ -167,10 +167,10 @@ app.prepare().then(() => {
       io.to(`user:${data.receiverId}`).emit("webrtc:call-request", { callerId: data.callerId });
     });
     socket.on("webrtc:call-accept", (data) => {
-      io.to(`user:${data.callerId}`).emit("webrtc:call-accept", { receiverId: data.receiverId });
+      io.to(`user:${data.receiverId}`).emit("webrtc:call-accept", { callerId: data.callerId });
     });
     socket.on("webrtc:call-decline", (data) => {
-      io.to(`user:${data.callerId}`).emit("webrtc:call-decline", { receiverId: data.receiverId });
+      io.to(`user:${data.receiverId}`).emit("webrtc:call-decline", { callerId: data.callerId });
     });
     socket.on("webrtc:end-call", (data) => {
       io.to(`user:${data.peerId}`).emit("webrtc:end-call");
