@@ -11,13 +11,15 @@ import {
 } from "lucide-react";
 import { GhostPet } from "./components/GhostPet";
 
+import type { PetStatus } from "../types";
+
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   // For the Gamification Live Preview
   const [previewLevel, setPreviewLevel] = useState(1);
-  const [previewStatus, setPreviewStatus] = useState<"FADED" | "HUNGRY" | "HAPPY" | "RADIANT">("HAPPY");
+  const [previewStatus, setPreviewStatus] = useState<PetStatus>("HAPPY");
 
   useEffect(() => {
     if (!loading && user) {
@@ -27,14 +29,14 @@ export default function HomePage() {
 
   useEffect(() => {
     // Cycle through pet statuses to show animation automatically
-    const statuses: ("FADED" | "HUNGRY" | "HAPPY" | "RADIANT")[] = ["FADED", "HUNGRY", "HAPPY", "RADIANT"];
-    const levels = [1, 3, 5, 12];
-    let i = 2; // Start at HAPPY
+    const statuses: PetStatus[] = ["HAPPY", "RADIANT", "BLAZING", "CELESTIAL", "FADED"];
+    const levels = [5, 25, 50, 100, 1];
+    let i = 0; // Start at HAPPY
     const interval = setInterval(() => {
       i = (i + 1) % statuses.length;
       setPreviewStatus(statuses[i]);
       setPreviewLevel(levels[i]);
-    }, 3000);
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -163,6 +165,8 @@ export default function HomePage() {
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-xs font-bold text-ghost-400 uppercase tracking-widest">Status</span>
                       <span className={`text-sm font-black uppercase tracking-wider ${
+                        previewStatus === 'CELESTIAL' ? 'text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]' :
+                        previewStatus === 'BLAZING' ? 'text-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' :
                         previewStatus === 'RADIANT' ? 'text-phantom-300 drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]' :
                         previewStatus === 'HAPPY' ? 'text-phantom-400' :
                         previewStatus === 'HUNGRY' ? 'text-warning' : 'text-ghost-500'

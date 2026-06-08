@@ -18,6 +18,8 @@ export function determinePetStatus(streak: number, lastActiveAt: Date | null): P
 
   if (diffHours > 48 || streak === 0) return "FADED";
   if (diffHours > 24) return "HUNGRY";
+  if (streak >= 100) return "CELESTIAL";
+  if (streak >= 30) return "BLAZING";
   if (streak >= 7) return "RADIANT";
   return "HAPPY";
 }
