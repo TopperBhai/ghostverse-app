@@ -4,7 +4,7 @@
 import { createServer } from "http";
 import next from "next";
 import { Server } from "socket.io";
-import type { ServerToClientEvents, ClientToServerEvents } from "./src/types/index.js";
+import type { ServerToClientEvents, ClientToServerEvents, WorldChatMessage } from "./src/types/index.js";
 
 const port = parseInt(process.env.PORT || "3000", 10);
 const dev = process.env.NODE_ENV !== "production";
@@ -16,6 +16,17 @@ const onlineUsers = new Map<string, { socketId: string; username: string }>();
 
 // Random Voice Queue
 const randomVoiceQueue = new Set<string>(); // stores socketIds
+
+// ── In-Memory World Chat History (max 100 messages) ──
+const MAX_WORLD_HISTORY = 100;
+const worldChatHistory: WorldChatMessage[] = [];
+
+function addToWorldHistory(msg: WorldChatMessage) {
+  worldChatHistory.push(msg);
+  if (worldChatHistory.length > MAX_WORLD_HISTORY) {
+    worldChatHistory.shift(); // Remove oldest message
+  }
+}
 
 app.prepare().then(() => {
   const httpServer = createServer((req, res) => {
@@ -55,6 +66,19 @@ app.prepare().then(() => {
     });
 
     socket.on("user:profile-update", (data) => {
+      // Update in-memory history so new joiners get fresh avatars/names
+      for (let i = 0; i < worldChatHistory.length; i++) {
+        if (worldChatHistory[i].sender.id === data.userId) {
+          worldChatHistory[i] = {
+            ...worldChatHistory[i],
+            sender: {
+              ...worldChatHistory[i].sender,
+              avatar: data.avatar,
+              displayName: data.displayName,
+            },
+          };
+        }
+      }
       // Broadcast to all other users
       socket.broadcast.emit("user:profile-update", data);
     });
@@ -64,6 +88,9 @@ app.prepare().then(() => {
       socket.join("world-chat");
       const onlineCount = io.sockets.adapter.rooms.get("world-chat")?.size || 0;
       io.to("world-chat").emit("world:online-count", onlineCount);
+
+      // Send message history to this socket only (not broadcast)
+      socket.emit("world:history" as any, worldChatHistory);
     });
 
     socket.on("world:leave", () => {
@@ -73,16 +100,38 @@ app.prepare().then(() => {
     });
 
     socket.on("world:send-message", (data) => {
-      // Broadcast the exact message object received from the sender to everyone else
+      // Save to in-memory history
+      addToWorldHistory(data);
+      // Broadcast to everyone else in the room
       socket.broadcast.to("world-chat").emit("world:message", data);
     });
 
     socket.on("world:edit-message", (data) => {
+      // Update in-memory history
+      const idx = worldChatHistory.findIndex(m => m.id === data.messageId);
+      if (idx !== -1) {
+        worldChatHistory[idx] = {
+          ...worldChatHistory[idx],
+          content: data.content,
+          isEdited: true,
+        };
+      }
       // Broadcast the edit to everyone else
       socket.broadcast.to("world-chat").emit("world:message-edited", {
         messageId: data.messageId,
         content: data.content,
       });
+    });
+
+    // World chat delete (new event handled server-side)
+    socket.on("world:delete-message" as any, (data: { messageId: string }) => {
+      // Remove from in-memory history
+      const idx = worldChatHistory.findIndex(m => m.id === data.messageId);
+      if (idx !== -1) {
+        worldChatHistory.splice(idx, 1);
+      }
+      // Broadcast delete to everyone else
+      socket.broadcast.to("world-chat").emit("world:message-deleted" as any, { messageId: data.messageId });
     });
 
     // ── Direct Messages ──

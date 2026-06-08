@@ -1,10 +1,15 @@
-// GhostVerse — World Chat API (Firebase)
+// GhostVerse — World Chat API (In-Memory Optimized)
+// World Chat messages are now stored in server RAM (socket server), NOT Firebase.
+// This saves ~90% of Firebase reads and writes.
+// Firebase is only used to verify auth & check mute status on POST.
+
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../lib/firebase-admin";
 import { getAuthUser } from "../../../lib/auth";
 import { v4 as uuidv4 } from "uuid";
 import type { ApiResponse, WorldChatMessage } from "../../../types";
 
+// GET: Return empty — client now receives history via socket `world:history` event
 export async function GET(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
@@ -14,57 +19,10 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const { searchParams } = new URL(request.url);
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
-
-    const snapshot = await db.collection("world_messages")
-      .orderBy("createdAt", "desc")
-      .limit(limit)
-      .get();
-
-    let messages = snapshot.docs.map(doc => doc.data() as WorldChatMessage);
-    
-    // Extract unique sender IDs to fetch their latest profiles
-    const uniqueSenderIds = [...new Set(messages.map(m => m.sender.id))];
-    
-    if (uniqueSenderIds.length > 0) {
-      // Fetch all unique senders in parallel
-      const userDocs = await Promise.all(
-        uniqueSenderIds.map(id => db.collection("users").doc(id).get())
-      );
-      
-      const userMap = new Map();
-      userDocs.forEach(doc => {
-        if (doc.exists) {
-          userMap.set(doc.id, doc.data());
-        }
-      });
-      
-      // Override the stored sender with the latest profile data
-      messages = messages.map(msg => {
-        const latestUser = userMap.get(msg.sender.id);
-        if (latestUser) {
-          return {
-            ...msg,
-            sender: {
-              ...msg.sender,
-              avatar: latestUser.avatar ?? null,
-              displayName: latestUser.displayName ?? msg.sender.displayName,
-              username: latestUser.username ?? msg.sender.username,
-            }
-          };
-        }
-        return msg;
-      });
-    }
-
-    // Sort chronologically for the frontend
-    messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
+    // History is delivered via socket (world:history event on world:join)
     return NextResponse.json<ApiResponse<WorldChatMessage[]>>({
       success: true,
-      data: messages,
+      data: [],
     });
   } catch (error) {
     console.error("World chat GET error:", error);
@@ -75,6 +33,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// POST: Build message object and return — socket.emit handles broadcast & in-memory storage
 export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
@@ -102,6 +61,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Only fetch user to check mute status + get display info (1 read per message, down from 2+)
     const userDoc = await db.collection("users").doc(authUser.userId).get();
     const user = userDoc.data() as any;
 
@@ -116,7 +76,7 @@ export async function POST(request: NextRequest) {
     const message: WorldChatMessage = {
       id: messageId,
       content: content.trim(),
-      createdAt: new Date().toISOString() as any, // TypeScript expects Date but JSON serializes to string, interface allows it if we cast
+      createdAt: new Date().toISOString() as any,
       sender: {
         id: user.id,
         username: user.username,
@@ -125,8 +85,7 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    await db.collection("world_messages").doc(messageId).set(message);
-
+    // NOTE: No Firebase write! The message is stored in server RAM via socket event.
     return NextResponse.json<ApiResponse<WorldChatMessage>>(
       { success: true, data: message },
       { status: 201 }

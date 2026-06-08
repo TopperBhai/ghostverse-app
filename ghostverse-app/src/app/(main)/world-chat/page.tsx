@@ -24,24 +24,17 @@ export default function WorldChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  // Load message history
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const res = await fetch("/api/world-chat?limit=50");
-        const data = await res.json();
-        if (data.success) setMessages(data.data || []);
-      } catch (err) {
-        console.error("Failed to load messages:", err);
-      }
-    };
-    fetchMessages();
-  }, []);
+  // Messages now arrive via socket `world:history` event on join — no HTTP fetch needed
 
   // Socket listeners
   useEffect(() => {
     if (!socket) return;
     socket.emit("world:join");
+
+    // Receive full message history on join (from server RAM)
+    socket.on("world:history" as any, (history: WorldChatMessage[]) => {
+      setMessages(history);
+    });
 
     socket.on("world:message", (message) => {
       setMessages((prev) => [...prev, message]);
@@ -57,6 +50,10 @@ export default function WorldChatPage() {
           m.id === data.messageId ? { ...m, content: data.content, isEdited: true } : m
         )
       );
+    });
+
+    socket.on("world:message-deleted" as any, (data: { messageId: string }) => {
+      setMessages((prev) => prev.filter((m) => m.id !== data.messageId));
     });
 
     socket.on("user:profile-update", (data) => {
@@ -76,9 +73,11 @@ export default function WorldChatPage() {
     });
 
     return () => {
+      socket.off("world:history" as any);
       socket.off("world:message");
       socket.off("world:online-count");
       socket.off("world:message-edited");
+      socket.off("world:message-deleted" as any);
       socket.off("user:profile-update");
       socket.emit("world:leave");
     };
@@ -141,14 +140,11 @@ export default function WorldChatPage() {
     }
   };
 
-  const deleteMessage = async (msgId: string) => {
-    // Optimistic remove
+  const deleteMessage = (msgId: string) => {
+    // Optimistic remove locally
     setMessages((prev) => prev.filter((m) => m.id !== msgId));
-    try {
-      await fetch(`/api/world-chat/${msgId}`, { method: "DELETE" });
-    } catch {
-      console.error("Failed to delete message");
-    }
+    // Tell server to remove from RAM and broadcast to others
+    if (socket) socket.emit("world:delete-message" as any, { messageId: msgId });
   };
 
   const formatTime = (date: Date | string) =>
