@@ -243,17 +243,18 @@ export default function WorldChatPage() {
 
         {messages.map((msg) => {
           const isOwn = msg.sender.id === user?.id;
+          const level = getGhostLevel(msg.sender.reputationScore || 0);
           return (
             <div
               key={msg.id}
-              className={`flex items-start gap-2.5 group ${isOwn ? "flex-row-reverse" : ""} animate-fade-in`}
+              className={`flex items-end gap-2.5 group ${isOwn ? "flex-row-reverse" : ""} animate-fade-in`}
               onMouseEnter={() => setHoveredMsg(msg.id)}
               onMouseLeave={() => setHoveredMsg(null)}
             >
-              {/* Avatar — clickable for profile card */}
+              {/* Avatar */}
               <button
-                className="avatar avatar-sm flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-phantom-500/60 transition-all"
-                title={`@${msg.sender.username} — view profile`}
+                className="avatar avatar-sm flex-shrink-0 mb-1 cursor-pointer hover:ring-2 hover:ring-phantom-500/60 transition-all"
+                title={`@${msg.sender.username}`}
                 onClick={() => setSelectedUser({
                   userId: msg.sender.id,
                   username: msg.sender.username,
@@ -268,12 +269,13 @@ export default function WorldChatPage() {
                 )}
               </button>
 
-              {/* Message bubble */}
-              <div className={`max-w-[75%] md:max-w-[65%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
-                {/* Sender name + time */}
-                <div className={`flex items-baseline gap-2 mb-1 ${isOwn ? "flex-row-reverse" : ""}`}>
+              {/* Column: header + bubble + actions */}
+              <div className={`flex flex-col max-w-[70%] md:max-w-[60%] ${isOwn ? "items-end" : "items-start"} gap-1`}>
+                
+                {/* Header: name + rank badge + time */}
+                <div className={`flex items-center gap-1.5 px-1 ${isOwn ? "flex-row-reverse" : ""}`}>
                   <button
-                    className={`text-xs font-semibold hover:underline cursor-pointer ${getGhostLevel(msg.sender.reputationScore || 0).color}`}
+                    className={`text-xs font-bold leading-none hover:underline cursor-pointer transition-colors ${level.color}`}
                     onClick={() => setSelectedUser({
                       userId: msg.sender.id,
                       username: msg.sender.username,
@@ -283,72 +285,73 @@ export default function WorldChatPage() {
                   >
                     {msg.sender.displayName}
                   </button>
-                  <span className="text-[10px] text-ghost-600 hidden sm:inline" title={getGhostLevel(msg.sender.reputationScore || 0).title}>
-                    {getGhostLevel(msg.sender.reputationScore || 0).badgeIcon} @{msg.sender.username}
+                  <span className={`flex items-center ${level.color} opacity-80`} title={level.title}>
+                    {level.badge}
                   </span>
-                  <span className="text-[10px] text-ghost-600 flex items-center">
+                  <span className="text-[10px] text-ghost-600 leading-none">
                     {formatTime(msg.createdAt)}
-                    {msg.isEdited && <span className="ml-1 text-[9px] text-ghost-500">(edited)</span>}
                   </span>
+                  {msg.isEdited && <span className="text-[9px] text-ghost-600 italic">(edited)</span>}
                 </div>
 
-                <div className="flex items-end gap-2">
-                  {/* Delete button (own messages only) */}
-                  {isOwn && (
-                    <div className={`flex items-center gap-1 transition-opacity duration-200 ${hoveredMsg === msg.id ? "opacity-100" : "opacity-0"}`}>
+                {/* Bubble row: actions + bubble */}
+                <div className={`flex items-center gap-1.5 ${isOwn ? "flex-row-reverse" : ""}`}>
+
+                  {/* Edit/Delete for own messages — shown on hover */}
+                  {isOwn && hoveredMsg === msg.id && (
+                    <div className="flex items-center gap-0.5 bg-ghost-900/80 backdrop-blur-sm border border-white/5 rounded-lg px-1 py-0.5 animate-fade-in">
                       <button
                         onClick={() => setEditingMsg({ id: msg.id, content: msg.content })}
-                        className="flex-shrink-0 p-1 rounded-lg text-ghost-600 hover:text-phantom-400 hover:bg-phantom-500/10 transition-all"
-                        title="Edit message"
+                        className="p-1 rounded text-ghost-500 hover:text-phantom-400 hover:bg-phantom-500/10 transition-all"
+                        title="Edit"
                       >
-                        <Pencil className="w-3.5 h-3.5" />
+                        <Pencil className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => deleteMessage(msg.id)}
-                        className="flex-shrink-0 p-1 rounded-lg text-ghost-600 hover:text-neon-red hover:bg-error/10 transition-all"
-                        title="Delete message"
+                        className="p-1 rounded text-ghost-500 hover:text-neon-red hover:bg-error/10 transition-all"
+                        title="Delete"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3 h-3" />
                       </button>
                     </div>
                   )}
 
-                  {/* Upvote button for others */}
-                  {!isOwn && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleUpvote(msg)}
-                        disabled={msg.upvotedBy?.includes(user?.id || "") || !canUpvote}
-                        className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ${
-                          msg.upvotedBy?.includes(user?.id || "")
-                            ? "bg-phantom-500/20 text-phantom-400 border border-phantom-500/30"
-                            : !canUpvote
-                            ? "bg-ghost-800/20 text-ghost-600 cursor-not-allowed opacity-50"
-                            : `bg-ghost-800/50 text-ghost-500 hover:bg-phantom-500/20 hover:text-phantom-400 opacity-0 group-hover:opacity-100 ${msg.upvotes ? "opacity-100" : ""}`
-                        }`}
-                        title={!canUpvote ? "You can upvote again in 24 hours" : "Give Rep"}
-                      >
-                        <Ghost className="w-3 h-3" />
-                        {msg.upvotes ? msg.upvotes : ""}
-                      </button>
-                    </div>
+                  {/* Upvote for others — shown on hover or if already upvoted */}
+                  {!isOwn && (hoveredMsg === msg.id || (msg.upvotes && msg.upvotes > 0)) && (
+                    <button
+                      onClick={() => handleUpvote(msg)}
+                      disabled={msg.upvotedBy?.includes(user?.id || "") || !canUpvote}
+                      className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold transition-all border ${
+                        msg.upvotedBy?.includes(user?.id || "")
+                          ? "bg-phantom-500/20 text-phantom-400 border-phantom-500/30 cursor-default"
+                          : !canUpvote
+                          ? "bg-ghost-800/20 text-ghost-600 border-ghost-700/20 cursor-not-allowed opacity-40"
+                          : "bg-ghost-800/60 text-ghost-500 border-white/5 hover:bg-phantom-500/20 hover:text-phantom-400 hover:border-phantom-500/30"
+                      }`}
+                      title={!canUpvote ? "You can upvote again in 24 hours" : msg.upvotedBy?.includes(user?.id || "") ? "Upvoted" : "Give Rep"}
+                    >
+                      <Ghost className="w-3 h-3" />
+                      {msg.upvotes ? msg.upvotes : ""}
+                    </button>
                   )}
-                  
-                  {/* Upvote display for own messages */}
+
+                  {/* Own message upvote display */}
                   {isOwn && msg.upvotes && msg.upvotes > 0 ? (
-                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-phantom-500/20 text-phantom-400 border border-phantom-500/30 cursor-default" title="Reputation received">
+                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-phantom-500/15 text-phantom-400 border border-phantom-500/20 cursor-default" title="Reputation earned">
                       <Ghost className="w-3 h-3" />
                       {msg.upvotes}
                     </div>
                   ) : null}
 
+                  {/* Bubble / Edit input */}
                   {editingMsg?.id === msg.id ? (
-                    <div className="flex flex-col gap-2 min-w-[200px] bg-ghost-800 p-2 rounded-xl border border-white/10">
+                    <div className="flex flex-col gap-2 min-w-[200px] max-w-xs bg-ghost-800 p-2.5 rounded-2xl border border-white/10 shadow-lg">
                       <input
                         type="text"
                         value={editingMsg.content}
                         onChange={(e) => setEditingMsg({ ...editingMsg, content: e.target.value })}
-                        className="bg-ghost-900 border border-ghost-700 text-ghost-100 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-phantom-500"
+                        className="bg-ghost-900/80 border border-ghost-700 text-ghost-100 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-phantom-500 transition-colors"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") saveEdit();
                           if (e.key === "Escape") setEditingMsg(null);
@@ -356,8 +359,8 @@ export default function WorldChatPage() {
                         autoFocus
                       />
                       <div className="flex justify-end gap-2">
-                        <button onClick={() => setEditingMsg(null)} className="text-[10px] text-ghost-400 hover:text-ghost-200">Cancel</button>
-                        <button onClick={saveEdit} className="text-[10px] text-phantom-400 hover:text-phantom-300 font-bold">Save</button>
+                        <button onClick={() => setEditingMsg(null)} className="text-[10px] px-2 py-0.5 rounded text-ghost-400 hover:text-ghost-200 hover:bg-ghost-700 transition-all">Cancel</button>
+                        <button onClick={saveEdit} className="text-[10px] px-2 py-0.5 rounded text-white bg-phantom-600 hover:bg-phantom-500 font-bold transition-all">Save</button>
                       </div>
                     </div>
                   ) : (

@@ -123,8 +123,8 @@ export default function LeaderboardPage() {
                           <h3 className="text-white font-bold truncate group-hover:text-phantom-400 transition-colors">{u.displayName}</h3>
                           <span className="text-xs text-ghost-500 truncate">@{u.username}</span>
                         </div>
-                        <p className={`text-xs font-semibold ${level.color} flex items-center gap-1`}>
-                          {level.badgeIcon} {level.title}
+                        <p className={`text-xs font-semibold ${level.color} flex items-center gap-1.5 mt-0.5`}>
+                          {level.badge ?? <span className="text-ghost-500 text-[10px]">{level.title}</span>}
                         </p>
                       </div>
                     </Link>

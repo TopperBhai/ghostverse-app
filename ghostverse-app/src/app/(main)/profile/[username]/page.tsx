@@ -485,8 +485,9 @@ export default function ProfilePage() {
           
           <div className="flex items-center gap-2" title="Reputation Score">
             <span className={`flex items-center gap-1.5 font-bold ${getGhostLevel(profile.profile?.reputationScore || 0).color}`}>
-              {getGhostLevel(profile.profile?.reputationScore || 0).badgeIcon}
-              <span>{profile.profile?.reputationScore || 0} Rep</span>
+              {getGhostLevel(profile.profile?.reputationScore || 0).badge}
+              {!getGhostLevel(profile.profile?.reputationScore || 0).badge && <span>{profile.profile?.reputationScore || 0} Rep</span>}
+              {getGhostLevel(profile.profile?.reputationScore || 0).badge && <span className="text-sm">{profile.profile?.reputationScore || 0}</span>}
             </span>
           </div>
 

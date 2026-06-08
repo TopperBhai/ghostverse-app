@@ -216,8 +216,8 @@ export function UserProfileCard({
               <div className="flex flex-wrap items-center gap-4 text-xs text-ghost-500 mb-3">
                 <span className="flex items-center gap-1" title="Reputation Score">
                   <span className={`flex items-center gap-1 ${getGhostLevel(profile.profile?.reputationScore || 0).color}`}>
-                    {getGhostLevel(profile.profile?.reputationScore || 0).badgeIcon}
-                    <strong className="font-bold">{profile.profile?.reputationScore || 0}</strong>
+                    {getGhostLevel(profile.profile?.reputationScore || 0).badge}
+                    <strong className="font-bold text-xs">{profile.profile?.reputationScore || 0}</strong>
                   </span>
                 </span>
                 <span className="flex items-center gap-1">

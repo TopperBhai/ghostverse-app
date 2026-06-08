@@ -82,13 +82,13 @@
     @apply bg-gradient-to-r from-phantom-400 to-fuchsia-400 bg-clip-text text-transparent;
   }
   .message-bubble {
-    @apply px-4 py-2.5 rounded-2xl text-sm leading-relaxed max-w-fit break-words;
+    @apply px-3.5 py-2 rounded-2xl text-sm leading-relaxed max-w-fit break-words;
   }
   .message-bubble-sent {
-    @apply bg-phantom-600 text-white rounded-br-sm shadow-md;
+    @apply bg-phantom-600 text-white rounded-br-md shadow-lg;
   }
   .message-bubble-received {
-    @apply bg-ghost-800 text-ghost-100 rounded-bl-sm shadow-md border border-white/5;
+    @apply bg-ghost-800/90 text-ghost-100 rounded-bl-md shadow-md border border-white/5;
   }
   .avatar {
     @apply flex items-center justify-center rounded-full bg-ghost-800 text-ghost-300 font-bold overflow-hidden shadow-inner uppercase border border-white/10;
