@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --webpack",
     "dev:server": "tsx watch --ignore .next server.ts",
-    "build": "next build",
-    "start": "NODE_ENV=production npx tsx server.ts",
+    "build": "next build --webpack",
+    "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
