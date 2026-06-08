@@ -156,6 +156,7 @@ export function UserProfileCard({
           gamification: {
             ...prev.gamification,
             hauntStreak: prev.gamification?.hauntStreak || 0,
+            lastActiveAt: prev.gamification?.lastActiveAt || null,
             pet: {
               ...prev.gamification?.pet,
               status: prev.gamification?.pet?.status || "HAPPY",
