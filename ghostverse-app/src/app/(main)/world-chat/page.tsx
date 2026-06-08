@@ -202,58 +202,72 @@ export default function WorldChatPage() {
           </div>
         )}
 
-        {messages.map((msg) => {
+        {messages.map((msg, index) => {
           const isOwn = msg.sender.id === user?.id;
           const level = getGhostLevel(msg.sender.reputationScore || 0);
+          
+          // Check if previous message is from same user within 5 mins
+          const prevMsg = index > 0 ? messages[index - 1] : null;
+          const isSequential = prevMsg 
+            ? prevMsg.sender.id === msg.sender.id && 
+              (new Date(msg.createdAt).getTime() - new Date(prevMsg.createdAt).getTime()) < 5 * 60 * 1000
+            : false;
+
           return (
             <div
               key={msg.id}
-              className={`flex items-end gap-2.5 group ${isOwn ? "flex-row-reverse" : ""} animate-fade-in`}
+              className={`flex items-end gap-2.5 group ${isOwn ? "flex-row-reverse" : ""} animate-fade-in ${isSequential ? "mt-1" : "mt-4"}`}
               onMouseEnter={() => setHoveredMsg(msg.id)}
               onMouseLeave={() => setHoveredMsg(null)}
             >
-              {/* Avatar */}
-              <button
-                className="avatar avatar-sm flex-shrink-0 mb-1 cursor-pointer hover:ring-2 hover:ring-phantom-500/60 transition-all"
-                title={`@${msg.sender.username}`}
-                onClick={() => setSelectedUser({
-                  userId: msg.sender.id,
-                  username: msg.sender.username,
-                  displayName: msg.sender.displayName,
-                  avatar: msg.sender.avatar,
-                })}
-              >
-                {msg.sender.avatar ? (
-                  <img src={msg.sender.avatar} alt={msg.sender.displayName} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  msg.sender.displayName.charAt(0)
-                )}
-              </button>
+              {/* Avatar or Spacer */}
+              {!isSequential ? (
+                <button
+                  className="avatar avatar-sm flex-shrink-0 mb-1 cursor-pointer hover:ring-2 hover:ring-phantom-500/60 transition-all"
+                  title={`@${msg.sender.username}`}
+                  onClick={() => setSelectedUser({
+                    userId: msg.sender.id,
+                    username: msg.sender.username,
+                    displayName: msg.sender.displayName,
+                    avatar: msg.sender.avatar,
+                  })}
+                >
+                  {msg.sender.avatar ? (
+                    <img src={msg.sender.avatar} alt={msg.sender.displayName} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    msg.sender.displayName.charAt(0)
+                  )}
+                </button>
+              ) : (
+                <div className="w-8 h-8 flex-shrink-0" />
+              )}
 
               {/* Column: header + bubble + actions */}
               <div className={`flex flex-col max-w-[70%] md:max-w-[60%] ${isOwn ? "items-end" : "items-start"} gap-1`}>
                 
-                {/* Header: name + rank badge + time */}
-                <div className={`flex items-center gap-1.5 px-1 ${isOwn ? "flex-row-reverse" : ""}`}>
-                  <button
-                    className={`text-xs font-bold leading-none hover:underline cursor-pointer transition-colors ${level.color}`}
-                    onClick={() => setSelectedUser({
-                      userId: msg.sender.id,
-                      username: msg.sender.username,
-                      displayName: msg.sender.displayName,
-                      avatar: msg.sender.avatar,
-                    })}
-                  >
-                    {msg.sender.displayName}
-                  </button>
-                  <span className={`flex items-center ${level.color} opacity-80`} title={level.title}>
-                    {level.badge}
-                  </span>
-                  <span className="text-[10px] text-ghost-600 leading-none">
-                    {formatTime(msg.createdAt)}
-                  </span>
-                  {msg.isEdited && <span className="text-[9px] text-ghost-600 italic">(edited)</span>}
-                </div>
+                {/* Header: name + rank badge + time (Hidden if sequential) */}
+                {!isSequential && (
+                  <div className={`flex items-center gap-1.5 px-1 ${isOwn ? "flex-row-reverse" : ""}`}>
+                    <button
+                      className={`text-xs font-bold leading-none hover:underline cursor-pointer transition-colors ${level.color}`}
+                      onClick={() => setSelectedUser({
+                        userId: msg.sender.id,
+                        username: msg.sender.username,
+                        displayName: msg.sender.displayName,
+                        avatar: msg.sender.avatar,
+                      })}
+                    >
+                      {msg.sender.displayName}
+                    </button>
+                    <span className={`flex items-center ${level.color} opacity-80`} title={level.title}>
+                      {level.badge}
+                    </span>
+                    <span className="text-[10px] text-ghost-600 leading-none">
+                      {formatTime(msg.createdAt)}
+                    </span>
+                    {msg.isEdited && <span className="text-[9px] text-ghost-600 italic">(edited)</span>}
+                  </div>
+                )}
 
                 {/* Bubble row: actions + bubble */}
                 <div className={`flex items-center gap-1.5 ${isOwn ? "flex-row-reverse" : ""}`}>
