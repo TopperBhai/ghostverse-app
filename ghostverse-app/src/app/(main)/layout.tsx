@@ -204,6 +204,13 @@ export default function MainLayout({
               >
                 <UserIcon className="w-4 h-4" /> My Profile
               </Link>
+              <Link
+                href={`/settings`}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm text-ghost-300 transition-colors mt-1"
+                onClick={() => setShowUserMenu(false)}
+              >
+                <Settings className="w-4 h-4" /> Account Settings
+              </Link>
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-error/10 text-sm text-neon-red transition-colors mt-1 border-t border-ghost-800"
