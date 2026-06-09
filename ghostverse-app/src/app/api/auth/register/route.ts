@@ -9,7 +9,16 @@ import type { UserRole } from "../../../../types";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: "Invalid JSON payload" },
+        { status: 400 }
+      );
+    }
+    
     const { password, username, displayName } = body;
 
     if (!password || !username || !displayName) {
@@ -82,8 +91,13 @@ export async function POST(request: NextRequest) {
     // Set HTTP-only cookie
     await setAuthCookie(token);
 
+    // Avoid sending password hash to client
+    const safeUser = { ...newUser };
+    // @ts-ignore
+    delete safeUser.passwordHash;
+
     return NextResponse.json<ApiResponse>(
-      { success: true, data: { user: newUser }, message: "Registration successful" },
+      { success: true, data: { user: safeUser }, message: "Registration successful" },
       { status: 201 }
     );
   } catch (error) {
