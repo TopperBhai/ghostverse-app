@@ -16,24 +16,25 @@
   --animate-float-slow: floatSlow 6s ease-in-out infinite;
   --animate-pulse-slow: pulseSlow 4s ease-in-out infinite;
 
-  --color-ghost-50: #fafafa;
-  --color-ghost-100: #f4f4f5;
-  --color-ghost-200: #e4e4e7;
-  --color-ghost-300: #d4d4d8;
-  --color-ghost-400: #a1a1aa;
-  --color-ghost-500: #71717a;
-  --color-ghost-600: #52525b;
-  --color-ghost-700: #3f3f46;
-  --color-ghost-800: #27272a;
-  --color-ghost-900: #18181b;
-  --color-ghost-950: #09090b;
+  /* Midnight Sapphire Palette */
+  --color-ghost-50: #f0f4f8;
+  --color-ghost-100: #d9e2ec;
+  --color-ghost-200: #bcccdc;
+  --color-ghost-300: #9fb3c8;
+  --color-ghost-400: #829ab1;
+  --color-ghost-500: #627d98;
+  --color-ghost-600: #486581;
+  --color-ghost-700: #334e68;
+  --color-ghost-800: #1b2d41;
+  --color-ghost-900: #101c2a;
+  --color-ghost-950: #080f18;
 
-  --color-phantom-400: #a78bfa;
-  --color-phantom-500: #8b5cf6;
-  --color-phantom-600: #7c3aed;
+  --color-phantom-400: #60a5fa;
+  --color-phantom-500: #3b82f6;
+  --color-phantom-600: #2563eb;
   
   --color-neon-red: #f43f5e;
-  --color-neon-blue: #3b82f6;
+  --color-neon-blue: #60a5fa;
 
   --color-success: #10b981;
   --color-error: #ef4444;
