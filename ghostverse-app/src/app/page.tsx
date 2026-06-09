@@ -268,31 +268,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* --- Trust & Security Footer Stats --- */}
-        <div className="mt-32 mb-10 pb-10 border-b border-white/5 flex flex-wrap justify-center items-center gap-x-12 gap-y-6 text-ghost-400 text-sm font-semibold page-slide-up" style={{ animationDelay: '0.6s' }}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-              <div className="w-2.5 h-2.5 rounded-full bg-success animate-pulse" />
-            </div>
-            <span>100% Anonymous</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-phantom-500/10 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-phantom-400" />
-            </div>
-            <span>End-to-End Encrypted Voice</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-fuchsia-500/10 flex items-center justify-center">
-              <Lock className="w-4 h-4 text-fuchsia-400" />
-            </div>
-            <span>Zero Data Selling</span>
-          </div>
-        </div>
 
-        <div className="text-center pb-8 text-ghost-600 text-xs font-medium">
-          © {new Date().getFullYear()} GhostVerse. Coded with ❤️ by the World's Top 1 Coder.
-        </div>
       </main>
     </div>
   );
