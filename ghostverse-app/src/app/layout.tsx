@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "../custom-hooks/use-auth";
+import { ThemeProvider } from "../custom-hooks/use-theme";
 
 export const metadata: Metadata = {
   title: "GhostVerse — Anonymous Social Platform",
@@ -52,19 +53,36 @@ export default async function RootLayout({
   const showMaintenance = isMaintenance && !isAdmin;
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var storedTheme = localStorage.getItem('theme');
+                  var theme = storedTheme || 'dark';
+                  document.documentElement.className = theme;
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="bg-ghost-950 text-ghost-100 antialiased">
-        {showMaintenance ? (
-          <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-            <h1 className="text-4xl font-bold text-phantom-500 mb-4">Under Maintenance</h1>
-            <p className="text-ghost-400 max-w-md">
-              GhostVerse is currently undergoing scheduled maintenance and upgrades. 
-              We'll be back shortly! Thanks for your patience.
-            </p>
-          </div>
-        ) : (
-          <AuthProvider>{children}</AuthProvider>
-        )}
+        <ThemeProvider>
+          {showMaintenance ? (
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+              <h1 className="text-4xl font-bold text-phantom-500 mb-4">Under Maintenance</h1>
+              <p className="text-ghost-400 max-w-md">
+                GhostVerse is currently undergoing scheduled maintenance and upgrades. 
+                We&apos;ll be back shortly! Thanks for your patience.
+              </p>
+            </div>
+          ) : (
+            <AuthProvider>{children}</AuthProvider>
+          )}
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -142,7 +142,7 @@ function HauntCard({
   const totalReactions = haunt.reactions.reduce((s: number, r: HauntPost["reactions"][0]) => s + r.count, 0);
 
   return (
-    <article className="relative bg-gradient-to-br from-ghost-900/80 to-ghost-950/40 backdrop-blur-xl border border-white/5 rounded-3xl p-5 md:p-6 group hover:border-phantom-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)] transition-all duration-500 animate-fade-in">
+    <article className="relative bg-ghost-900 border border-white/5 rounded-3xl p-5 md:p-6 group hover:border-phantom-500/30 transition-colors duration-300 animate-fade-in">
       {/* Premium Glow effect behind card on hover */}
       <div className="absolute inset-0 bg-phantom-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
@@ -362,7 +362,7 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
 
   return (
     <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center p-0 md:p-6">
-      <div className="absolute inset-0 bg-ghost-950/80 backdrop-blur-md animate-fade-in" onClick={onClose} />
+      <div className="absolute inset-0 bg-ghost-950/90 animate-fade-in" onClick={onClose} />
       <div className="relative w-full max-w-xl bg-gradient-to-b from-ghost-900 to-ghost-950 md:border border-white/10 md:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden animate-slide-up">
         {/* Glow Effects */}
         <div className="absolute -top-32 -right-32 w-64 h-64 bg-phantom-500/20 rounded-full blur-3xl pointer-events-none" />
@@ -470,7 +470,7 @@ export default function HauntsPage() {
   return (
     <div className="flex-1 overflow-y-auto w-full relative">
       {/* Sticky Premium Header */}
-      <div className="sticky top-0 z-20 bg-ghost-950/80 backdrop-blur-2xl border-b border-white/5 px-4 md:px-6 py-4 flex items-center justify-between shadow-sm">
+      <div className="sticky top-0 z-20 bg-ghost-950 border-b border-white/5 px-4 md:px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-phantom-500/10 flex items-center justify-center border border-phantom-500/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
             <Ghost className="w-5 h-5 text-phantom-400" />

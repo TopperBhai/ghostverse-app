@@ -4,8 +4,10 @@ import { useAuth } from "../../custom-hooks/use-auth";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy, Zap, Shield, Inbox as InboxIcon } from "lucide-react";
+import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy, Zap, Shield, Inbox as InboxIcon, Sun, Moon } from "lucide-react";
 import { NotificationDropdown } from "../components/NotificationDropdown";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { useTheme } from "../../custom-hooks/use-theme";
 
 const NAV_ITEMS = [
   { href: "/world-chat", icon: Globe, label: "World Chat" },
@@ -33,6 +35,7 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const { user, loading, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -77,7 +80,7 @@ export default function MainLayout({
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/80 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -191,6 +194,18 @@ export default function MainLayout({
               >
                 <Settings className="w-4 h-4" /> Account Settings
               </Link>
+              <button
+                onClick={() => toggleTheme()}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-white/5 text-sm text-ghost-300 transition-colors mt-1 text-left cursor-pointer"
+              >
+                <span className="flex items-center gap-3">
+                  {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  Theme Mode
+                </span>
+                <span className="text-xs font-bold uppercase text-phantom-400">
+                  {theme}
+                </span>
+              </button>
               {user.role === "ADMIN" && (
                 <Link
                   href={`/dashboard`}
@@ -226,6 +241,7 @@ export default function MainLayout({
           <span className="font-bold gradient-text text-sm flex-1">GhostVerse</span>
           {/* Notification bell shortcut on mobile */}
           <NotificationDropdown />
+          <ThemeToggle />
           {user.gamification && user.gamification.hauntStreak > 0 && (
             <div className="flex items-center gap-1 bg-orange-500/10 text-orange-400 px-2 py-1 rounded-lg border border-orange-500/20 shadow-sm ml-1">
               <span className="text-sm">🔥</span>
@@ -235,7 +251,7 @@ export default function MainLayout({
         </header>
 
         {/* Desktop top bar */}
-        <header className="hidden md:flex sticky top-0 z-30 bg-ghost-950/80 backdrop-blur-xl border-b border-white/5 px-6 py-3 items-center justify-end gap-4">
+        <header className="hidden md:flex sticky top-0 z-30 bg-ghost-950 border-b border-white/5 px-6 py-3 items-center justify-end gap-4">
           <div className="flex items-center gap-3 bg-ghost-900/50 rounded-full pl-1 pr-3 py-1 border border-white/5">
             <div className="avatar avatar-sm">
               {user.avatar ? (
@@ -255,13 +271,14 @@ export default function MainLayout({
             </div>
           )}
           <NotificationDropdown />
+          <ThemeToggle />
         </header>
 
         {/* Page content — extra bottom padding on mobile for bottom nav */}
         <div className="flex-1 pb-16 md:pb-0 overflow-hidden">{children}</div>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-ghost-950/95 backdrop-blur-xl border-t border-white/5">
+        <nav className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-ghost-950 border-t border-white/5">
           <div className="flex items-stretch">
             {MOBILE_NAV.map((item) => {
               const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");

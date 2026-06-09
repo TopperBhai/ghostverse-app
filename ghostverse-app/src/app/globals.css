@@ -2,6 +2,93 @@
 @import "tailwindcss";
 @source "../../";
 
+:root {
+  /* Default: Midnight Sapphire (Dark Mode) */
+  --bg-main: #050505;
+  --bg-radial-glow: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.15) 0%, transparent 60%);
+  --bg-grid-color: rgba(59, 130, 246, 0.04);
+  --glow-opacity: 0.03;
+  --scrollbar-thumb: #1b2d41;
+  --scrollbar-hover: #334e68;
+
+  /* Subtle border & hover overlays */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-medium: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  --hover-white-5: rgba(255, 255, 255, 0.05);
+  --hover-white-10: rgba(255, 255, 255, 0.1);
+  --bg-white-02: rgba(255, 255, 255, 0.02);
+  --bg-white-025: rgba(255, 255, 255, 0.025);
+  --bg-white-5: rgba(255, 255, 255, 0.05);
+  --bg-white-10: rgba(255, 255, 255, 0.1);
+  --bg-white-20: rgba(255, 255, 255, 0.2);
+
+  /* GhostVerse Core Palette (Dark values) */
+  --ghost-50: #f0f4f8;
+  --ghost-100: #d9e2ec;
+  --ghost-200: #bcccdc;
+  --ghost-300: #9fb3c8;
+  --ghost-400: #829ab1;
+  --ghost-500: #627d98;
+  --ghost-600: #486581;
+  --ghost-700: #334e68;
+  --ghost-800: #1b2d41;
+  --ghost-900: #101c2a;
+  --ghost-950: #080f18;
+
+  --phantom-400: #60a5fa;
+  --phantom-500: #3b82f6;
+  --phantom-600: #2563eb;
+  
+  --neon-red: #f43f5e;
+  --neon-blue: #60a5fa;
+}
+
+.light {
+  /* Icy Sapphire (Light Mode Overrides) */
+  --bg-main: #f4f7fa;
+  --bg-radial-glow: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.06) 0%, transparent 60%);
+  --bg-grid-color: rgba(59, 130, 246, 0.02);
+  --glow-opacity: 0.08;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-hover: #94a3b8;
+
+  /* Subtle border & hover overlays (re-tinted to dark slate opacity) */
+  --border-subtle: rgba(15, 23, 42, 0.06);
+  --border-medium: rgba(15, 23, 42, 0.12);
+  --border-strong: rgba(15, 23, 42, 0.2);
+
+  --hover-white-5: rgba(15, 23, 42, 0.05);
+  --hover-white-10: rgba(15, 23, 42, 0.08);
+  --bg-white-02: rgba(15, 23, 42, 0.02);
+  --bg-white-025: rgba(15, 23, 42, 0.025);
+  --bg-white-5: rgba(15, 23, 42, 0.04);
+  --bg-white-10: rgba(15, 23, 42, 0.08);
+  --bg-white-20: rgba(15, 23, 42, 0.15);
+
+  /* Swapped & re-tinted GhostVerse Palette */
+  --ghost-50: #090d16;    /* Dark highlight text */
+  --ghost-100: #0f172a;   /* Active text / title */
+  --ghost-200: #1e293b;   /* High contrast text */
+  --ghost-300: #334155;   /* Regular body text */
+  --ghost-400: #475569;   /* Secondary muted text */
+  --ghost-500: #64748b;   /* Muted labels & inactive elements */
+  --ghost-600: #8a99ad;   /* Placeholders */
+  --ghost-700: #f0f4f8;   /* Hover backgrounds */
+  --ghost-800: #e2e8f5;   /* Borders, dividers, secondary bg */
+  --ghost-900: #ffffff;   /* Card backgrounds */
+  --ghost-950: #f4f7fa;   /* Core main background */
+
+  /* Make accents slightly deeper for readability in light mode */
+  --phantom-400: #3b82f6;
+  --phantom-500: #2563eb;
+  --phantom-600: #1d4ed8;
+
+  --neon-red: #e11d48;
+  --neon-blue: #2563eb;
+}
+
 @theme {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -16,25 +103,25 @@
   --animate-float-slow: floatSlow 6s ease-in-out infinite;
   --animate-pulse-slow: pulseSlow 4s ease-in-out infinite;
 
-  /* Midnight Sapphire Palette */
-  --color-ghost-50: #f0f4f8;
-  --color-ghost-100: #d9e2ec;
-  --color-ghost-200: #bcccdc;
-  --color-ghost-300: #9fb3c8;
-  --color-ghost-400: #829ab1;
-  --color-ghost-500: #627d98;
-  --color-ghost-600: #486581;
-  --color-ghost-700: #334e68;
-  --color-ghost-800: #1b2d41;
-  --color-ghost-900: #101c2a;
-  --color-ghost-950: #080f18;
+  /* Theme-Aware CSS Mappings */
+  --color-ghost-50: var(--ghost-50);
+  --color-ghost-100: var(--ghost-100);
+  --color-ghost-200: var(--ghost-200);
+  --color-ghost-300: var(--ghost-300);
+  --color-ghost-400: var(--ghost-400);
+  --color-ghost-500: var(--ghost-500);
+  --color-ghost-600: var(--ghost-600);
+  --color-ghost-700: var(--ghost-700);
+  --color-ghost-800: var(--ghost-800);
+  --color-ghost-900: var(--ghost-900);
+  --color-ghost-950: var(--ghost-950);
 
-  --color-phantom-400: #60a5fa;
-  --color-phantom-500: #3b82f6;
-  --color-phantom-600: #2563eb;
+  --color-phantom-400: var(--phantom-400);
+  --color-phantom-500: var(--phantom-500);
+  --color-phantom-600: var(--phantom-600);
   
-  --color-neon-red: #f43f5e;
-  --color-neon-blue: #60a5fa;
+  --color-neon-red: var(--neon-red);
+  --color-neon-blue: var(--neon-blue);
 
   --color-success: #10b981;
   --color-error: #ef4444;
@@ -43,31 +130,39 @@
 
 @layer utilities {
   .glass-card {
-    @apply bg-ghost-900/60 backdrop-blur-xl border border-ghost-800/50 shadow-xl rounded-2xl;
+    @apply bg-ghost-900 border shadow-md rounded-2xl;
+    border-color: var(--border-subtle);
   }
   .glass-nav {
-    @apply bg-ghost-950/80 backdrop-blur-lg border-b border-white/5;
+    @apply bg-ghost-950 border-b;
+    border-color: var(--border-subtle);
   }
   .glass-sidebar {
-    @apply bg-ghost-950/90 backdrop-blur-xl border-r border-white/5;
+    @apply bg-ghost-950 border-r;
+    border-color: var(--border-subtle);
   }
   .glass-input {
-    @apply w-full bg-ghost-900/50 border border-ghost-800 text-ghost-100 rounded-xl px-4 py-3.5 outline-none focus:border-phantom-500 focus:ring-1 focus:ring-phantom-500 transition-all placeholder:text-ghost-600;
+    @apply w-full bg-ghost-900/50 border text-ghost-100 rounded-xl px-4 py-3.5 outline-none focus:border-phantom-500 focus:ring-1 focus:ring-phantom-500 transition-all placeholder:text-ghost-600;
+    border-color: var(--ghost-800);
   }
   .btn-primary {
-    @apply bg-phantom-600 hover:bg-phantom-500 text-white font-semibold rounded-xl active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70 disabled:active:scale-100 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)];
+    @apply bg-phantom-600 hover:bg-phantom-500 text-white font-semibold rounded-xl active:scale-[0.98] transition-colors flex items-center justify-center disabled:opacity-70 disabled:active:scale-100 shadow-sm hover:shadow-md;
   }
   .btn-secondary {
-    @apply bg-ghost-800 hover:bg-ghost-700 text-ghost-100 font-semibold rounded-xl active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70 disabled:active:scale-100 border border-white/5;
+    @apply bg-ghost-800 hover:bg-ghost-700 text-ghost-100 font-semibold rounded-xl active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70 disabled:active:scale-100 border;
+    border-color: var(--border-subtle);
   }
   .btn-danger {
     @apply bg-error/20 hover:bg-error/30 text-neon-red font-semibold rounded-xl active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70 disabled:active:scale-100 border border-error/20;
   }
   .btn-ghost {
-    @apply hover:bg-white/5 text-ghost-400 hover:text-ghost-100 font-semibold rounded-xl active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70 disabled:active:scale-100;
+    @apply text-ghost-400 hover:text-ghost-100 font-semibold rounded-xl active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-70 disabled:active:scale-100;
+  }
+  .btn-ghost:hover {
+    background-color: var(--hover-white-5);
   }
   .interest-pill {
-    @apply px-3 py-1 rounded-full text-xs font-semibold border backdrop-blur-md;
+    @apply px-3 py-1 rounded-full text-xs font-semibold border bg-ghost-800;
   }
   .badge {
     @apply px-2 py-0.5 rounded-full font-medium inline-flex items-center justify-center;
@@ -76,7 +171,8 @@
     @apply bg-success/15 text-success border border-success/30;
   }
   .badge-offline {
-    @apply bg-ghost-800 text-ghost-400 border border-white/5;
+    @apply bg-ghost-800 text-ghost-400 border;
+    border-color: var(--border-subtle);
   }
   .focus-ring {
     @apply outline-none focus:border-phantom-500 focus:ring-1 focus:ring-phantom-500;
@@ -91,10 +187,12 @@
     @apply bg-phantom-600 text-white rounded-br-md shadow-lg;
   }
   .message-bubble-received {
-    @apply bg-ghost-800/90 text-ghost-100 rounded-bl-md shadow-md border border-white/5;
+    @apply bg-ghost-800/90 text-ghost-100 rounded-bl-md shadow-md border;
+    border-color: var(--border-subtle);
   }
   .avatar {
-    @apply flex items-center justify-center rounded-full bg-ghost-800 text-ghost-300 font-bold overflow-hidden shadow-inner uppercase border border-white/10;
+    @apply flex items-center justify-center rounded-full bg-ghost-800 text-ghost-300 font-bold overflow-hidden shadow-inner uppercase border;
+    border-color: var(--border-medium);
   }
   .avatar-sm {
     @apply w-10 h-10 text-sm;
@@ -135,8 +233,8 @@
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); }
-  50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.4); }
+  0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
+  50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.3); }
 }
 
 @keyframes float {
@@ -181,10 +279,15 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: #050505;
-  color: #f4f4f5;
+  background-color: var(--bg-main);
+  color: var(--color-ghost-100);
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+/* Smooth theme transformations */
+body, aside, header, nav, .glass-card, .bento-card, .glass-nav, .glass-sidebar, .glass-input, button, a {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 /* ============================================================
@@ -200,23 +303,23 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: var(--scrollbar-hover);
 }
 
 /* ============================================================
-   AUTOFILL FIX FOR DARK THEME
+   AUTOFILL FIX FOR THEMES
    ============================================================ */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #09090b inset !important;
-  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 30px var(--color-ghost-900) inset !important;
+  -webkit-text-fill-color: var(--color-ghost-100) !important;
   transition: background-color 5000s ease-in-out 0s;
   border-radius: 0.75rem;
 }
@@ -226,17 +329,13 @@ input:-webkit-autofill:active {
    ============================================================ */
 .bg-grid {
   background-image:
-    linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+    linear-gradient(var(--bg-grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid-color) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 .bg-gradient-radial {
-  background: radial-gradient(
-    ellipse at top,
-    rgba(139, 92, 246, 0.15) 0%,
-    transparent 60%
-  );
+  background: var(--bg-radial-glow);
 }
 
 .page-enter {
@@ -248,22 +347,56 @@ input:-webkit-autofill:active {
 }
 
 .bento-card {
-  @apply bg-ghost-900/60 backdrop-blur-xl border border-ghost-800/50 shadow-xl rounded-2xl relative overflow-hidden transition-all duration-500 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)] hover:border-phantom-500/30;
-}
-
-.bento-card::before {
-  content: '';
-  @apply absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 transition-opacity duration-500 pointer-events-none;
-}
-
-.bento-card:hover::before {
-  @apply opacity-100;
+  @apply bg-ghost-900 border shadow-md rounded-2xl relative overflow-hidden transition-colors duration-300 hover:border-phantom-500/30;
+  border-color: var(--border-subtle);
 }
 
 .bento-icon-wrapper {
-  @apply w-12 h-12 rounded-2xl bg-ghost-900 border border-white/5 flex items-center justify-center mb-6 shadow-inner transition-transform duration-500;
+  @apply w-12 h-12 rounded-2xl bg-ghost-800 border flex items-center justify-center mb-6 shadow-sm transition-colors duration-300;
+  border-color: var(--border-subtle);
 }
 
 .bento-card:hover .bento-icon-wrapper {
-  @apply scale-110 bg-phantom-500/10 border-phantom-500/30;
+  @apply bg-phantom-500/10;
+  border-color: var(--phantom-500)/30;
+}
+
+/* ============================================================
+   TAILWIND UTILITY OVERRIDES FOR LIGHT/DARK MODE
+   ============================================================ */
+.border-white\/5 {
+  border-color: var(--border-subtle) !important;
+}
+.border-white\/10 {
+  border-color: var(--border-medium) !important;
+}
+.border-white\/20 {
+  border-color: var(--border-strong) !important;
+}
+
+.bg-white\/5 {
+  background-color: var(--bg-white-5) !important;
+}
+.bg-white\/10 {
+  background-color: var(--bg-white-10) !important;
+}
+.bg-white\/20 {
+  background-color: var(--bg-white-20) !important;
+}
+.bg-white\/\[0\.02\] {
+  background-color: var(--bg-white-02) !important;
+}
+.bg-white\/\[0\.025\] {
+  background-color: var(--bg-white-025) !important;
+}
+
+.hover\:bg-white\/5:hover {
+  background-color: var(--hover-white-5) !important;
+}
+.hover\:bg-white\/10:hover {
+  background-color: var(--hover-white-10) !important;
+}
+
+.divide-white\/\[0\.03\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--border-subtle) !important;
 }
