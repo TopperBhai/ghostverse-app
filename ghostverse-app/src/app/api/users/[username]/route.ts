@@ -31,9 +31,12 @@ export async function GET(
     const userDoc = userQuery.docs[0];
     const userData = userDoc.data() as any;
 
-    // Get Profile data
+    // Get Profile data (Note: reputationScore is now at root)
     const profileDoc = await userDoc.ref.collection("data").doc("profile").get();
-    const profileData = profileDoc.exists ? profileDoc.data() : { interests: [], reputationScore: 0 };
+    const profileData = profileDoc.data() || { interests: [] };
+    
+    // Merge root reputationScore into profileData for client compatibility
+    profileData.reputationScore = userData.reputationScore || 0;
 
     // Get Friends count
     const sentFriends = await db.collection("friendships")

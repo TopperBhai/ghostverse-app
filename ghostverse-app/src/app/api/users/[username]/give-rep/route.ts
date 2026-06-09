@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../../lib/firebase-admin";
 import { getAuthUser } from "../../../../../lib/auth";
+import { getISTDateString } from "../../../../../lib/gamification";
 import { FieldValue } from "firebase-admin/firestore";
 import type { ApiResponse } from "../../../../../types";
 
@@ -48,35 +49,26 @@ export async function POST(
       );
     }
 
-    // Check 24-hour rate limit on voter
+    // Check Daily (IST Midnight) rate limit on voter
     const voterDoc = await db.collection("users").doc(authUser.userId).get();
     const voterData = voterDoc.data();
     if (voterData?.lastUpvoteGivenAt) {
-      const lastUpvote = new Date(voterData.lastUpvoteGivenAt).getTime();
-      const msUntilNext = 24 * 60 * 60 * 1000 - (Date.now() - lastUpvote);
-      if (msUntilNext > 0) {
-        const hoursLeft = Math.ceil(msUntilNext / (1000 * 60 * 60));
+      const todayStr = getISTDateString(Date.now());
+      const lastVoteStr = getISTDateString(voterData.lastUpvoteGivenAt);
+      
+      if (todayStr === lastVoteStr) {
         return NextResponse.json<ApiResponse>(
-          { success: false, error: `You can give rep again in ${hoursLeft} hour${hoursLeft === 1 ? "" : "s"}` },
+          { success: false, error: "You can only give 1 reputation point per day. Resets at midnight (IST)." },
           { status: 429 }
         );
       }
     }
 
-    // Atomic batch: update target reputation + voter lastUpvoteGivenAt
     const batch = db.batch();
 
     batch.update(db.collection("users").doc(targetUserId), {
       reputationScore: FieldValue.increment(1),
     });
-
-    // Also update profile subcollection for compatibility
-    try {
-      batch.update(
-        db.collection("users").doc(targetUserId).collection("data").doc("profile"),
-        { reputationScore: FieldValue.increment(1) }
-      );
-    } catch {}
 
     batch.update(db.collection("users").doc(authUser.userId), {
       lastUpvoteGivenAt: new Date().toISOString(),

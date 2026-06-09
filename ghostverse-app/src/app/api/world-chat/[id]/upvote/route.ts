@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../../lib/firebase-admin";
 import { getAuthUser } from "../../../../../lib/auth";
+import { getISTDateString } from "../../../../../lib/gamification";
 import { FieldValue } from "firebase-admin/firestore";
 import type { ApiResponse } from "../../../../../types";
 
@@ -32,15 +33,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check 24-hour limit
+    // Check Daily (IST Midnight) rate limit on voter
     const voterDoc = await db.collection("users").doc(authUser.userId).get();
     const voterData = voterDoc.data();
     if (voterData?.lastUpvoteGivenAt) {
-      const lastUpvote = new Date(voterData.lastUpvoteGivenAt).getTime();
-      const now = Date.now();
-      if (now - lastUpvote < 24 * 60 * 60 * 1000) {
+      const todayStr = getISTDateString(Date.now());
+      const lastVoteStr = getISTDateString(voterData.lastUpvoteGivenAt);
+      
+      if (todayStr === lastVoteStr) {
         return NextResponse.json<ApiResponse>(
-          { success: false, error: "You can only give 1 reputation point every 24 hours" },
+          { success: false, error: "You can only give 1 reputation point per day. Resets at midnight (IST)." },
           { status: 429 }
         );
       }
@@ -59,15 +61,6 @@ export async function POST(request: NextRequest) {
     });
 
     await batch.commit();
-
-    // Also update it in the profile subcollection for backward compatibility
-    try {
-      await db.collection("users").doc(senderId).collection("data").doc("profile").update({
-        reputationScore: FieldValue.increment(1)
-      });
-    } catch (err) {
-      // Ignore if profile doc doesn't exist yet
-    }
 
     return NextResponse.json<ApiResponse>(
       { success: true, message: "Upvoted successfully" },

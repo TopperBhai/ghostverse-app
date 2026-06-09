@@ -32,10 +32,9 @@ export async function POST(request: NextRequest) {
     }
 
     const userData = userDoc.data();
-    const profile = userData?.profile || {};
     const cosmetics = userData?.cosmetics || { activeHat: null, activeAura: null, unlockedItems: [] };
     const unlocked = cosmetics.unlockedItems || [];
-    let rep = profile.reputationScore || 0;
+    let rep = userData?.reputationScore || 0;
 
     if (action === "buy") {
       if (!itemId || !type) return NextResponse.json<ApiResponse>({ success: false, error: "Invalid item" }, { status: 400 });
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
       cosmetics.unlockedItems = unlocked;
 
       await userRef.update({
-        "profile.reputationScore": rep,
+        reputationScore: rep,
         cosmetics: cosmetics,
       });
 

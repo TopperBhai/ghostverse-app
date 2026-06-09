@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         .get();
     } else {
       snapshot = await db.collection("users")
-        .orderBy("profile.reputationScore", "desc")
+        .orderBy("reputationScore", "desc")
         .limit(50)
         .get();
     }
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         username: data.username,
         displayName: data.displayName,
         avatar: data.avatar || null,
-        reputationScore: data.profile?.reputationScore || 0,
+        reputationScore: data.reputationScore || 0,
         hauntStreak: data.gamification?.hauntStreak || 0,
       };
     });

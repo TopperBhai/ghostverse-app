@@ -10,6 +10,12 @@ export function calculatePetLevel(xp: number): number {
   return Math.floor(xp / XP_PER_LEVEL) + 1;
 }
 
+export function getISTDateString(date: Date | string | number) {
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() + 330);
+  return d.toISOString().split("T")[0];
+}
+
 export function determinePetStatus(streak: number, lastActiveAt: Date | null): PetStatus {
   if (!lastActiveAt) return "HAPPY";
 
@@ -50,16 +56,19 @@ export async function updateGamification(userId: string, action: "HAUNT" | "CHAT
     let streakBroken = false;
 
     if (lastActive) {
-      const msDiff = now.getTime() - lastActive.getTime();
-      const hoursDiff = msDiff / (1000 * 60 * 60);
+      const todayStr = getISTDateString(now);
+      const lastActiveStr = getISTDateString(lastActive);
       
-      // If action is HAUNT or CHAT, it affects the streak
-      if (action === "HAUNT" || action === "CHAT") {
-        if (hoursDiff >= 24 && hoursDiff < 48) {
+      if (todayStr !== lastActiveStr) {
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = getISTDateString(yesterday);
+
+        if (lastActiveStr === yesterdayStr) {
+          isNewDay = true; // It was yesterday
+        } else {
+          streakBroken = true; // More than 1 day ago
           isNewDay = true;
-        } else if (hoursDiff >= 48) {
-          streakBroken = true;
-          isNewDay = true; // Still a new active day, just broke previous streak
         }
       }
     } else {
@@ -90,5 +99,60 @@ export async function updateGamification(userId: string, action: "HAUNT" | "CHAT
     gamification.pet.status = determinePetStatus(gamification.hauntStreak, now); // Update status instantly
 
     transaction.update(userRef, { gamification });
+  });
+}
+
+/**
+ * Evaluates streak on app open (called by auth/me).
+ */
+export async function evaluateStreakOnLogin(userId: string) {
+  // We can just call updateGamification with a mock action, or create a specific login action
+  // To keep it simple, we'll create an "APP_OPEN" action or just use HAUNT logic.
+  // Wait, I will just call updateGamification(userId, "LOGIN" as any) but avoid adding XP.
+  // Let's just write the transaction directly here to be clean.
+  const userRef = db.collection("users").doc(userId);
+
+  await db.runTransaction(async (transaction) => {
+    const userDoc = await transaction.get(userRef);
+    if (!userDoc.exists) return;
+
+    const data = userDoc.data();
+    let gamification: Gamification = data?.gamification || {
+      hauntStreak: 0,
+      lastActiveAt: null,
+      pet: { level: 1, xp: 0, status: "HAPPY" }
+    };
+
+    const now = new Date();
+    const lastActive = gamification.lastActiveAt ? new Date(gamification.lastActiveAt) : null;
+    let modified = false;
+
+    if (lastActive) {
+      const todayStr = getISTDateString(now);
+      const lastActiveStr = getISTDateString(lastActive);
+      
+      if (todayStr !== lastActiveStr) {
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = getISTDateString(yesterday);
+
+        if (lastActiveStr === yesterdayStr) {
+          gamification.hauntStreak += 1;
+        } else {
+          gamification.hauntStreak = 1;
+        }
+        gamification.lastActiveAt = now.toISOString();
+        modified = true;
+      }
+    } else {
+      gamification.hauntStreak = 1;
+      gamification.lastActiveAt = now.toISOString();
+      modified = true;
+    }
+
+    if (modified) {
+      gamification.pet.status = determinePetStatus(gamification.hauntStreak, now);
+      transaction.update(userRef, { gamification });
+    }
   });
 }

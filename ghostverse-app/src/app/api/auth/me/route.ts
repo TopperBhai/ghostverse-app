@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../lib/firebase-admin";
 import { getAuthUser } from "../../../../lib/auth";
+import { evaluateStreakOnLogin } from "../../../../lib/gamification";
 import type { ApiResponse } from "../../../../types";
 
 export async function GET(request: NextRequest) {
@@ -43,9 +44,16 @@ export async function GET(request: NextRequest) {
       lastSeen: new Date().toISOString()
     });
 
-    // Get Profile data
+    // Evaluate streak (daily IST calendar reset logic)
+    await evaluateStreakOnLogin(authUser.userId);
+
+    // Get Profile data (Note: reputationScore is now at root)
     const profileDoc = await userDoc.ref.collection("data").doc("profile").get();
-    const profileData = profileDoc.exists ? profileDoc.data() : { interests: [], reputationScore: 0 };
+    const profileData = profileDoc.data() || { interests: [] };
+    
+    // Merge root reputationScore into profileData for client compatibility if needed, 
+    // but the client usually looks at profile.reputationScore.
+    profileData.reputationScore = user.reputationScore || 0;
 
     // Get Friends count
     const sentFriends = await db.collection("friendships")
