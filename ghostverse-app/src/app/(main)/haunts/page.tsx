@@ -5,19 +5,20 @@ import { useAuth } from "../../../custom-hooks/use-auth";
 import type { HauntPost, HauntReply, HauntReactionType } from "../../../types";
 import { getGhostLevel } from "../../../lib/levels";
 import { UserProfileCard } from "../../components/UserProfileCard";
+import { GhostPet } from "../../components/GhostPet";
 import {
-  Ghost, MessageCircle, Send, X, Plus, ChevronDown, ChevronUp,
+  Ghost, MessageCircle, Send, X, Plus,
   Loader2, Sparkles, RefreshCw, Trash2
 } from "lucide-react";
 import Link from "next/link";
 import { MentionInput } from "../../components/MentionInput";
 import { FormattedText } from "../../components/FormattedText";
 
-const REACTIONS: { type: HauntReactionType; emoji: string; label: string }[] = [
-  { type: "SPOOKY", emoji: "👻", label: "Spooky" },
-  { type: "FIRE",   emoji: "🔥", label: "Fire" },
-  { type: "DEAD",   emoji: "💀", label: "Dead" },
-  { type: "ICONIC", emoji: "✨", label: "Iconic" },
+const REACTIONS: { type: HauntReactionType; emoji: string; label: string; glow: string; text: string }[] = [
+  { type: "SPOOKY", emoji: "👻", label: "Spooky", glow: "shadow-[0_0_15px_rgba(168,85,247,0.5)]", text: "text-purple-400" },
+  { type: "FIRE",   emoji: "🔥", label: "Fire", glow: "shadow-[0_0_15px_rgba(239,68,68,0.5)]", text: "text-orange-400" },
+  { type: "DEAD",   emoji: "💀", label: "Dead", glow: "shadow-[0_0_15px_rgba(255,255,255,0.4)]", text: "text-gray-300" },
+  { type: "ICONIC", emoji: "✨", label: "Iconic", glow: "shadow-[0_0_15px_rgba(250,204,21,0.5)]", text: "text-yellow-300" },
 ];
 
 function formatRelativeTime(date: Date | string): string {
@@ -131,6 +132,8 @@ function HauntCard({
       if (data.success && data.data) {
         setReplies((prev) => [...prev, data.data]);
         setReplyInput("");
+        // Optimistically increment reply count locally if needed
+        haunt.replyCount++;
       }
     } catch {}
     finally { setSubmittingReply(false); }
@@ -139,33 +142,37 @@ function HauntCard({
   const totalReactions = haunt.reactions.reduce((s: number, r: HauntPost["reactions"][0]) => s + r.count, 0);
 
   return (
-    <article className="glass-card p-5 group hover:border-white/10 transition-all duration-300 animate-fade-in">
+    <article className="relative bg-gradient-to-br from-ghost-900/80 to-ghost-950/40 backdrop-blur-xl border border-white/5 rounded-3xl p-5 md:p-6 group hover:border-phantom-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)] transition-all duration-500 animate-fade-in">
+      {/* Premium Glow effect behind card on hover */}
+      <div className="absolute inset-0 bg-phantom-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
       {/* Author row */}
-      <div className="flex items-start gap-3 mb-4">
+      <div className="relative flex items-start gap-4 mb-4">
         <button
           onClick={() => onInspect({ userId: haunt.author.id, username: haunt.author.username, displayName: haunt.author.displayName, avatar: haunt.author.avatar })}
-          className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border border-white/10 hover:ring-2 hover:ring-phantom-500/60 transition-all"
+          className={`relative flex-shrink-0 w-12 h-12 rounded-full overflow-hidden hover:scale-105 transition-transform shadow-lg ${level.color.includes('cyan') ? 'shadow-cyan-500/20 ring-2 ring-cyan-500/30' : level.color.includes('phantom') ? 'shadow-phantom-500/20 ring-2 ring-phantom-500/30' : level.color.includes('orange') ? 'shadow-orange-500/20 ring-2 ring-orange-500/30' : 'border border-white/10'}`}
         >
           {haunt.author.avatar ? (
             <img src={haunt.author.avatar} alt={haunt.author.displayName} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-ghost-800 flex items-center justify-center text-ghost-300 font-bold text-sm">
+            <div className="w-full h-full bg-ghost-800 flex items-center justify-center text-ghost-300 font-black text-lg">
               {haunt.author.displayName.charAt(0).toUpperCase()}
             </div>
           )}
         </button>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pt-0.5">
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => onInspect({ userId: haunt.author.id, username: haunt.author.username, displayName: haunt.author.displayName, avatar: haunt.author.avatar })}
-              className={`text-sm font-bold hover:underline transition-colors ${level.color}`}
+              className={`text-base font-black hover:underline transition-colors tracking-tight ${level.color}`}
             >
               {haunt.author.displayName}
             </button>
-            {level.badge && <span className="flex-shrink-0">{level.badge}</span>}
-            <span className="text-xs text-ghost-500">@{haunt.author.username}</span>
+            {level.badge && <span className="flex-shrink-0 scale-110 drop-shadow-sm">{level.badge}</span>}
+            <span className="text-xs text-ghost-500 font-medium">@{haunt.author.username}</span>
+            <span className="text-ghost-600 text-xs hidden sm:inline">·</span>
+            <span className="text-[11px] text-ghost-500 uppercase tracking-widest font-semibold">{formatRelativeTime(haunt.createdAt)}</span>
           </div>
-          <span className="text-[11px] text-ghost-600">{formatRelativeTime(haunt.createdAt)}</span>
         </div>
         
         {/* DELETE BUTTON */}
@@ -173,7 +180,7 @@ function HauntCard({
           <button 
             onClick={handleDelete} 
             disabled={isDeleting}
-            className="text-ghost-600 hover:text-neon-red transition-colors p-1.5 rounded-lg hover:bg-neon-red/10 ml-2"
+            className="text-ghost-600 hover:text-neon-red transition-all duration-300 p-2 rounded-full hover:bg-neon-red/10 flex-shrink-0 opacity-0 group-hover:opacity-100"
             title="Delete Haunt"
           >
             {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
@@ -182,13 +189,13 @@ function HauntCard({
       </div>
 
       {/* Content */}
-      <p className="text-ghost-100 text-sm leading-relaxed mb-4">
+      <p className="relative text-ghost-100 text-[15px] leading-relaxed mb-5 pl-16 pr-4 tracking-wide">
         <FormattedText content={haunt.content} onInspect={onInspect} />
       </p>
 
       {/* Reactions row */}
-      <div className="flex items-center gap-2 flex-wrap mb-3">
-        {REACTIONS.map(({ type, emoji, label }) => {
+      <div className="relative flex items-center gap-3 flex-wrap mb-4 pl-16">
+        {REACTIONS.map(({ type, emoji, label, glow, text }) => {
           const reaction = haunt.reactions.find((r) => r.type === type);
           const isActive = userReaction === type;
           return (
@@ -196,106 +203,114 @@ function HauntCard({
               key={type}
               onClick={() => handleReact(type)}
               disabled={pendingReaction !== null}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all duration-200 ${
+              className={`group/react flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 active:scale-90 ${
                 isActive
-                  ? "bg-phantom-500/20 border-phantom-500/40 text-phantom-300 scale-105"
-                  : "bg-ghost-900/50 border-ghost-800/60 text-ghost-500 hover:border-ghost-700 hover:text-ghost-300 hover:bg-ghost-800/50"
+                  ? `bg-white/10 ${text} ${glow} border border-white/20 scale-105`
+                  : "bg-ghost-900/60 border border-ghost-800/80 text-ghost-500 hover:border-white/20 hover:text-white hover:bg-ghost-800/60 hover:scale-105"
               } ${pendingReaction === type ? "opacity-50" : ""}`}
               title={label}
             >
-              <span className="text-base leading-none">{emoji}</span>
+              <span className={`text-base leading-none transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover/react:scale-110 group-hover/react:-rotate-6'}`}>{emoji}</span>
               {reaction && reaction.count > 0 && (
-                <span className={isActive ? "text-phantom-300" : "text-ghost-400"}>{reaction.count}</span>
+                <span className={isActive ? text : "text-ghost-400"}>{reaction.count}</span>
               )}
             </button>
           );
         })}
-        {totalReactions > 0 && (
-          <span className="text-xs text-ghost-600 ml-1">{totalReactions} reaction{totalReactions !== 1 ? "s" : ""}</span>
-        )}
       </div>
 
-      {/* Divider + Echo (reply) toggle */}
-      <div className="flex items-center justify-between pt-2 border-t border-white/5">
+      {/* Action Row */}
+      <div className="relative flex items-center justify-between pt-3 pl-16 pr-4 border-t border-white/5">
         <button
           onClick={toggleReplies}
-          className="flex items-center gap-1.5 text-xs text-ghost-500 hover:text-ghost-300 transition-colors"
+          className="flex items-center gap-2 text-xs font-bold text-ghost-500 hover:text-phantom-300 transition-colors group/reply"
         >
-          <MessageCircle className="w-3.5 h-3.5" />
+          <div className="w-7 h-7 rounded-full bg-ghost-900 flex items-center justify-center group-hover/reply:bg-phantom-500/20 transition-colors">
+            <MessageCircle className="w-3.5 h-3.5" />
+          </div>
           {haunt.replyCount > 0
             ? `${haunt.replyCount} Echo${haunt.replyCount !== 1 ? "es" : ""}`
-            : "Echo"}
-          {showReplies ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            : "Write an Echo..."}
         </button>
-        <Link href={`/profile/${haunt.author.username}`} className="text-[10px] text-ghost-600 hover:text-phantom-400 transition-colors">
+        <Link href={`/profile/${haunt.author.username}`} className="text-[10px] uppercase tracking-widest font-bold text-ghost-600 hover:text-phantom-400 transition-colors">
           View Profile →
         </Link>
       </div>
 
-      {/* Replies section */}
+      {/* Replies Threading (Inline) */}
       {showReplies && (
-        <div className="mt-3 pt-3 border-t border-white/5 space-y-3">
+        <div className="relative mt-4 pl-16 pr-4 space-y-4 animate-slide-up">
+          <div className="absolute left-8 top-0 bottom-8 w-px bg-gradient-to-b from-white/10 to-transparent" />
+          
           {loadingReplies ? (
-            <div className="flex justify-center py-3">
-              <Loader2 className="w-4 h-4 text-phantom-500 animate-spin" />
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-5 h-5 text-phantom-500 animate-spin" />
             </div>
           ) : replies.length === 0 ? (
-            <p className="text-xs text-ghost-600 text-center py-2">No echoes yet. Be the first!</p>
+            <div className="flex flex-col items-center justify-center py-6 gap-2">
+              <Ghost className="w-8 h-8 text-ghost-800" />
+              <p className="text-xs font-medium text-ghost-500 text-center">It's quiet in here. Start the echo.</p>
+            </div>
           ) : (
-            replies.map((reply) => (
-              <div key={reply.id} className="flex items-start gap-2.5 pl-2 border-l-2 border-ghost-800">
-                <button
-                  onClick={() => onInspect({ userId: reply.author.id, username: reply.author.username, displayName: reply.author.displayName, avatar: reply.author.avatar })}
-                  className="flex-shrink-0 w-7 h-7 rounded-full overflow-hidden border border-white/10 hover:ring-1 hover:ring-phantom-500/50 transition-all"
-                >
-                  {reply.author.avatar ? (
-                    <img src={reply.author.avatar} alt={reply.author.displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-ghost-800 flex items-center justify-center text-ghost-400 text-[10px] font-bold">
-                      {reply.author.displayName.charAt(0).toUpperCase()}
+            <div className="space-y-4 pt-2">
+              {replies.map((reply) => (
+                <div key={reply.id} className="relative flex items-start gap-3">
+                  <button
+                    onClick={() => onInspect({ userId: reply.author.id, username: reply.author.username, displayName: reply.author.displayName, avatar: reply.author.avatar })}
+                    className="relative z-10 flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border border-white/10 hover:ring-2 hover:ring-phantom-500/50 transition-all shadow-md bg-ghost-900"
+                  >
+                    {reply.author.avatar ? (
+                      <img src={reply.author.avatar} alt={reply.author.displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-ghost-400 text-xs font-black">
+                        {reply.author.displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </button>
+                  <div className="flex-1 min-w-0 bg-ghost-900/40 rounded-2xl p-3 border border-white/5">
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <button
+                        onClick={() => onInspect({ userId: reply.author.id, username: reply.author.username, displayName: reply.author.displayName, avatar: reply.author.avatar })}
+                        className={`text-sm font-bold hover:underline ${getGhostLevel(reply.author.reputationScore || 0).color}`}
+                      >
+                        {reply.author.displayName}
+                      </button>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-ghost-600">{formatRelativeTime(reply.createdAt)}</span>
                     </div>
-                  )}
-                </button>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-1.5 mb-0.5">
-                    <button
-                      onClick={() => onInspect({ userId: reply.author.id, username: reply.author.username, displayName: reply.author.displayName, avatar: reply.author.avatar })}
-                      className={`text-xs font-bold hover:underline ${getGhostLevel(reply.author.reputationScore || 0).color}`}
-                    >
-                      {reply.author.displayName}
-                    </button>
-                    <span className="text-[10px] text-ghost-600">{formatRelativeTime(reply.createdAt)}</span>
+                    <p className="text-[13px] text-ghost-200 leading-relaxed">
+                      <FormattedText content={reply.content} onInspect={onInspect} />
+                    </p>
                   </div>
-                  <p className="text-xs text-ghost-300 leading-relaxed">
-                    <FormattedText content={reply.content} onInspect={onInspect} />
-                  </p>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
 
-          {/* Reply input */}
-          <form onSubmit={submitReply} className="flex items-center gap-2 mt-2">
-            <div className="flex-1">
+          {/* Inline Reply Input */}
+          <form onSubmit={submitReply} className="relative flex items-start gap-3 pt-2">
+            <div className="relative z-10 flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border border-white/10 bg-ghost-800 flex items-center justify-center">
+               <Ghost className="w-4 h-4 text-ghost-400" />
+            </div>
+            <div className="flex-1 relative">
               <MentionInput
                 value={replyInput}
                 onChange={setReplyInput}
                 maxLength={280}
                 placeholder="Write an echo..."
-                className="w-full bg-ghost-900/60 border border-ghost-800 text-ghost-100 text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-phantom-500/60 transition-colors placeholder:text-ghost-600"
+                className="w-full bg-ghost-900/60 border border-ghost-800 text-ghost-100 text-sm rounded-2xl pl-4 pr-12 py-3 focus:outline-none focus:border-phantom-500/50 focus:ring-1 focus:ring-phantom-500/50 transition-all placeholder:text-ghost-600"
                 onSubmit={() => {
                   const e = { preventDefault: () => {} } as React.FormEvent;
                   submitReply(e);
                 }}
               />
+              <button
+                type="submit"
+                disabled={!replyInput.trim() || submittingReply}
+                className="absolute right-1.5 top-1.5 bottom-1.5 aspect-square rounded-xl bg-phantom-600 text-white hover:bg-phantom-500 disabled:bg-ghost-800 disabled:text-ghost-500 transition-all flex items-center justify-center"
+              >
+                {submittingReply ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 -ml-0.5" />}
+              </button>
             </div>
-            <button
-              type="submit"
-              disabled={!replyInput.trim() || submittingReply}
-              className="flex-shrink-0 p-2 rounded-xl bg-phantom-600 text-white hover:bg-phantom-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-            >
-              {submittingReply ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-            </button>
           </form>
         </div>
       )}
@@ -346,31 +361,40 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
   const isNearLimit = charsLeft <= 40;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-4 sm:p-6 animate-fade-in">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg bg-ghost-900 border border-ghost-800/70 rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+    <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center p-0 md:p-6">
+      <div className="absolute inset-0 bg-ghost-950/80 backdrop-blur-md animate-fade-in" onClick={onClose} />
+      <div className="relative w-full max-w-xl bg-gradient-to-b from-ghost-900 to-ghost-950 md:border border-white/10 md:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden animate-slide-up">
+        {/* Glow Effects */}
+        <div className="absolute -top-32 -right-32 w-64 h-64 bg-phantom-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/5">
-          <div className="flex items-center gap-2">
-            <Ghost className="w-5 h-5 text-phantom-400" />
-            <h2 className="font-bold text-ghost-100">New Haunt</h2>
+        <div className="relative flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-phantom-500/20 flex items-center justify-center border border-phantom-400/30">
+              <Sparkles className="w-5 h-5 text-phantom-300" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-white tracking-tight">Summon Haunt</h2>
+              <p className="text-[11px] font-semibold text-ghost-400 uppercase tracking-widest mt-0.5">Share your spirit</p>
+            </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-ghost-800/60 flex items-center justify-center text-ghost-500 hover:text-ghost-200 transition-colors">
-            <X className="w-4 h-4" />
+          <button onClick={onClose} className="w-10 h-10 rounded-full bg-ghost-800/50 flex items-center justify-center text-ghost-400 hover:text-white hover:bg-white/10 transition-colors">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Body */}
-        <form onSubmit={submit} className="p-5 space-y-4">
-          <div className="w-full">
+        <form onSubmit={submit} className="relative p-6 space-y-5">
+          <div className="w-full relative">
             <MentionInput
               isTextArea
               value={content}
               onChange={setContent}
               maxLength={280}
               rows={5}
-              placeholder="What's haunting you right now?"
-              className="w-full bg-ghost-950/50 border border-ghost-800/50 text-ghost-100 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-phantom-500/60 transition-colors resize-none placeholder:text-ghost-600 leading-relaxed"
+              placeholder="What's haunting your thoughts?"
+              className="w-full bg-black/20 border border-white/5 text-white text-lg md:text-xl rounded-2xl px-5 py-4 focus:outline-none focus:border-phantom-500/50 focus:bg-black/40 transition-all resize-none placeholder:text-ghost-600 leading-relaxed font-medium"
               onSubmit={() => {
                 const e = { preventDefault: () => {} } as React.FormEvent;
                 submit(e);
@@ -379,24 +403,24 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
           </div>
 
           {error && (
-            <p className="text-xs text-neon-red bg-error/10 px-3 py-2 rounded-lg">{error}</p>
+            <p className="text-sm font-bold text-neon-red bg-error/10 border border-error/20 px-4 py-3 rounded-xl">{error}</p>
           )}
 
-          <div className="flex items-center justify-between">
-            <span className={`text-xs font-medium tabular-nums ${isNearLimit ? (charsLeft <= 0 ? "text-neon-red" : "text-amber-400") : "text-ghost-600"}`}>
-              {charsLeft} chars left
+          <div className="flex items-center justify-between pt-2 border-t border-white/5">
+            <span className={`text-sm font-black tabular-nums ${isNearLimit ? (charsLeft <= 0 ? "text-neon-red" : "text-amber-400") : "text-ghost-600"}`}>
+              {charsLeft}
             </span>
-            <div className="flex items-center gap-2">
-              <button type="button" onClick={onClose} className="btn-ghost text-sm px-4 py-2">
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-ghost-400 hover:text-white transition-colors">
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={!content.trim() || charsLeft < 0 || submitting}
-                className="btn-primary text-sm px-5 py-2 gap-2 disabled:opacity-50"
+                className="btn-primary text-sm px-6 py-2.5 gap-2 shadow-lg shadow-phantom-500/25 disabled:opacity-50 disabled:shadow-none transition-all hover:scale-105 active:scale-95"
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                {submitting ? "Haunting..." : "Haunt"}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {submitting ? "Summoning..." : "Post Haunt"}
               </button>
             </div>
           </div>
@@ -444,40 +468,52 @@ export default function HauntsPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto w-full">
-      {/* Header */}
-      <div className="sticky top-0 z-20 bg-ghost-950/80 backdrop-blur-xl border-b border-white/5 px-4 md:px-6 py-3.5 flex items-center justify-between">
+    <div className="flex-1 overflow-y-auto w-full relative">
+      {/* Sticky Premium Header */}
+      <div className="sticky top-0 z-20 bg-ghost-950/80 backdrop-blur-2xl border-b border-white/5 px-4 md:px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <Ghost className="w-5 h-5 text-phantom-400" />
+          <div className="w-10 h-10 rounded-full bg-phantom-500/10 flex items-center justify-center border border-phantom-500/20 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
+            <Ghost className="w-5 h-5 text-phantom-400" />
+          </div>
           <div>
-            <h1 className="text-base font-bold text-ghost-100 leading-none">Haunts</h1>
-            <p className="text-[11px] text-ghost-500 mt-0.5">The ghost feed</p>
+            <h1 className="text-lg font-black text-white leading-none tracking-tight">The Haunts</h1>
+            <p className="text-[10px] font-bold text-ghost-400 uppercase tracking-widest mt-1">Global Ghost Feed</p>
           </div>
         </div>
         <button
           onClick={() => fetchHaunts(true)}
           disabled={refreshing}
-          className="p-2 rounded-xl text-ghost-500 hover:text-ghost-300 hover:bg-ghost-800/50 transition-all"
-          title="Refresh"
+          className="p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-ghost-300 transition-all hover:rotate-180 duration-500"
+          title="Refresh Feed"
         >
-          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-phantom-400" : ""}`} />
         </button>
       </div>
 
-      {/* Feed */}
-      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+      {/* Feed Container */}
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="w-8 h-8 border-2 border-phantom-500/30 border-t-phantom-500 rounded-full animate-spin" />
-            <p className="text-ghost-500 text-sm">Summoning haunts...</p>
+          <div className="flex flex-col items-center justify-center py-32 gap-4">
+            <div className="relative">
+              <div className="w-12 h-12 border-4 border-phantom-500/20 border-t-phantom-500 rounded-full animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 bg-phantom-400 rounded-full animate-pulse" />
+              </div>
+            </div>
+            <p className="text-ghost-400 text-sm font-semibold uppercase tracking-widest animate-pulse">Summoning spirits...</p>
           </div>
         ) : haunts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-            <Ghost className="w-14 h-14 text-ghost-700" />
-            <h3 className="text-lg font-bold text-ghost-400">No haunts yet</h3>
-            <p className="text-sm text-ghost-600 max-w-xs">Be the first ghost to haunt the feed. Your words echo here.</p>
-            <button onClick={() => setComposeOpen(true)} className="btn-primary mt-2 px-5 py-2.5 gap-2">
-              <Plus className="w-4 h-4" /> Post First Haunt
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center animate-fade-in relative">
+            <div className="absolute inset-0 bg-phantom-500/5 rounded-full blur-3xl scale-150 pointer-events-none" />
+            <div className="relative z-10 mb-6 drop-shadow-[0_0_20px_rgba(139,92,246,0.2)]">
+              <GhostPet status="HAPPY" level={10} size="xl" />
+            </div>
+            <h3 className="text-3xl font-black text-white mb-2 tracking-tight">It's Dead Quiet.</h3>
+            <p className="text-base text-ghost-400 max-w-sm mb-8 leading-relaxed">
+              Be the first ghost to haunt the feed. Share your thoughts, code, or just say boo.
+            </p>
+            <button onClick={() => setComposeOpen(true)} className="btn-primary text-base px-8 py-3.5 gap-2 shadow-lg shadow-phantom-500/30 hover:scale-105 active:scale-95 transition-all">
+              <Sparkles className="w-5 h-5" /> Summon the First Haunt
             </button>
           </div>
         ) : (
@@ -495,14 +531,16 @@ export default function HauntsPage() {
         )}
       </div>
 
-      {/* Floating compose button */}
-      {user && (
+      {/* Magical Floating Compose Button */}
+      {user && !composeOpen && (
         <button
           onClick={() => setComposeOpen(true)}
-          className="fixed bottom-20 md:bottom-6 right-4 md:right-6 w-14 h-14 rounded-full bg-phantom-600 hover:bg-phantom-500 text-white shadow-xl hover:shadow-phantom-500/30 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center z-30"
-          title="New Haunt"
+          className="fixed bottom-24 md:bottom-8 right-6 md:right-8 w-16 h-16 rounded-full bg-gradient-to-br from-phantom-500 to-purple-600 text-white shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:shadow-[0_0_40px_rgba(139,92,246,0.6)] hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center z-40 group"
+          title="Summon Haunt"
         >
-          <Plus className="w-6 h-6" />
+          {/* Outer pulsing ring */}
+          <div className="absolute inset-0 rounded-full border-2 border-phantom-300 opacity-50 animate-ping" style={{ animationDuration: '3s' }} />
+          <Plus className="w-8 h-8 group-hover:rotate-90 transition-transform duration-300 drop-shadow-md" />
         </button>
       )}
 
