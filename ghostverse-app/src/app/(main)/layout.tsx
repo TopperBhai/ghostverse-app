@@ -94,10 +94,14 @@ export default function MainLayout({
         {/* Logo */}
         <div className="px-5 py-5 flex items-center justify-between border-b border-white/5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-phantom-600/20 border border-phantom-500/30 flex items-center justify-center">
-              <Ghost className="w-5 h-5 text-phantom-400" />
+            <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-phantom-500 to-phantom-400 flex items-center justify-center shadow-lg overflow-hidden">
+              <div className="absolute inset-0 bg-black/20" />
+              <Ghost className="w-5 h-5 text-white relative z-10" />
             </div>
-            <span className="text-lg font-black gradient-text tracking-tight">GhostVerse</span>
+            <div className="text-lg font-black tracking-tight flex items-center">
+              <span className="text-white">GHOST</span>
+              <span className="bg-gradient-to-r from-phantom-500 via-phantom-400 to-neon-red bg-clip-text text-transparent">VERSE</span>
+            </div>
           </div>
           {/* Close button on mobile */}
           <button
@@ -237,8 +241,11 @@ export default function MainLayout({
           >
             <Menu className="w-5 h-5" />
           </button>
-          <Ghost className="w-5 h-5 text-phantom-400" />
-          <span className="font-bold gradient-text text-sm flex-1">GhostVerse</span>
+          <Ghost className="w-5 h-5 text-phantom-500" />
+          <div className="font-bold text-sm flex-1 flex items-center">
+            <span className="text-white">GHOST</span>
+            <span className="bg-gradient-to-r from-phantom-500 via-phantom-400 to-neon-red bg-clip-text text-transparent">VERSE</span>
+          </div>
           {/* Notification bell shortcut on mobile */}
           <NotificationDropdown />
           <ThemeToggle />

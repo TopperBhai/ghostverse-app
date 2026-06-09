@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 @source "../../";
 
 :root {
-  /* Default: Midnight Sapphire (Dark Mode) */
-  --bg-main: #050505;
+  /* Default: Deep Space (Dark Mode) */
+  --bg-main: #0D0D16;
   --bg-radial-glow: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.15) 0%, transparent 60%);
   --bg-grid-color: rgba(59, 130, 246, 0.04);
   --glow-opacity: 0.03;
-  --scrollbar-thumb: #1b2d41;
-  --scrollbar-hover: #334e68;
+  --scrollbar-thumb: #232340;
+  --scrollbar-hover: #3B82F6;
 
   /* Subtle border & hover overlays */
   --border-subtle: rgba(255, 255, 255, 0.05);
@@ -25,24 +25,24 @@
   --bg-white-20: rgba(255, 255, 255, 0.2);
 
   /* GhostVerse Core Palette (Dark values) */
-  --ghost-50: #f0f4f8;
-  --ghost-100: #d9e2ec;
-  --ghost-200: #bcccdc;
-  --ghost-300: #9fb3c8;
-  --ghost-400: #829ab1;
-  --ghost-500: #627d98;
-  --ghost-600: #486581;
-  --ghost-700: #334e68;
-  --ghost-800: #1b2d41;
-  --ghost-900: #101c2a;
-  --ghost-950: #080f18;
+  --ghost-50: #F8FAFC;
+  --ghost-100: #E2E8F0;
+  --ghost-200: #CBD5E1;
+  --ghost-300: #94A3B8;
+  --ghost-400: #64748B;
+  --ghost-500: #475569;
+  --ghost-600: #334155;
+  --ghost-700: #232340;
+  --ghost-800: #1E1E36;
+  --ghost-900: #1A1A2E;
+  --ghost-950: #0D0D16;
 
-  --phantom-400: #60a5fa;
-  --phantom-500: #3b82f6;
-  --phantom-600: #2563eb;
+  --phantom-400: #8B5CF6;
+  --phantom-500: #3B82F6;
+  --phantom-600: #2563EB;
   
-  --neon-red: #f43f5e;
-  --neon-blue: #60a5fa;
+  --neon-red: #EC4899;
+  --neon-blue: #22D3EE;
 }
 
 .light {
@@ -90,7 +90,7 @@
 }
 
 @theme {
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Poppins', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --animate-fade-in: fadeIn 0.4s ease-out;
@@ -178,7 +178,7 @@
     @apply outline-none focus:border-phantom-500 focus:ring-1 focus:ring-phantom-500;
   }
   .gradient-text {
-    @apply bg-gradient-to-r from-phantom-400 to-fuchsia-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-phantom-500 via-phantom-400 to-neon-red bg-clip-text text-transparent;
   }
   .message-bubble {
     @apply px-3.5 py-2 rounded-2xl text-sm leading-relaxed max-w-fit break-words;

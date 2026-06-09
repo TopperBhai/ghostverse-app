@@ -61,10 +61,14 @@ export default function HomePage() {
       <nav className="glass-nav fixed top-0 left-0 right-0 z-50 px-6 py-4 transition-all duration-300">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="w-10 h-10 rounded-xl bg-ghost-900 border border-white/10 flex items-center justify-center shadow-inner group-hover:border-phantom-500/50 group-hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] transition-all">
-              <Ghost className="w-6 h-6 text-phantom-400 group-hover:text-phantom-300 group-hover:scale-110 transition-transform" />
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-phantom-500 to-phantom-400 flex items-center justify-center shadow-lg group-hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] transition-all overflow-hidden">
+              <div className="absolute inset-0 bg-black/20" />
+              <Ghost className="w-6 h-6 text-white group-hover:scale-110 transition-transform relative z-10" />
             </div>
-            <span className="text-2xl font-black gradient-text tracking-tight">GhostVerse</span>
+            <div className="text-2xl font-black tracking-tight flex items-center">
+              <span className="text-white">GHOST</span>
+              <span className="bg-gradient-to-r from-phantom-500 via-phantom-400 to-neon-red bg-clip-text text-transparent">VERSE</span>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-bold text-ghost-300 hover:text-white transition-colors">
