@@ -486,7 +486,7 @@ export default function ProfilePage() {
               <div className={`absolute -top-10 -right-10 w-32 h-32 blur-3xl opacity-20 rounded-full ${gamification.pet.status === "RADIANT" ? "bg-phantom-500" : "bg-ghost-500"}`} />
               
               <div className="relative bg-ghost-950/50 rounded-xl p-4 border border-white/5 shadow-inner">
-                <GhostPet status={gamification.pet.status} level={gamification.pet.level} size="lg" />
+                <GhostPet status={gamification.pet.status} level={gamification.pet.level} size="lg" aura={profile.cosmetics?.activeAura} hat={profile.cosmetics?.activeHat} />
               </div>
               
               <div className="flex-1 text-center sm:text-left z-10">

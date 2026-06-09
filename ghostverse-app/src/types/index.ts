@@ -22,6 +22,12 @@ export interface Gamification {
   pet: GhostPet;
 }
 
+export interface GhostCosmetics {
+  activeHat: string | null;
+  activeAura: string | null;
+  unlockedItems: string[];
+}
+
 
 // ============================================================
 // AUTH TYPES
@@ -72,6 +78,7 @@ export interface UserProfile {
     reputationScore: number;
   } | null;
   gamification?: Gamification;
+  cosmetics?: GhostCosmetics;
   friendsCount: number;
   viewerFriendshipStatus?: ViewerFriendshipStatus;
 }
@@ -88,6 +95,7 @@ export interface SafeUser {
   createdAt: Date;
   lastUpvoteGivenAt?: Date | null;
   gamification?: Gamification;
+  cosmetics?: GhostCosmetics;
 }
 
 

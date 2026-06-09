@@ -35,6 +35,7 @@ interface FullProfile {
     reputationScore: number;
   } | null;
   gamification?: import("../../types").Gamification;
+  cosmetics?: import("../../types").GhostCosmetics;
 }
 
 const INTEREST_COLORS: Record<string, string> = {
@@ -299,7 +300,7 @@ export function UserProfileCard({
                   <div className="bg-ghost-900/50 border border-ghost-800/60 rounded-xl p-3 mb-3 flex items-center justify-between group hover:border-phantom-500/30 transition-all">
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <GhostPet status={gamification.pet.status} level={gamification.pet.level} size="sm" />
+                        <GhostPet status={gamification.pet.status} level={gamification.pet.level} size="sm" aura={profile.cosmetics?.activeAura} hat={profile.cosmetics?.activeHat} />
                       </div>
                       <div>
                         <div className="text-[10px] uppercase tracking-wider text-ghost-500 font-bold mb-0.5">Ghost Pet · Lvl {gamification.pet.level}</div>

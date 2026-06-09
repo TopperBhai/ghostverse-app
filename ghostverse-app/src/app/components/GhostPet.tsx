@@ -8,9 +8,11 @@ interface GhostPetProps {
   level: number;
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
+  aura?: string | null;
+  hat?: string | null;
 }
 
-export function GhostPet({ status, level, className = "", size = "md" }: GhostPetProps) {
+export function GhostPet({ status, level, className = "", size = "md", aura, hat }: GhostPetProps) {
   const sizeMap = {
     sm: "w-8 h-8",
     md: "w-16 h-16",
@@ -78,6 +80,20 @@ export function GhostPet({ status, level, className = "", size = "md" }: GhostPe
   return (
     <div className={`relative flex items-center justify-center ${sizeMap[size]} ${className}`}>
       
+      {/* Dynamic Aura Accessory */}
+      {aura === "neon-green" && (
+        <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse" />
+      )}
+      {aura === "infernal-red" && (
+        <div className="absolute inset-0 bg-red-600/30 rounded-full blur-xl animate-pulse" />
+      )}
+      {aura === "void-purple" && (
+        <div className="absolute inset-0 bg-purple-600/30 rounded-full blur-xl animate-pulse" />
+      )}
+      {aura === "golden-halo" && (
+        <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl animate-pulse" />
+      )}
+      
       {/* Background Particles for Specific Statuses */}
       {status === "CELESTIAL" && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-full">
@@ -138,6 +154,11 @@ export function GhostPet({ status, level, className = "", size = "md" }: GhostPe
 
           {/* BACKGROUND ACCESSORIES */}
           
+          {/* Hats! Rendered behind if they are a halo, but usually hats are rendered on top. Wait, let's put hats in the foreground later. */}
+          {hat === "halo" && (
+            <ellipse cx="50" cy="15" rx="20" ry="5" fill="none" stroke="#fbbf24" strokeWidth="3" className="animate-pulse" />
+          )}
+
           {/* Level 100+: Majestic Cape (Behind the body) */}
           {level >= 100 && (
             <path d="M 25 45 Q 10 70, 5 95 Q 45 90, 85 95 Q 90 70, 75 45 Z" fill="url(#cape-grad)" stroke="#450a0a" strokeWidth="1" className="drop-shadow-lg" />
@@ -241,6 +262,29 @@ export function GhostPet({ status, level, className = "", size = "md" }: GhostPe
               <rect x="0" y="10" width="4" height="40" fill="#78350f" rx="2" />
               <circle cx="2" cy="10" r="8" fill="#fef08a" className="drop-shadow-[0_0_10px_#fde047]" />
               <path d="M 2 0 L 5 7 L 12 10 L 5 13 L 2 20 L -1 13 L -8 10 L -1 7 Z" fill="#fff" className="animate-pulse" />
+            </g>
+          )}
+
+          {/* FOREGROUND ACCESSORIES (Hats) */}
+          {hat === "crown" && (
+            <path d="M 35 30 L 30 15 L 42 22 L 50 10 L 58 22 L 70 15 L 65 30 Z" fill="#fbbf24" stroke="#d97706" strokeWidth="1" />
+          )}
+          {hat === "demon-horns" && (
+            <g fill="#991b1b">
+              <path d="M 30 35 Q 20 15, 10 20 Q 20 25, 25 35 Z" />
+              <path d="M 70 35 Q 80 15, 90 20 Q 80 25, 75 35 Z" />
+            </g>
+          )}
+          {hat === "wizard-hat" && (
+            <g>
+              <ellipse cx="50" cy="30" rx="30" ry="5" fill="#4c1d95" />
+              <path d="M 25 30 Q 50 -10, 60 5 L 75 30 Z" fill="#5b21b6" />
+            </g>
+          )}
+          {hat === "cowboy" && (
+            <g>
+              <ellipse cx="50" cy="30" rx="35" ry="6" fill="#78350f" />
+              <path d="M 30 30 Q 50 10, 70 30 Z" fill="#92400e" />
             </g>
           )}
 

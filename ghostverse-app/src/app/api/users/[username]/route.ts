@@ -87,6 +87,7 @@ export async function GET(
       friendsCount,
       viewerFriendshipStatus,
       gamification: userData.gamification,
+      cosmetics: userData.cosmetics,
     };
 
 

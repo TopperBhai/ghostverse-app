@@ -4,27 +4,27 @@ import { useAuth } from "../../custom-hooks/use-auth";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy, Zap, Shield } from "lucide-react";
+import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy, Zap, Shield, Inbox as InboxIcon } from "lucide-react";
+import { NotificationDropdown } from "../components/NotificationDropdown";
 
 const NAV_ITEMS = [
   { href: "/world-chat", icon: Globe, label: "World Chat" },
   { href: "/haunts", icon: Zap, label: "Haunts" },
+  { href: "/inbox", icon: InboxIcon, label: "Inbox" },
   { href: "/random-chat", icon: Dices, label: "Random Voice" },
-  { href: "/messages", icon: MessageSquare, label: "Messages" },
-  { href: "/friends", icon: Users, label: "Friends" },
   { href: "/confessions", icon: VenetianMask, label: "Confessions" },
   { href: "/leaderboard", icon: Trophy, label: "Leaderboard" },
-  { href: "/notifications", icon: Bell, label: "Notifications" },
-  { href: "/support", icon: MessageSquare, label: "Support & Report" },
+  { href: "/shop", icon: Ghost, label: "Soul Shop" },
+  { href: "/support", icon: MessageSquare, label: "Support" },
 ];
 
 // Mobile bottom nav shows only top 5 (most used)
 const MOBILE_NAV = [
   { href: "/world-chat", icon: Globe, label: "World" },
   { href: "/haunts", icon: Zap, label: "Haunts" },
-  { href: "/messages", icon: MessageSquare, label: "Messages" },
-  { href: "/friends", icon: Users, label: "Friends" },
-  { href: "/notifications", icon: Bell, label: "Alerts" },
+  { href: "/inbox", icon: InboxIcon, label: "Inbox" },
+  { href: "/leaderboard", icon: Trophy, label: "Leaders" },
+  { href: "/shop", icon: Ghost, label: "Shop" },
 ];
 
 export default function MainLayout({
@@ -51,32 +51,8 @@ export default function MainLayout({
     setShowUserMenu(false);
   }, [pathname]);
 
-  // Fetch real notification count
-  const fetchNotifCount = useCallback(async () => {
-    if (!user) return;
-    try {
-      const res = await fetch("/api/notifications?limit=50");
-      const data = await res.json();
-      if (data.success && data.data) {
-        const unread = data.data.filter((n: any) => !n.read).length;
-        setUnreadNotifCount(unread);
-      }
-    } catch {}
-  }, [user]);
-
-  useEffect(() => {
-    fetchNotifCount();
-    // Refresh count every 60s
-    const interval = setInterval(fetchNotifCount, 60000);
-    return () => clearInterval(interval);
-  }, [fetchNotifCount]);
-
-  // Clear count when visiting notifications
-  useEffect(() => {
-    if (pathname === "/notifications") {
-      setUnreadNotifCount(0);
-    }
-  }, [pathname]);
+  // Fetch real notification count is now handled by the dropdown!
+  // No need to fetch it in layout anymore.
 
   if (loading) {
     return (
@@ -152,11 +128,6 @@ export default function MainLayout({
                     <Icon className="w-5 h-5" />
                   </span>
                   <span className="flex-1">{item.label}</span>
-                  {item.href === "/notifications" && unreadNotifCount > 0 && (
-                    <span className="ml-auto min-w-[20px] h-5 rounded-full bg-phantom-500 text-white text-[10px] flex items-center justify-center font-bold px-1.5">
-                      {unreadNotifCount > 99 ? "99+" : unreadNotifCount}
-                    </span>
-                  )}
                 </Link>
               );
             })}
@@ -254,20 +225,36 @@ export default function MainLayout({
           <Ghost className="w-5 h-5 text-phantom-400" />
           <span className="font-bold gradient-text text-sm flex-1">GhostVerse</span>
           {/* Notification bell shortcut on mobile */}
-          <Link href="/notifications" className="relative p-1 text-ghost-400 hover:text-ghost-200 transition-colors">
-            <Bell className="w-5 h-5" />
-            {unreadNotifCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-phantom-500 text-white text-[9px] flex items-center justify-center font-bold">
-                {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
-              </span>
-            )}
-          </Link>
+          <NotificationDropdown />
           {user.gamification && user.gamification.hauntStreak > 0 && (
             <div className="flex items-center gap-1 bg-orange-500/10 text-orange-400 px-2 py-1 rounded-lg border border-orange-500/20 shadow-sm ml-1">
               <span className="text-sm">🔥</span>
               <span className="text-xs font-bold">{user.gamification.hauntStreak}</span>
             </div>
           )}
+        </header>
+
+        {/* Desktop top bar */}
+        <header className="hidden md:flex sticky top-0 z-30 bg-ghost-950/80 backdrop-blur-xl border-b border-white/5 px-6 py-3 items-center justify-end gap-4">
+          <div className="flex items-center gap-3 bg-ghost-900/50 rounded-full pl-1 pr-3 py-1 border border-white/5">
+            <div className="avatar avatar-sm">
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.displayName} className="w-full h-full rounded-full object-cover" />
+              ) : (
+                <span className="gradient-text font-black">{user.displayName.charAt(0)}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-ghost-100">{user.profile?.reputationScore || 0} Rep</span>
+            </div>
+          </div>
+          {user.gamification && user.gamification.hauntStreak > 0 && (
+            <div className="flex items-center gap-1 bg-orange-500/10 text-orange-400 px-3 py-1.5 rounded-full border border-orange-500/20 shadow-sm">
+              <span className="text-sm">🔥</span>
+              <span className="text-sm font-bold">{user.gamification.hauntStreak} Streak</span>
+            </div>
+          )}
+          <NotificationDropdown />
         </header>
 
         {/* Page content — extra bottom padding on mobile for bottom nav */}
@@ -292,11 +279,6 @@ export default function MainLayout({
                   )}
                   <div className="relative">
                     <Icon className="w-5 h-5" />
-                    {item.href === "/notifications" && unreadNotifCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-phantom-500 text-white text-[8px] flex items-center justify-center font-bold">
-                        {unreadNotifCount > 9 ? "9+" : unreadNotifCount}
-                      </span>
-                    )}
                   </div>
                   <span className="text-[10px] font-medium">{item.label}</span>
                 </Link>
