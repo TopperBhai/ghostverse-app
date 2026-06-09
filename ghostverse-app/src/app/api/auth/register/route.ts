@@ -4,6 +4,7 @@ import { db } from "../../../../lib/firebase-admin";
 import { signToken, setAuthCookie } from "../../../../lib/auth";
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
+import { rateLimit } from "../../../../lib/rate-limit";
 import type { ApiResponse } from "../../../../types";
 import type { UserRole } from "../../../../types";
 
@@ -19,6 +20,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Rate Limiting: Max 10 registrations per 1 hour per IP
+    const isAllowed = rateLimit(request, 10, 60 * 60 * 1000);
+    if (!isAllowed) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: "Too many requests, please try again later." },
+        { status: 429 }
+      );
+    }
+
     const { password, username, displayName } = body;
 
     if (!password || !username || !displayName) {

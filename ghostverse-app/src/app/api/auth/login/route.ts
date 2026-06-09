@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../lib/firebase-admin";
 import { signToken, setAuthCookie } from "../../../../lib/auth";
 import bcrypt from "bcryptjs";
+import { rateLimit } from "../../../../lib/rate-limit";
 import type { ApiResponse } from "../../../../types";
 
 export async function POST(request: NextRequest) {
@@ -16,6 +17,16 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    
+    // Rate Limiting: Max 20 login attempts per 15 minutes per IP
+    const isAllowed = rateLimit(request, 20, 15 * 60 * 1000);
+    if (!isAllowed) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: "Too many login attempts. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const { username, password } = body;
 
     if (!username || !password) {
@@ -46,19 +57,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Account Lockout Check
+    const now = Date.now();
+    if (user.lockUntil && user.lockUntil > now) {
+      const minutesLeft = Math.ceil((user.lockUntil - now) / 60000);
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: `Account locked due to too many failed attempts. Try again in ${minutesLeft} minutes.` },
+        { status: 423 } // 423 Locked
+      );
+    }
+
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
+      // Increment failed login attempts
+      const failedAttempts = (user.failedLoginAttempts || 0) + 1;
+      const updates: any = { failedLoginAttempts: failedAttempts };
+      
+      // If 5 or more failed attempts, lock for 15 minutes
+      if (failedAttempts >= 5) {
+        updates.lockUntil = now + 15 * 60 * 1000;
+        updates.failedLoginAttempts = 0; // Reset attempts after lock
+      }
+      
+      await userDoc.ref.update(updates);
+
       return NextResponse.json<ApiResponse>(
         { success: false, error: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    // Update last seen
+    // Update last seen and reset failed attempts on successful login
     await userDoc.ref.update({
-      lastSeen: new Date().toISOString()
+      lastSeen: new Date().toISOString(),
+      failedLoginAttempts: 0,
+      lockUntil: null
     });
 
     // Create JWT
