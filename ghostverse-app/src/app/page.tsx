@@ -2,25 +2,17 @@
 
 import { useAuth } from "../custom-hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { 
-  Ghost, Rocket, User as UserIcon, Lock, Zap, 
-  Globe, Dices, VenetianMask, Users, Search, 
-  Flame, Sparkles, MessageSquare, Shield, Activity 
+  Ghost, User as UserIcon, MessageSquare, 
+  Globe, Shield, Star, Smartphone, Lock, Activity, Download
 } from "lucide-react";
-import { GhostPet } from "./components/GhostPet";
 import { ThemeToggle } from "./components/ThemeToggle";
-
-import type { PetStatus } from "../types";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-
-  // For the Gamification Live Preview
-  const [previewLevel, setPreviewLevel] = useState(1);
-  const [previewStatus, setPreviewStatus] = useState<PetStatus>("HAPPY");
 
   useEffect(() => {
     if (!loading && user) {
@@ -28,248 +20,191 @@ export default function HomePage() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    // Cycle through pet statuses to show animation automatically
-    const statuses: PetStatus[] = ["HAPPY", "RADIANT", "BLAZING", "CELESTIAL", "FADED"];
-    const levels = [5, 25, 50, 100, 1];
-    let i = 0; // Start at HAPPY
-    const interval = setInterval(() => {
-      i = (i + 1) % statuses.length;
-      setPreviewStatus(statuses[i]);
-      setPreviewLevel(levels[i]);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-ghost-950">
+      <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-2 border-phantom-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-ghost-400 text-sm font-medium animate-pulse">Entering the Universe...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-ghost-950 bg-grid relative overflow-hidden text-ghost-100 font-sans selection:bg-phantom-500/30">
-      {/* Dynamic Background Effects */}
-      <div className="bg-gradient-radial absolute inset-0 pointer-events-none opacity-50" />
-
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-phantom-500/30">
+      
       {/* Navigation */}
-      <nav className="glass-nav fixed top-0 left-0 right-0 z-50 px-6 py-4 transition-all duration-300">
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-black/80 backdrop-blur-md border-b border-white/5 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-phantom-500 to-phantom-400 flex items-center justify-center shadow-lg group-hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] transition-all overflow-hidden">
-              <div className="absolute inset-0 bg-black/20" />
+            <div className="relative w-10 h-10 rounded-xl bg-phantom-500 flex items-center justify-center shadow-lg overflow-hidden">
               <Ghost className="w-6 h-6 text-white group-hover:scale-110 transition-transform relative z-10" />
             </div>
-            <div className="text-2xl font-black tracking-tight flex items-center">
-              <span className="text-white">GHOST</span>
-              <span className="bg-gradient-to-r from-phantom-500 via-phantom-400 to-neon-red bg-clip-text text-transparent">VERSE</span>
+            <div className="text-xl font-bold tracking-tight flex items-center">
+              <span className="text-white">Ghost</span>
+              <span className="text-phantom-500">Verse</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-bold text-ghost-300 hover:text-white transition-colors">
-              Sign In
+            <Link href="/login" className="text-sm font-semibold text-ghost-300 hover:text-white transition-colors hidden sm:block">
+              Log In
             </Link>
-            <Link href="/register" className="btn-primary px-5 py-2 text-sm shadow-lg shadow-phantom-500/20 hover:shadow-phantom-500/40">
-              Join Now
+            <Link href="/register" className="bg-phantom-500 hover:bg-phantom-600 text-white px-5 py-2 rounded-full text-sm font-bold transition-all shadow-lg shadow-phantom-500/20">
+              Get App
             </Link>
-            <ThemeToggle />
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-20">
-        
-        {/* Top Hero Typography */}
-        <div className="text-center max-w-4xl mx-auto page-slide-up relative">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-phantom-500/10 border border-phantom-500/20 text-phantom-300 text-sm font-bold mb-8 animate-fade-in">
-            <Sparkles className="w-4 h-4" /> The Next-Gen Anonymous Social Network
+      <main className="pt-32 pb-20">
+        {/* App Store Hero Section */}
+        <section className="max-w-7xl mx-auto px-6 mb-24">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-phantom-500/10 text-phantom-500 text-sm font-bold mb-6">
+                <Star className="w-4 h-4 fill-phantom-500" /> #1 Anonymous Social Network
+              </div>
+              <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight">
+                Be Anyone.<br />
+                <span className="text-phantom-500">Anywhere.</span>
+              </h1>
+              <p className="text-xl text-ghost-400 mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Meet strangers, confess secrets, and build streaks. Experience true freedom without revealing your identity on the most secure social platform.
+              </p>
+              
+              {/* App Store Style CTAs */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <Link
+                  href="/register"
+                  className="w-full sm:w-auto px-8 py-4 bg-phantom-500 hover:bg-phantom-600 text-white font-bold rounded-2xl flex items-center justify-center gap-3 transition-all"
+                >
+                  <Download className="w-6 h-6" />
+                  <div className="flex flex-col items-start text-left">
+                    <span className="text-[10px] uppercase tracking-wider opacity-80 leading-none">Download for</span>
+                    <span className="text-lg leading-none mt-1">Web Platform</span>
+                  </div>
+                </Link>
+                <Link
+                  href="/world-chat"
+                  className="w-full sm:w-auto px-8 py-4 bg-ghost-900 hover:bg-ghost-800 text-white font-bold rounded-2xl flex items-center justify-center gap-3 transition-all border border-white/5"
+                >
+                  <Globe className="w-6 h-6 text-phantom-500" />
+                  <div className="flex flex-col items-start text-left">
+                    <span className="text-[10px] uppercase tracking-wider opacity-80 leading-none">Explore the</span>
+                    <span className="text-lg leading-none mt-1">World Chat</span>
+                  </div>
+                </Link>
+              </div>
+              
+              <div className="mt-8 flex items-center justify-center lg:justify-start gap-2 text-sm text-ghost-500 font-medium">
+                <Shield className="w-4 h-4" /> 100% Anonymous & Secure
+              </div>
+            </div>
+
+            {/* Device Mockup */}
+            <div className="flex-1 relative w-full max-w-md mx-auto">
+              <div className="relative aspect-[9/19] bg-ghost-950 rounded-[3rem] border-[8px] border-ghost-900 shadow-2xl shadow-phantom-500/10 overflow-hidden">
+                {/* Mock UI inside device */}
+                <div className="absolute inset-0 bg-black flex flex-col">
+                  <div className="bg-ghost-900 p-4 pt-8 flex items-center justify-between border-b border-white/5">
+                    <h3 className="font-bold">World Chat</h3>
+                    <div className="w-8 h-8 rounded-full bg-phantom-500 flex items-center justify-center"><Ghost className="w-4 h-4"/></div>
+                  </div>
+                  <div className="flex-1 p-4 space-y-4 overflow-hidden">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-ghost-800 shrink-0" />
+                      <div className="bg-ghost-900 p-3 rounded-2xl rounded-tl-sm text-sm border border-white/5">Hello from Tokyo! Anyone here?</div>
+                    </div>
+                    <div className="flex items-start gap-3 flex-row-reverse">
+                      <div className="bg-phantom-600 p-3 rounded-2xl rounded-tr-sm text-sm text-white">Welcome to the Verse! 👻</div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-ghost-800 shrink-0" />
+                      <div className="bg-ghost-900 p-3 rounded-2xl rounded-tl-sm text-sm border border-white/5">Just hit a 50-day streak!</div>
+                    </div>
+                  </div>
+                  <div className="p-4 border-t border-white/5 bg-ghost-900">
+                    <div className="h-10 rounded-full bg-black border border-white/10 flex items-center px-4">
+                      <span className="text-ghost-500 text-sm">Message...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+        </section>
 
-          <h1 className="text-6xl md:text-8xl font-black mb-8 tracking-tighter leading-tight drop-shadow-2xl">
-            Be <span className="gradient-text">Anyone.</span>
-            <br />
-            Anywhere.
-          </h1>
+        {/* Screenshots / Features Carousel Style */}
+        <section className="bg-ghost-950 border-y border-white/5 py-24 mb-24">
+          <div className="max-w-7xl mx-auto px-6">
+            <h2 className="text-3xl font-black mb-12 text-center">Everything you need. <br/><span className="text-ghost-500">Nothing you don't.</span></h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="bg-black p-8 rounded-3xl border border-white/5">
+                <div className="w-12 h-12 rounded-xl bg-phantom-500/10 flex items-center justify-center mb-6">
+                  <Globe className="w-6 h-6 text-phantom-500" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">World Chat</h3>
+                <p className="text-ghost-400">Join the massive global lobby. Connect with hundreds of anonymous users instantly in real-time.</p>
+              </div>
+              <div className="bg-black p-8 rounded-3xl border border-white/5">
+                <div className="w-12 h-12 rounded-xl bg-phantom-500/10 flex items-center justify-center mb-6">
+                  <Activity className="w-6 h-6 text-phantom-500" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Random Voice</h3>
+                <p className="text-ghost-400">Match with strangers globally for 1-on-1 encrypted voice chats. Skip anytime if the vibe isn't right.</p>
+              </div>
+              <div className="bg-black p-8 rounded-3xl border border-white/5">
+                <div className="w-12 h-12 rounded-xl bg-phantom-500/10 flex items-center justify-center mb-6">
+                  <Lock className="w-6 h-6 text-phantom-500" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">Secret Confessions</h3>
+                <p className="text-ghost-400">Spill your deepest secrets 100% anonymously. Read, upvote, and comment on others' confessions.</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-          <p className="text-xl md:text-2xl text-ghost-300 mb-12 text-balance font-medium leading-relaxed max-w-2xl mx-auto">
-            Meet strangers, confess secrets, and build streaks. 
-            Experience true freedom without revealing your identity.
-          </p>
+        {/* Ratings & Social Proof */}
+        <section className="max-w-5xl mx-auto px-6 mb-24 text-center">
+          <div className="flex items-center justify-center gap-1 mb-6">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star key={star} className="w-8 h-8 fill-phantom-500 text-phantom-500" />
+            ))}
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black mb-16 tracking-tight">"The most liberating social<br/>experience on the web."</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+            <div className="p-6 bg-ghost-900 rounded-2xl border border-white/5">
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((s) => <Star key={s} className="w-4 h-4 fill-phantom-500 text-phantom-500" />)}
+              </div>
+              <p className="font-medium mb-4">"Finally a place where I can just be myself without worrying about followers or real-life connections. The Ghost Pet gamification is super addicting too!"</p>
+              <div className="text-sm text-ghost-400">— Anonymous User, Lvl 42</div>
+            </div>
+            <div className="p-6 bg-ghost-900 rounded-2xl border border-white/5">
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((s) => <Star key={s} className="w-4 h-4 fill-phantom-500 text-phantom-500" />)}
+              </div>
+              <p className="font-medium mb-4">"The World Chat moves so fast but it's incredibly fun. The random voice feature works flawlessly and the audio quality is surprisingly good."</p>
+              <div className="text-sm text-ghost-400">— Anonymous User, Lvl 15</div>
+            </div>
+          </div>
+        </section>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-24">
+        {/* Final Bottom CTA */}
+        <section className="max-w-4xl mx-auto px-6 text-center">
+          <div className="bg-phantom-500 p-12 rounded-[3rem] shadow-[0_0_50px_rgba(225,29,72,0.2)]">
+            <h2 className="text-4xl font-black text-white mb-6">Ready to drop the mask?</h2>
+            <p className="text-white/80 text-lg mb-8 max-w-xl mx-auto">Join thousands of others in the GhostVerse today. No real names, no phone numbers required.</p>
             <Link
               href="/register"
-              className="group relative px-8 py-4 bg-phantom-600 hover:bg-phantom-500 text-white font-bold text-lg rounded-2xl shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:shadow-[0_0_50px_rgba(139,92,246,0.6)] transition-all flex items-center gap-3 overflow-hidden"
+              className="inline-flex px-8 py-4 bg-white text-phantom-500 hover:bg-ghost-100 font-black rounded-2xl transition-all"
             >
-              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full" />
-              <Rocket className="w-6 h-6 group-hover:-translate-y-1 group-hover:translate-x-1 transition-transform" />
-              Start Chatting — Free
-            </Link>
-            <Link 
-              href="/login" 
-              className="px-8 py-4 bg-ghost-900 border border-ghost-700 hover:bg-ghost-800 hover:border-ghost-600 text-ghost-100 font-bold text-lg rounded-2xl transition-all flex items-center gap-3 shadow-xl"
-            >
-              <UserIcon className="w-6 h-6 text-ghost-400" />
-              I have an account
+              Create Free Account
             </Link>
           </div>
-        </div>
-
-        {/* --- Highlight: Gamification & Ghost Pet Chamber --- */}
-        <div className="w-full max-w-5xl mx-auto mb-32 page-slide-up" style={{ animationDelay: '0.2s' }}>
-          <div className="relative rounded-[2.5rem] bg-ghost-900 border border-white/10 p-8 md:p-12 overflow-hidden group hover:border-phantom-500/30 transition-colors duration-500">
-            
-            <div className="relative z-10 flex flex-col md:flex-row items-center gap-12">
-              <div className="flex-1 space-y-6 text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fuchsia-500/10 text-fuchsia-400 text-xs font-bold uppercase tracking-wider">
-                  <Flame className="w-4 h-4" /> Gamified Social
-                </div>
-                <h2 className="text-4xl md:text-5xl font-black text-ghost-50 leading-tight">
-                  Evolve your <br/><span className="text-fuchsia-400 drop-shadow-[0_0_15px_rgba(232,121,249,0.5)]">Ghost Pet</span>
-                </h2>
-                <p className="text-ghost-300 text-lg leading-relaxed">
-                  Chat in World Chat, post Haunts, and maintain daily streaks to earn XP. 
-                  Watch your pet evolve, gain crowns, and become RADIANT. Don&apos;t lose your streak, or it fades!
-                </p>
-                <div className="flex items-center justify-center md:justify-start gap-6 pt-2">
-                  <div className="flex flex-col">
-                    <span className="text-3xl font-black text-ghost-50">Levels</span>
-                    <span className="text-sm text-ghost-400 font-medium">Unlock crowns & jewels</span>
-                  </div>
-                  <div className="w-px h-12 bg-ghost-800" />
-                  <div className="flex flex-col">
-                    <span className="text-3xl font-black text-ghost-50">Streaks</span>
-                    <span className="text-sm text-ghost-400 font-medium">Keep it alive daily</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* The Live Preview Chamber */}
-              <div className="flex-1 w-full max-w-sm">
-                <div className="relative aspect-square rounded-3xl bg-gradient-to-b from-ghost-800/80 to-ghost-950 border-2 border-ghost-700 p-8 shadow-2xl flex flex-col items-center justify-center overflow-hidden">
-                  {/* Grid background inside chamber */}
-                  <div className="absolute inset-0 bg-grid opacity-30 mix-blend-overlay" />
-                  
-                  {/* The Pet */}
-                  <div className="relative z-10 scale-150 transform mb-8 h-32 flex items-center justify-center">
-                    <GhostPet status={previewStatus} level={previewLevel} size="lg" />
-                  </div>
-
-                  {/* Status Indicator */}
-                  <div className="relative z-10 bg-black/80 border border-white/10 rounded-2xl px-6 py-4 w-full text-center">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-bold text-ghost-400 uppercase tracking-widest">Status</span>
-                      <span className={`text-sm font-black uppercase tracking-wider ${
-                        previewStatus === 'CELESTIAL' ? 'text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]' :
-                        previewStatus === 'BLAZING' ? 'text-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]' :
-                        previewStatus === 'RADIANT' ? 'text-phantom-300 drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]' :
-                        previewStatus === 'HAPPY' ? 'text-phantom-400' :
-                        previewStatus === 'HUNGRY' ? 'text-warning' : 'text-ghost-500'
-                      }`}>
-                        {previewStatus}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-ghost-400 uppercase tracking-widest">Level</span>
-                      <span className="text-sm font-black text-white">
-                        Lvl {previewLevel}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* --- Bento Grid Features Showcase --- */}
-        <div className="max-w-6xl mx-auto space-y-6 page-slide-up" style={{ animationDelay: '0.4s' }}>
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-black text-ghost-50 mb-4">A Universe of Features</h2>
-            <p className="text-ghost-400 text-lg">Everything you need to connect freely and securely.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[240px]">
-            {/* World Chat - Large Card */}
-            <div className="bento-card md:col-span-2 md:row-span-2 p-8 flex flex-col justify-between">
-              <div>
-                <div className="bento-icon-wrapper">
-                  <Globe className="w-6 h-6 text-phantom-400 group-hover:text-phantom-300 transition-colors" />
-                </div>
-                <h3 className="text-3xl font-black text-ghost-50 mb-3">World Chat</h3>
-                <p className="text-ghost-300 text-lg leading-relaxed max-w-sm">
-                  Jump into the global lobby. Talk with hundreds of users instantly. 
-                  Share media, react, and level up your XP together.
-                </p>
-              </div>
-              {/* Mock UI snippet inside card */}
-              <div className="mt-8 bg-ghost-950 rounded-2xl border border-white/5 p-4 flex flex-col gap-3 opacity-80 group-hover:opacity-100 transition-opacity">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-phantom-500/20 flex items-center justify-center"><UserIcon className="w-4 h-4 text-phantom-400"/></div>
-                  <div className="bg-ghost-800 rounded-2xl rounded-tl-sm px-4 py-2 text-sm">Hello from Tokyo! 🗼</div>
-                </div>
-                <div className="flex items-center gap-3 self-end">
-                  <div className="bg-phantom-600 rounded-2xl rounded-tr-sm px-4 py-2 text-sm text-white font-medium">Welcome to GhostVerse! 👻</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Random Voice */}
-            <div className="bento-card md:col-span-2 p-8 flex flex-col justify-center">
-              <div className="bento-icon-wrapper">
-                <Activity className="w-6 h-6 text-fuchsia-400" />
-              </div>
-              <h3 className="text-2xl font-black text-ghost-50 mb-2">Random Voice Call</h3>
-              <p className="text-ghost-400">Match with strangers globally for 1-on-1 P2P encrypted voice chats. Skip anytime.</p>
-            </div>
-
-            {/* Confessions */}
-            <div className="bento-card md:col-span-1 p-8 bg-gradient-to-br hover:from-error/10 hover:to-transparent flex flex-col justify-center">
-              <div className="bento-icon-wrapper group-hover:border-error/30 group-hover:bg-error/10">
-                <VenetianMask className="w-6 h-6 text-error group-hover:text-error" />
-              </div>
-              <h3 className="text-xl font-black text-ghost-50 mb-2">Confessions</h3>
-              <p className="text-ghost-400 text-sm">Spill your deepest secrets 100% anonymously. Upvote and comment.</p>
-            </div>
-
-            {/* Private DM */}
-            <div className="bento-card md:col-span-1 p-8 flex flex-col justify-center">
-              <div className="bento-icon-wrapper">
-                <MessageSquare className="w-6 h-6 text-phantom-400" />
-              </div>
-              <h3 className="text-xl font-black text-ghost-50 mb-2">Private DMs</h3>
-              <p className="text-ghost-400 text-sm">Add friends and chat privately with end-to-end security.</p>
-            </div>
-
-            {/* Haunts (Feed) */}
-            <div className="bento-card md:col-span-2 p-8 flex flex-row items-center justify-between gap-6">
-              <div className="flex-1">
-                <div className="bento-icon-wrapper">
-                  <Ghost className="w-6 h-6 text-neon-cyan" />
-                </div>
-                <h3 className="text-2xl font-black text-ghost-50 mb-2">Haunts</h3>
-                <p className="text-ghost-400">Post ephemeral thoughts to your timeline. They vanish like ghosts if not interacted with.</p>
-              </div>
-            </div>
-
-            {/* Communities */}
-            <div className="bento-card md:col-span-2 p-8 flex flex-col justify-center">
-              <div className="bento-icon-wrapper">
-                <Users className="w-6 h-6 text-success" />
-              </div>
-              <h3 className="text-2xl font-black text-ghost-50 mb-2">Communities</h3>
-              <p className="text-ghost-400">Create private, password-protected rooms for you and your friends to vibe in peace.</p>
-            </div>
-          </div>
-        </div>
-
+        </section>
 
       </main>
     </div>

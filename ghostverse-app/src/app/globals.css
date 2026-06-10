@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 @source "../../";
 
 :root {
-  /* Default: Deep Space (Dark Mode) */
-  --bg-main: #0D0D16;
-  --bg-radial-glow: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.15) 0%, transparent 60%);
-  --bg-grid-color: rgba(59, 130, 246, 0.04);
+  /* Default: OLED (Dark Mode) */
+  --bg-main: #000000;
+  --bg-radial-glow: radial-gradient(ellipse at top, rgba(225, 29, 72, 0.15) 0%, transparent 60%);
+  --bg-grid-color: rgba(255, 255, 255, 0.02);
   --glow-opacity: 0.03;
-  --scrollbar-thumb: #232340;
-  --scrollbar-hover: #3B82F6;
+  --scrollbar-thumb: #1F2937;
+  --scrollbar-hover: #E11D48;
 
   /* Subtle border & hover overlays */
   --border-subtle: rgba(255, 255, 255, 0.05);
@@ -25,24 +25,24 @@
   --bg-white-20: rgba(255, 255, 255, 0.2);
 
   /* GhostVerse Core Palette (Dark values) */
-  --ghost-50: #F8FAFC;
-  --ghost-100: #E2E8F0;
-  --ghost-200: #CBD5E1;
-  --ghost-300: #94A3B8;
-  --ghost-400: #64748B;
-  --ghost-500: #475569;
-  --ghost-600: #334155;
-  --ghost-700: #232340;
-  --ghost-800: #1E1E36;
-  --ghost-900: #1A1A2E;
-  --ghost-950: #0D0D16;
+  --ghost-50: #FFFFFF;
+  --ghost-100: #F3F4F6;
+  --ghost-200: #E5E7EB;
+  --ghost-300: #D1D5DB;
+  --ghost-400: #9CA3AF;
+  --ghost-500: #6B7280;
+  --ghost-600: #4B5563;
+  --ghost-700: #374151;
+  --ghost-800: #1F2937;
+  --ghost-900: #0A0A0A;
+  --ghost-950: #000000;
 
-  --phantom-400: #8B5CF6;
-  --phantom-500: #3B82F6;
-  --phantom-600: #2563EB;
+  --phantom-400: #FB7185;
+  --phantom-500: #E11D48;
+  --phantom-600: #BE123C;
   
-  --neon-red: #EC4899;
-  --neon-blue: #22D3EE;
+  --neon-red: #E11D48;
+  --neon-blue: #2563EB;
 }
 
 .light {
@@ -90,7 +90,7 @@
 }
 
 @theme {
-  --font-sans: 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --animate-fade-in: fadeIn 0.4s ease-out;
