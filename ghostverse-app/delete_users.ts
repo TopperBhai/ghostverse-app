@@ -3,7 +3,7 @@ import { db } from "./src/lib/firebase-admin";
 
 async function deleteAll() {
   console.log("Starting deletion of fake accounts...");
-  
+
   // Delete users
   const usersSnapshot = await db.collection("users").get();
   let deletedUsers = 0;
