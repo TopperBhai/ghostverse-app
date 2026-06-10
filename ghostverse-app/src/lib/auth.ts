@@ -55,9 +55,15 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
 
 export async function setAuthCookie(token: string): Promise<void> {
   const cookieStore = await cookies();
+  
+  // Only use secure cookies in production if not on localhost
+  const isProduction = process.env.NODE_ENV === "production";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const isLocalhost = appUrl.startsWith("http://localhost") || appUrl.startsWith("http://127.0.0.1");
+  
   cookieStore.set(TOKEN_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isProduction && !isLocalhost,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: "/",

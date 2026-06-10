@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const lowercaseUsername = username.toLowerCase();
+    const lowercaseUsername = username.trim().toLowerCase();
     
     // Check if username is taken (requires querying all users)
     const usernameQuery = await db.collection("users").where("username", "==", lowercaseUsername).limit(1).get();

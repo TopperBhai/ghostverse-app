@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     // Find user by username
     const usersRef = db.collection("users");
-    const snapshot = await usersRef.where("username", "==", username.toLowerCase()).limit(1).get();
+    const snapshot = await usersRef.where("username", "==", username.trim().toLowerCase()).limit(1).get();
 
     if (snapshot.empty) {
       return NextResponse.json<ApiResponse>(
