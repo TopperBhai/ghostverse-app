@@ -38,6 +38,17 @@ export interface GhostCosmetics {
   unlockedItems: string[];
 }
 
+export interface Clan {
+  id: string;
+  name: string;
+  tag: string;
+  description: string;
+  leaderId: string;
+  members: string[]; // User IDs
+  clanDust: number;
+  createdAt: string | Date;
+}
+
 
 // ============================================================
 // AUTH TYPES
@@ -89,6 +100,8 @@ export interface UserProfile {
   } | null;
   gamification?: Gamification;
   cosmetics?: GhostCosmetics;
+  clanId?: string | null;
+  clanTag?: string | null;
   friendsCount: number;
   viewerFriendshipStatus?: ViewerFriendshipStatus;
 }
@@ -106,6 +119,8 @@ export interface SafeUser {
   lastUpvoteGivenAt?: Date | null;
   gamification?: Gamification;
   cosmetics?: GhostCosmetics;
+  clanId?: string | null;
+  clanTag?: string | null;
 }
 
 
@@ -124,6 +139,7 @@ export interface ChatMessage {
     avatar: string | null;
     reputationScore?: number;
     gamificationLevel?: number;
+    clanTag?: string | null;
   };
   isEdited?: boolean;
 }
@@ -180,6 +196,7 @@ export interface HauntReply {
     displayName: string;
     avatar: string | null;
     reputationScore?: number;
+    clanTag?: string | null;
   };
 }
 
@@ -194,6 +211,7 @@ export interface HauntPost {
     displayName: string;
     avatar: string | null;
     reputationScore?: number;
+    clanTag?: string | null;
   };
   likes: number;
   likedBy: string[];

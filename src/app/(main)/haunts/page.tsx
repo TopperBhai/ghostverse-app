@@ -153,6 +153,11 @@ function HauntCard({
               className={`text-base font-black hover:underline transition-colors tracking-tight ${level.color}`}
             >
               {haunt.author.displayName}
+              {haunt.author.clanTag && (
+                <span className="ml-1.5 text-[10px] bg-phantom-500/20 text-phantom-400 border border-phantom-500/30 px-1.5 py-0.5 rounded font-mono tracking-wider shadow-sm translate-y-px">
+                  [{haunt.author.clanTag}]
+                </span>
+              )}
             </button>
             {level.badge && <span className="flex-shrink-0 scale-110 drop-shadow-sm">{level.badge}</span>}
             <span className="text-xs text-ghost-500 font-medium">@{haunt.author.username}</span>
@@ -266,6 +271,11 @@ function HauntCard({
                         className={`text-sm font-bold hover:underline ${getGhostLevel(reply.author.reputationScore || 0).color}`}
                       >
                         {reply.author.displayName}
+                        {reply.author.clanTag && (
+                          <span className="ml-1.5 text-[9px] bg-phantom-500/20 text-phantom-400 border border-phantom-500/30 px-1 py-px rounded font-mono tracking-wider shadow-sm translate-y-px">
+                            [{reply.author.clanTag}]
+                          </span>
+                        )}
                       </button>
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-ghost-600">{formatRelativeTime(reply.createdAt)}</span>
                     </div>

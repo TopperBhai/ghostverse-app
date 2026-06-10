@@ -113,6 +113,7 @@ export async function POST(
         displayName: userData.displayName,
         avatar: userData.avatar || null,
         reputationScore: userData.reputationScore || 0,
+        clanTag: userData.clanTag || null,
       },
     };
 

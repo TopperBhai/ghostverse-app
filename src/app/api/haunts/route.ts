@@ -119,6 +119,7 @@ export async function POST(request: NextRequest) {
         displayName: userData.displayName,
         avatar: userData.avatar || null,
         reputationScore: userData.reputationScore || profileData?.reputationScore || 0,
+        clanTag: userData.clanTag || null,
       },
       likes: 0,
       likedBy: [],

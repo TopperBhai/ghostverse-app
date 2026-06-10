@@ -109,7 +109,7 @@ export default function WorldChatPage() {
       id: `local-${Date.now()}`,
       content,
       createdAt: new Date(),
-      sender: { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar, reputationScore: user.profile?.reputationScore, gamificationLevel: user.gamification?.pet?.level || 1 },
+      sender: { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar, reputationScore: user.profile?.reputationScore, gamificationLevel: user.gamification?.pet?.level || 1, clanTag: user.clanTag },
     };
     setMessages((prev) => [...prev, optimisticMsg]);
 
@@ -260,6 +260,11 @@ export default function WorldChatPage() {
                     >
                       {msg.sender.displayName}
                     </button>
+                    {msg.sender.clanTag && (
+                      <span className="text-[9px] bg-phantom-500/20 text-phantom-400 border border-phantom-500/30 px-1 py-px rounded font-mono tracking-wider shadow-sm mr-1">
+                        [{msg.sender.clanTag}]
+                      </span>
+                    )}
                     <span className={`flex items-center ${level.color} opacity-80`} title={level.title}>
                       {level.badge}
                     </span>

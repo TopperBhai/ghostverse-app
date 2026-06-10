@@ -4,7 +4,10 @@ import { useAuth } from "../../custom-hooks/use-auth";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings, User as UserIcon, LogOut, Menu, X, Trophy, Zap, Shield, Inbox as InboxIcon, Sun, Moon } from "lucide-react";
+import { 
+  Globe, Ghost, MessageSquare, Zap, VenetianMask, 
+  Trophy, Store, Menu, X, LogOut, Bell, Shield, InboxIcon, Dices, Users, Settings, User as UserIcon, Sun, Moon
+} from "lucide-react";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { useTheme } from "../../custom-hooks/use-theme";
@@ -14,12 +17,13 @@ import { DailyMissionsModal } from "../components/DailyMissionsModal";
 
 const NAV_ITEMS = [
   { href: "/world-chat", icon: Globe, label: "World Chat" },
-  { href: "/haunts", icon: Zap, label: "Haunts" },
+  { href: "/haunts", icon: Ghost, label: "Haunts" },
   { href: "/inbox", icon: InboxIcon, label: "Inbox" },
+  { href: "/clans", icon: Users, label: "Ghost Families" },
   { href: "/random-chat", icon: Dices, label: "Random Voice" },
   { href: "/confessions", icon: VenetianMask, label: "Confessions" },
   { href: "/leaderboard", icon: Trophy, label: "Leaderboard" },
-  { href: "/shop", icon: Ghost, label: "Soul Shop" },
+  { href: "/shop", icon: Store, label: "Soul Shop" },
   { href: "/support", icon: MessageSquare, label: "Support" },
 ];
 
