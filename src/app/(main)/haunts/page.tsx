@@ -34,14 +34,14 @@ function HauntCard({
   currentUserId,
   currentUserRole,
   onInspect,
-  onReactionUpdate,
+  onLikeUpdate,
   onDelete,
 }: {
   haunt: HauntPost;
   currentUserId: string;
   currentUserRole?: string;
   onInspect: (user: { userId: string; username: string; displayName: string; avatar: string | null }) => void;
-  onReactionUpdate: (hauntId: string, reactions: HauntPost["reactions"]) => void;
+  onLikeUpdate: (hauntId: string, likeData: { likes: number, likedBy: string[] }) => void;
   onDelete?: (hauntId: string) => void;
 }) {
   const [showReplies, setShowReplies] = useState(false);
@@ -83,7 +83,7 @@ function HauntCard({
       });
       const data = await res.json();
       if (data.success) {
-        onReactionUpdate(haunt.id, data.data);
+        onLikeUpdate(haunt.id, data.data);
       }
     } catch {}
     finally { setPendingLike(false); }
@@ -540,7 +540,7 @@ export default function HauntsPage() {
     refreshUser(); // Update XP & Streak locally
   };
 
-  const handleReactionUpdate = (hauntId: string, likeData: {likes: number, likedBy: string[]}) => {
+  const handleLikeUpdate = (hauntId: string, likeData: {likes: number, likedBy: string[]}) => {
     setHaunts((prev) => prev.map((h) => h.id === hauntId ? { ...h, likes: likeData.likes, likedBy: likeData.likedBy } : h));
   };
 
@@ -605,7 +605,7 @@ export default function HauntsPage() {
               currentUserId={user?.id || ""}
               currentUserRole={user?.role}
               onInspect={setSelectedUser}
-              onReactionUpdate={handleReactionUpdate}
+              onLikeUpdate={handleLikeUpdate}
               onDelete={handleDeleteHaunt}
             />
           ))
