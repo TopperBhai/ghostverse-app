@@ -24,7 +24,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/me");
+      const res = await fetch(`/api/auth/me?t=${Date.now()}`, { 
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" }
+      });
       const data: ApiResponse<UserProfile> = await res.json();
       if (data.success && data.data) {
         setUser(data.data);
