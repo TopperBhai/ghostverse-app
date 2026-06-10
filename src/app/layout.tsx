@@ -82,12 +82,23 @@ export default async function RootLayout({
       <body className="bg-ghost-950 text-ghost-100 antialiased">
         <ThemeProvider>
           {showMaintenance ? (
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-              <h1 className="text-4xl font-bold text-phantom-500 mb-4">Under Maintenance</h1>
-              <p className="text-ghost-400 max-w-md">
-                GhostVerse is currently undergoing scheduled maintenance and upgrades. 
-                We&apos;ll be back shortly! Thanks for your patience.
-              </p>
+            <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 text-center animate-[fadeIn_0.5s_ease-out]">
+              <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/10 blur-[150px] rounded-full pointer-events-none" />
+              
+              <div className="relative z-10 animate-[slideUp_0.5s_ease-out]">
+                <div className="w-24 h-24 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/30 mx-auto mb-8 shadow-[0_0_50px_rgba(239,68,68,0.3)]">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500 animate-pulse"><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">GhostVerse is Offline</h1>
+                <p className="text-xl text-gray-400 mb-8 max-w-lg mx-auto font-medium">
+                  We are currently upgrading the realm with "God Mode" features. The servers will be back online shortly.
+                </p>
+                <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-zinc-900 border border-zinc-800 shadow-xl">
+                  <span className="w-3 h-3 rounded-full bg-yellow-500 animate-pulse" />
+                  <span className="text-sm font-bold text-gray-300 uppercase tracking-widest">Maintenance Mode Active</span>
+                </div>
+              </div>
             </div>
           ) : (
             <AuthProvider>{children}</AuthProvider>
