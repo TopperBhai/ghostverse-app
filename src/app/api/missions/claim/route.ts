@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       if (!userDoc.exists) return null;
 
       const data = userDoc.data();
-      let gamification: Gamification = data?.gamification;
+      const gamification: Gamification = data?.gamification;
 
       if (!gamification || !gamification.dailyMissions) {
         throw new Error("No missions data found. Perform an action first.");

@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       if (!userDoc.exists) throw new Error("User not found");
 
       const userData = userDoc.data()!;
-      let cosmetics: GhostCosmetics = userData.cosmetics || { activeHat: null, activeAura: null, nameColor: null, unlockedItems: [] };
+      const cosmetics: GhostCosmetics = userData.cosmetics || { activeHat: null, activeAura: null, nameColor: null, unlockedItems: [] };
 
       if (itemId && !cosmetics.unlockedItems.includes(itemId)) {
         throw new Error("You do not own this item");

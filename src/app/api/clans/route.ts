@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         throw new Error("You are already in a clan. Leave it first.");
       }
 
-      let gamification: Gamification = userData.gamification;
+      const gamification: Gamification = userData.gamification;
       if (!gamification || gamification.ghostDust < CLAN_CREATE_COST) {
         throw new Error(`You need ${CLAN_CREATE_COST} Ghost Dust to create a clan.`);
       }

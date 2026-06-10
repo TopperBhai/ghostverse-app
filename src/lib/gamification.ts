@@ -43,7 +43,7 @@ export async function updateGamification(userId: string, action: "HAUNT" | "CHAT
     if (!userDoc.exists) return;
 
     const data = userDoc.data();
-    let gamification: Gamification = data?.gamification || {
+    const gamification: Gamification = data?.gamification || {
       hauntStreak: 0,
       lastActiveAt: null,
       pet: { level: 1, xp: 0, status: "HAPPY" },
@@ -141,7 +141,7 @@ export async function evaluateStreakOnLogin(userId: string) {
     if (!userDoc.exists) return;
 
     const data = userDoc.data();
-    let gamification: Gamification = data?.gamification || {
+    const gamification: Gamification = data?.gamification || {
       hauntStreak: 0,
       lastActiveAt: null,
       pet: { level: 1, xp: 0, status: "HAPPY" },

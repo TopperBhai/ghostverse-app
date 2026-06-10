@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "./use-auth";
 import type { ServerToClientEvents, ClientToServerEvents } from "../types";
@@ -8,41 +8,40 @@ import type { ServerToClientEvents, ClientToServerEvents } from "../types";
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
 export function useSocket() {
-  const socketRef = useRef<TypedSocket | null>(null);
+  const [socket, setSocket] = useState<TypedSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
     // Initialize socket connection
-    const socket: TypedSocket = io({
+    const newSocket: TypedSocket = io({
       path: "/api/socketio",
       addTrailingSlash: false,
     });
 
-    socket.on("connect", () => {
+    newSocket.on("connect", () => {
       setIsConnected(true);
     });
 
-    socket.on("disconnect", () => {
+    newSocket.on("disconnect", () => {
       setIsConnected(false);
     });
 
-    socketRef.current = socket;
+    setSocket(newSocket);
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      newSocket.disconnect();
     };
   }, []);
 
   useEffect(() => {
-    if (isConnected && socketRef.current && user) {
-      socketRef.current.emit("user:online", { userId: user.id } as any);
+    if (isConnected && socket && user) {
+      socket.emit("user:online", { userId: user.id });
     }
-  }, [isConnected, user]);
+  }, [isConnected, socket, user]);
 
   return {
-    socket: socketRef.current,
+    socket,
     isConnected,
   };
 }

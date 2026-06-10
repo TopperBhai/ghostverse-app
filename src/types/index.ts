@@ -269,9 +269,9 @@ export interface ServerToClientEvents {
   "webrtc:call-accept": (data: { callerId: string }) => void;
   "webrtc:call-decline": (data: { callerId: string }) => void;
   "webrtc:end-call": () => void;
-  "webrtc:offer": (data: { offer: any; senderId: string }) => void;
-  "webrtc:answer": (data: { answer: any; senderId: string }) => void;
-  "webrtc:ice-candidate": (data: { candidate: any; senderId: string }) => void;
+  "webrtc:offer": (data: { offer: unknown; senderId: string }) => void;
+  "webrtc:answer": (data: { answer: unknown; senderId: string }) => void;
+  "webrtc:ice-candidate": (data: { candidate: unknown; senderId: string }) => void;
 
   // Random Voice Matchmaking
   "random-voice:match": (data: { peerId: string; isCaller: boolean; roomId: string }) => void;
@@ -321,9 +321,9 @@ export interface ClientToServerEvents {
   "webrtc:call-accept": (data: { callerId: string; receiverId: string }) => void;
   "webrtc:call-decline": (data: { callerId: string; receiverId: string }) => void;
   "webrtc:end-call": (data: { peerId: string }) => void;
-  "webrtc:offer": (data: { receiverId: string; senderId: string; offer: any }) => void;
-  "webrtc:answer": (data: { receiverId: string; senderId: string; answer: any }) => void;
-  "webrtc:ice-candidate": (data: { receiverId: string; senderId: string; candidate: any }) => void;
+  "webrtc:offer": (data: { receiverId: string; senderId: string; offer: unknown }) => void;
+  "webrtc:answer": (data: { receiverId: string; senderId: string; answer: unknown }) => void;
+  "webrtc:ice-candidate": (data: { receiverId: string; senderId: string; candidate: unknown }) => void;
 
   // Random Voice Matchmaking
   "random-voice:join": (data: { userId: string }) => void;

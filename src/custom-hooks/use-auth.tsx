@@ -43,7 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    refreshUser();
+    // eslint-disable-next-line
+    void refreshUser();
   }, [refreshUser]);
 
   const login = async (username: string, password: string) => {

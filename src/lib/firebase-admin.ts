@@ -12,8 +12,8 @@ const createUninitializedProxy = (serviceName: string) => {
   });
 };
 
-let dbInstance: admin.firestore.Firestore | any = createUninitializedProxy("Firestore");
-let authInstance: admin.auth.Auth | any = createUninitializedProxy("Auth");
+let dbInstance: unknown = createUninitializedProxy("Firestore");
+let authInstance: unknown = createUninitializedProxy("Auth");
 
 if (!admin.apps.length) {
   try {

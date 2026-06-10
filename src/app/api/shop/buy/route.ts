@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
       if (!userDoc.exists) throw new Error("User not found");
 
       const userData = userDoc.data()!;
-      let gamification: Gamification = userData.gamification || { ghostDust: 0 };
-      let cosmetics: GhostCosmetics = userData.cosmetics || { activeHat: null, activeAura: null, nameColor: null, unlockedItems: [] };
+      const gamification: Gamification = userData.gamification || { ghostDust: 0 };
+      const cosmetics: GhostCosmetics = userData.cosmetics || { activeHat: null, activeAura: null, nameColor: null, unlockedItems: [] };
 
       if (cosmetics.unlockedItems.includes(itemId)) {
         throw new Error("You already own this item");

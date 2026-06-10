@@ -39,19 +39,22 @@ export async function POST(
     let updatedLikes: number;
 
     if (hasLiked) {
-      // Remove like
+      // Remove like atomically
+      await hauntRef.update({
+        likes: FieldValue.increment(-1),
+        likedBy: FieldValue.arrayRemove(userId),
+      });
       updatedLikedBy = likedBy.filter((uid) => uid !== userId);
       updatedLikes = Math.max(0, (hauntData.likes || 0) - 1);
     } else {
-      // Add like
+      // Add like atomically
+      await hauntRef.update({
+        likes: FieldValue.increment(1),
+        likedBy: FieldValue.arrayUnion(userId),
+      });
       updatedLikedBy = [...likedBy, userId];
       updatedLikes = (hauntData.likes || 0) + 1;
     }
-
-    await hauntRef.update({ 
-      likes: updatedLikes,
-      likedBy: updatedLikedBy 
-    });
 
     return NextResponse.json<ApiResponse<{likes: number, likedBy: string[]}>>({
       success: true,
