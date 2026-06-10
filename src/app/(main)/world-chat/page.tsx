@@ -9,6 +9,7 @@ import { UserProfileCard } from "../../components/UserProfileCard";
 import { getGhostLevel } from "../../../lib/levels";
 import { MentionInput } from "../../components/MentionInput";
 import { FormattedText } from "../../components/FormattedText";
+import { getDailyChaosEvent } from "../../../lib/chaos-events";
 
 export default function WorldChatPage() {
   const { user, refreshUser } = useAuth();
@@ -22,6 +23,8 @@ export default function WorldChatPage() {
     userId: string; username: string; displayName: string; avatar: string | null;
   } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chaosEvent = getDailyChaosEvent();
+  const isGhostDay = chaosEvent.id === "ghost";
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -224,19 +227,23 @@ export default function WorldChatPage() {
               {/* Avatar or Spacer */}
               {!isSequential ? (
                 <button
-                  className="avatar avatar-sm flex-shrink-0 mb-1 cursor-pointer hover:ring-2 hover:ring-phantom-500/60 transition-all"
-                  title={`@${msg.sender.username}`}
-                  onClick={() => setSelectedUser({
-                    userId: msg.sender.id,
-                    username: msg.sender.username,
-                    displayName: msg.sender.displayName,
-                    avatar: msg.sender.avatar,
-                  })}
+                  className={`avatar avatar-sm flex-shrink-0 mb-1 transition-all ${!isGhostDay ? "cursor-pointer hover:ring-2 hover:ring-phantom-500/60" : "cursor-default"}`}
+                  title={!isGhostDay ? `@${msg.sender.username}` : "Anonymous"}
+                  onClick={() => {
+                    if (!isGhostDay) {
+                      setSelectedUser({
+                        userId: msg.sender.id,
+                        username: msg.sender.username,
+                        displayName: msg.sender.displayName,
+                        avatar: msg.sender.avatar,
+                      });
+                    }
+                  }}
                 >
-                  {msg.sender.avatar ? (
+                  {!isGhostDay && msg.sender.avatar ? (
                     <img src={msg.sender.avatar} alt={msg.sender.displayName} className="w-full h-full rounded-full object-cover" />
                   ) : (
-                    msg.sender.displayName.charAt(0)
+                    isGhostDay ? "👻" : msg.sender.displayName.charAt(0)
                   )}
                 </button>
               ) : (
@@ -250,27 +257,35 @@ export default function WorldChatPage() {
                 {!isSequential && (
                   <div className={`flex items-center gap-1.5 px-1 ${isOwn ? "flex-row-reverse" : ""}`}>
                     <button
-                      className={`text-xs font-bold leading-none hover:underline cursor-pointer transition-colors ${msg.sender.cosmetics?.nameColor || level.color}`}
-                      onClick={() => setSelectedUser({
-                        userId: msg.sender.id,
-                        username: msg.sender.username,
-                        displayName: msg.sender.displayName,
-                        avatar: msg.sender.avatar,
-                      })}
+                      className={`text-xs font-bold leading-none transition-colors ${!isGhostDay ? "hover:underline cursor-pointer" : "cursor-default"} ${!isGhostDay ? (msg.sender.cosmetics?.nameColor || level.color) : "text-ghost-400"}`}
+                      onClick={() => {
+                        if (!isGhostDay) {
+                          setSelectedUser({
+                            userId: msg.sender.id,
+                            username: msg.sender.username,
+                            displayName: msg.sender.displayName,
+                            avatar: msg.sender.avatar,
+                          });
+                        }
+                      }}
                     >
-                      {msg.sender.displayName}
+                      {isGhostDay ? "Anonymous Ghost" : msg.sender.displayName}
                     </button>
-                    {msg.sender.clanTag && (
+                    {!isGhostDay && msg.sender.clanTag && (
                       <span className="text-[9px] bg-phantom-500/20 text-phantom-400 border border-phantom-500/30 px-1 py-px rounded font-mono tracking-wider shadow-sm mr-1">
                         [{msg.sender.clanTag}]
                       </span>
                     )}
-                    <span className={`flex items-center ${level.color} opacity-80`} title={level.title}>
-                      {level.badge}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-[#27272a] border border-[#3f3f46] text-[10px] font-black tracking-wide text-[#e4e4e7] flex items-center justify-center shadow-sm leading-none">
-                      Lvl {msg.sender.gamificationLevel || 1}
-                    </span>
+                    {!isGhostDay && (
+                      <span className={`flex items-center ${level.color} opacity-80`} title={level.title}>
+                        {level.badge}
+                      </span>
+                    )}
+                    {!isGhostDay && (
+                      <span className="px-2 py-0.5 rounded-full bg-[#27272a] border border-[#3f3f46] text-[10px] font-black tracking-wide text-[#e4e4e7] flex items-center justify-center shadow-sm leading-none">
+                        Lvl {msg.sender.gamificationLevel || 1}
+                      </span>
+                    )}
                     <span className="text-[10px] text-ghost-600 leading-none">
                       {formatTime(msg.createdAt)}
                     </span>

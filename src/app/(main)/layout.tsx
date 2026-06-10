@@ -14,6 +14,7 @@ import { useTheme } from "../../custom-hooks/use-theme";
 import { WebRTCProvider } from "../../custom-hooks/WebRTCContext";
 import { FloatingCallWidget } from "../components/FloatingCallWidget";
 import { DailyMissionsModal } from "../components/DailyMissionsModal";
+import { DailyChaosBanner } from "../components/DailyChaosBanner";
 
 const NAV_ITEMS = [
   { href: "/world-chat", icon: Globe, label: "World Chat" },
@@ -241,6 +242,7 @@ export default function MainLayout({
 
       {/* Main content */}
       <main className="flex-1 flex flex-col min-h-screen overflow-hidden">
+        <DailyChaosBanner />
         {/* Mobile top bar */}
         <header className="glass-nav sticky top-0 z-30 md:hidden px-4 py-3 flex items-center gap-3">
           <button
