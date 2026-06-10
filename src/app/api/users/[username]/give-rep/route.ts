@@ -79,6 +79,8 @@ export async function POST(
     // Call Gamification logic so they receive the XP for getting Rep
     const { updateGamification } = require("../../../../../lib/gamification");
     await updateGamification(targetUserId, "REP");
+    // And giver gets mission progress
+    await updateGamification(authUser.userId, "GIVE_REP");
 
     return NextResponse.json<ApiResponse>(
       { success: true, message: "Reputation given successfully" },

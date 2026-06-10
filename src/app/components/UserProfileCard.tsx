@@ -163,7 +163,9 @@ export function UserProfileCard({
               status: prev.gamification?.pet?.status || "HAPPY",
               level: prev.gamification?.pet ? Math.floor((prev.gamification.pet.xp + 100) / 500) + 1 : 1,
               xp: (prev.gamification?.pet?.xp || 0) + 100
-            }
+            },
+            ghostDust: prev.gamification?.ghostDust || 0,
+            dailyMissions: prev.gamification?.dailyMissions || { date: "", hauntsPosted: 0, echoesLeft: 0, repGiven: 0, claimed: false }
           }
         } : null);
       } else {

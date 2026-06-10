@@ -6,6 +6,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
 import type { ApiResponse, HauntReply } from "../../../../../types";
 import { extractMentions, notifyMentionedUsers } from "../../../../../lib/mentions";
+import { updateGamification } from "../../../../../lib/gamification";
 
 // GET: Fetch replies for a haunt
 export async function GET(
@@ -133,6 +134,9 @@ export async function POST(
         content
       ).catch(err => console.error("Mention notification error in haunt replies:", err));
     }
+
+    // Update gamification for the echo
+    await updateGamification(userData.id, "ECHO");
 
     return NextResponse.json<ApiResponse<HauntReply>>({
       success: true,

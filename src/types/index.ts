@@ -16,10 +16,20 @@ export interface GhostPet {
   status: PetStatus;
 }
 
+export interface DailyMissions {
+  date: string; // YYYY-MM-DD
+  hauntsPosted: number;
+  echoesLeft: number;
+  repGiven: number;
+  claimed: boolean;
+}
+
 export interface Gamification {
   hauntStreak: number;
   lastActiveAt: string | Date | null;
   pet: GhostPet;
+  ghostDust: number;
+  dailyMissions: DailyMissions;
 }
 
 export interface GhostCosmetics {

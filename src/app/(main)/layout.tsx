@@ -10,6 +10,7 @@ import { ThemeToggle } from "../components/ThemeToggle";
 import { useTheme } from "../../custom-hooks/use-theme";
 import { WebRTCProvider } from "../../custom-hooks/WebRTCContext";
 import { FloatingCallWidget } from "../components/FloatingCallWidget";
+import { DailyMissionsModal } from "../components/DailyMissionsModal";
 
 const NAV_ITEMS = [
   { href: "/world-chat", icon: Globe, label: "World Chat" },
@@ -43,6 +44,7 @@ export default function MainLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [showMissions, setShowMissions] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -258,6 +260,15 @@ export default function MainLayout({
               <span className="text-xs font-bold">{user.gamification.hauntStreak}</span>
             </div>
           )}
+          {user.gamification && (
+            <button 
+              onClick={() => setShowMissions(true)}
+              className="flex items-center gap-1 bg-phantom-500/10 text-phantom-300 px-2 py-1 rounded-lg border border-phantom-500/20 shadow-sm ml-1 hover:bg-phantom-500/20 transition-colors"
+            >
+              <span className="text-xs font-bold">{user.gamification.ghostDust || 0}</span>
+              <span className="text-sm">🟣</span>
+            </button>
+          )}
         </header>
 
         {/* Desktop top bar */}
@@ -279,6 +290,15 @@ export default function MainLayout({
               <span className="text-sm">🔥</span>
               <span className="text-sm font-bold">{user.gamification.hauntStreak} Streak</span>
             </div>
+          )}
+          {user.gamification && (
+            <button 
+              onClick={() => setShowMissions(true)}
+              className="flex items-center gap-1.5 bg-phantom-500/10 text-phantom-300 px-3 py-1.5 rounded-full border border-phantom-500/20 shadow-sm hover:bg-phantom-500/20 hover:scale-105 transition-all active:scale-95"
+            >
+              <span className="text-sm font-bold">{user.gamification.ghostDust || 0} Dust</span>
+              <span className="text-sm">🟣</span>
+            </button>
           )}
           <NotificationDropdown />
           <ThemeToggle />
@@ -317,6 +337,20 @@ export default function MainLayout({
       
       {/* Global Floating Call Widget */}
       <FloatingCallWidget />
+
+      {/* Daily Missions Modal */}
+      {user.gamification && (
+        <DailyMissionsModal 
+          isOpen={showMissions} 
+          onClose={() => setShowMissions(false)} 
+          gamification={user.gamification}
+          onClaimSuccess={(newGamif) => {
+            // Update local user state if possible, or force reload
+            // A simple page reload is fine for now, or trust the realtime stream if setup.
+            window.location.reload();
+          }}
+        />
+      )}
     </div>
     </WebRTCProvider>
   );

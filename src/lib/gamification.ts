@@ -31,11 +31,11 @@ export function determinePetStatus(streak: number, lastActiveAt: Date | null): P
 }
 
 /**
- * Updates a user's gamification stats (streak, pet xp, level).
+ * Updates a user's gamification stats (streak, pet xp, level, daily missions).
  * @param userId The user's ID
- * @param action "HAUNT" | "CHAT" | "REP"
+ * @param action "HAUNT" | "CHAT" | "REP" | "ECHO" | "GIVE_REP"
  */
-export async function updateGamification(userId: string, action: "HAUNT" | "CHAT" | "REP") {
+export async function updateGamification(userId: string, action: "HAUNT" | "CHAT" | "REP" | "ECHO" | "GIVE_REP") {
   const userRef = db.collection("users").doc(userId);
 
   await db.runTransaction(async (transaction) => {
@@ -46,10 +46,28 @@ export async function updateGamification(userId: string, action: "HAUNT" | "CHAT
     let gamification: Gamification = data?.gamification || {
       hauntStreak: 0,
       lastActiveAt: null,
-      pet: { level: 1, xp: 0, status: "HAPPY" }
+      pet: { level: 1, xp: 0, status: "HAPPY" },
+      ghostDust: 0,
+      dailyMissions: { date: getISTDateString(new Date()), hauntsPosted: 0, echoesLeft: 0, repGiven: 0, claimed: false }
     };
 
+    // Ensure ghostDust exists for legacy users
+    if (gamification.ghostDust === undefined) gamification.ghostDust = 0;
+    
     const now = new Date();
+    const todayStr = getISTDateString(now);
+
+    // Reset Daily Missions if it's a new day
+    if (!gamification.dailyMissions || gamification.dailyMissions.date !== todayStr) {
+      gamification.dailyMissions = {
+        date: todayStr,
+        hauntsPosted: 0,
+        echoesLeft: 0,
+        repGiven: 0,
+        claimed: false
+      };
+    }
+
     const lastActive = gamification.lastActiveAt ? new Date(gamification.lastActiveAt) : null;
     
     let isNewDay = false;
@@ -76,7 +94,7 @@ export async function updateGamification(userId: string, action: "HAUNT" | "CHAT
     }
 
     // Update Streak
-    if (action === "HAUNT" || action === "CHAT") {
+    if (action === "HAUNT" || action === "CHAT" || action === "ECHO") {
       if (streakBroken) {
         gamification.hauntStreak = 1;
       } else if (isNewDay) {
@@ -87,10 +105,16 @@ export async function updateGamification(userId: string, action: "HAUNT" | "CHAT
       gamification.lastActiveAt = now.toISOString();
     }
 
+    // Update Missions
+    if (action === "HAUNT") gamification.dailyMissions.hauntsPosted += 1;
+    if (action === "ECHO") gamification.dailyMissions.echoesLeft += 1;
+    if (action === "GIVE_REP") gamification.dailyMissions.repGiven += 1;
+
     // Add XP
     let xpToAdd = 0;
     if (action === "HAUNT") xpToAdd = XP_PER_HAUNT;
     if (action === "CHAT") xpToAdd = XP_PER_CHAT;
+    if (action === "ECHO") xpToAdd = XP_PER_CHAT; // Echo counts as chat XP
     if (action === "REP") xpToAdd = XP_PER_REP_RECEIVED;
 
     // Apply XP to Pet
@@ -120,12 +144,31 @@ export async function evaluateStreakOnLogin(userId: string) {
     let gamification: Gamification = data?.gamification || {
       hauntStreak: 0,
       lastActiveAt: null,
-      pet: { level: 1, xp: 0, status: "HAPPY" }
+      pet: { level: 1, xp: 0, status: "HAPPY" },
+      ghostDust: 0,
+      dailyMissions: { date: getISTDateString(new Date()), hauntsPosted: 0, echoesLeft: 0, repGiven: 0, claimed: false }
     };
 
+    // Ensure ghostDust exists for legacy users
+    if (gamification.ghostDust === undefined) gamification.ghostDust = 0;
+    
     const now = new Date();
-    const lastActive = gamification.lastActiveAt ? new Date(gamification.lastActiveAt) : null;
+    const todayStr = getISTDateString(now);
     let modified = false;
+
+    // Reset Daily Missions if it's a new day
+    if (!gamification.dailyMissions || gamification.dailyMissions.date !== todayStr) {
+      gamification.dailyMissions = {
+        date: todayStr,
+        hauntsPosted: 0,
+        echoesLeft: 0,
+        repGiven: 0,
+        claimed: false
+      };
+      modified = true;
+    }
+
+    const lastActive = gamification.lastActiveAt ? new Date(gamification.lastActiveAt) : null;
 
     if (lastActive) {
       const todayStr = getISTDateString(now);
