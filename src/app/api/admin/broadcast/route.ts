@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     // Check if admin
     const userDoc = await db.collection("users").doc(authUser.userId).get();
-    if (!userDoc.exists || userDoc.data()?.role !== "admin") {
+    if (!userDoc.exists || userDoc.data()?.role !== "ADMIN") {
       return NextResponse.json<ApiResponse>(
         { success: false, error: "Forbidden: Admin access required" },
         { status: 403 }
