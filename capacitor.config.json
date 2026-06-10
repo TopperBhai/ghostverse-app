@@ -4,7 +4,7 @@
   "webDir": "public",
   "bundledWebRuntime": false,
   "server": {
-    "url": "https://ghostverse-app.vercel.app",
+    "url": "https://ghostverse-app.onrender.com",
     "cleartext": true
   }
 }
