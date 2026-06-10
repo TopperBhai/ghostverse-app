@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
-import type { HauntPost, HauntReply, HauntReactionType } from "../../../types";
+import type { HauntPost, HauntReply } from "../../../types";
 import { getGhostLevel } from "../../../lib/levels";
 import { UserProfileCard } from "../../components/UserProfileCard";
 import { GhostPet } from "../../components/GhostPet";
@@ -13,13 +13,6 @@ import {
 import Link from "next/link";
 import { MentionInput } from "../../components/MentionInput";
 import { FormattedText } from "../../components/FormattedText";
-
-const REACTIONS: { type: HauntReactionType; emoji: string; label: string; glow: string; text: string }[] = [
-  { type: "SPOOKY", emoji: "👻", label: "Spooky", glow: "shadow-[0_0_15px_rgba(168,85,247,0.5)]", text: "text-purple-400" },
-  { type: "FIRE",   emoji: "🔥", label: "Fire", glow: "shadow-[0_0_15px_rgba(239,68,68,0.5)]", text: "text-orange-400" },
-  { type: "DEAD",   emoji: "💀", label: "Dead", glow: "shadow-[0_0_15px_rgba(255,255,255,0.4)]", text: "text-gray-300" },
-  { type: "ICONIC", emoji: "✨", label: "Iconic", glow: "shadow-[0_0_15px_rgba(250,204,21,0.5)]", text: "text-yellow-300" },
-];
 
 function formatRelativeTime(date: Date | string): string {
   const d = new Date(date);
@@ -56,7 +49,7 @@ function HauntCard({
   const [loadingReplies, setLoadingReplies] = useState(false);
   const [replyInput, setReplyInput] = useState("");
   const [submittingReply, setSubmittingReply] = useState(false);
-  const [pendingReaction, setPendingReaction] = useState<HauntReactionType | null>(null);
+  const [pendingLike, setPendingLike] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -79,26 +72,21 @@ function HauntCard({
 
   const level = getGhostLevel(haunt.author.reputationScore || 0);
 
-  const getUserReaction = () =>
-    haunt.reactions.find((r: HauntPost["reactions"][0]) => r.reactedBy.includes(currentUserId))?.type || null;
+  const hasLiked = haunt.likedBy?.includes(currentUserId);
 
-  const userReaction = getUserReaction();
-
-  const handleReact = async (type: HauntReactionType) => {
-    if (pendingReaction) return;
-    setPendingReaction(type);
+  const handleLike = async () => {
+    if (pendingLike) return;
+    setPendingLike(true);
     try {
-      const res = await fetch(`/api/haunts/${haunt.id}/react`, {
+      const res = await fetch(`/api/haunts/${haunt.id}/like`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type }),
       });
       const data = await res.json();
       if (data.success) {
         onReactionUpdate(haunt.id, data.data);
       }
     } catch {}
-    finally { setPendingReaction(null); }
+    finally { setPendingLike(false); }
   };
 
   const loadReplies = async () => {
@@ -138,8 +126,6 @@ function HauntCard({
     } catch {}
     finally { setSubmittingReply(false); }
   };
-
-  const totalReactions = haunt.reactions.reduce((s: number, r: HauntPost["reactions"][0]) => s + r.count, 0);
 
   return (
     <article className="relative bg-ghost-900 border border-white/5 rounded-3xl p-5 md:p-6 group hover:border-phantom-500/30 transition-colors duration-300 animate-fade-in">
@@ -207,28 +193,21 @@ function HauntCard({
 
       {/* Reactions row */}
       <div className="relative flex items-center gap-3 flex-wrap mb-4 pl-16">
-        {REACTIONS.map(({ type, emoji, label, glow, text }) => {
-          const reaction = haunt.reactions.find((r) => r.type === type);
-          const isActive = userReaction === type;
-          return (
-            <button
-              key={type}
-              onClick={() => handleReact(type)}
-              disabled={pendingReaction !== null}
-              className={`group/react flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 active:scale-90 ${
-                isActive
-                  ? `bg-white/10 ${text} ${glow} border border-white/20 scale-105`
-                  : "bg-ghost-900/60 border border-ghost-800/80 text-ghost-500 hover:border-white/20 hover:text-white hover:bg-ghost-800/60 hover:scale-105"
-              } ${pendingReaction === type ? "opacity-50" : ""}`}
-              title={label}
-            >
-              <span className={`text-base leading-none transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover/react:scale-110 group-hover/react:-rotate-6'}`}>{emoji}</span>
-              {reaction && reaction.count > 0 && (
-                <span className={isActive ? text : "text-ghost-400"}>{reaction.count}</span>
-              )}
-            </button>
-          );
-        })}
+        <button
+          onClick={handleLike}
+          disabled={pendingLike}
+          className={`group/like flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 active:scale-90 ${
+            hasLiked
+              ? "bg-white/10 text-orange-400 shadow-[0_0_15px_rgba(239,68,68,0.5)] border border-white/20 scale-105"
+              : "bg-ghost-900/60 border border-ghost-800/80 text-ghost-500 hover:border-white/20 hover:text-white hover:bg-ghost-800/60 hover:scale-105"
+          } ${pendingLike ? "opacity-50" : ""}`}
+          title="Like"
+        >
+          <span className={`text-base leading-none transition-transform duration-300 ${hasLiked ? 'scale-110' : 'group-hover/like:scale-110 group-hover/like:-rotate-6'}`}>🔥</span>
+          {(haunt.likes > 0) && (
+            <span className={hasLiked ? "text-orange-400" : "text-ghost-400"}>{haunt.likes}</span>
+          )}
+        </button>
       </div>
 
       {/* Action Row */}
@@ -561,8 +540,8 @@ export default function HauntsPage() {
     refreshUser(); // Update XP & Streak locally
   };
 
-  const handleReactionUpdate = (hauntId: string, reactions: HauntPost["reactions"]) => {
-    setHaunts((prev) => prev.map((h) => h.id === hauntId ? { ...h, reactions } : h));
+  const handleReactionUpdate = (hauntId: string, likeData: {likes: number, likedBy: string[]}) => {
+    setHaunts((prev) => prev.map((h) => h.id === hauntId ? { ...h, likes: likeData.likes, likedBy: likeData.likedBy } : h));
   };
 
   const handleDeleteHaunt = (hauntId: string) => {

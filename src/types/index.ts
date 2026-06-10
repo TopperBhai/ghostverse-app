@@ -158,13 +158,7 @@ export interface Confession {
 // HAUNT FEED TYPES
 // ============================================================
 
-export type HauntReactionType = "SPOOKY" | "FIRE" | "DEAD" | "ICONIC";
-
-export interface HauntReaction {
-  type: HauntReactionType;
-  count: number;
-  reactedBy: string[]; // user IDs
-}
+// (Removed HauntReaction and HauntReactionType, we only use Likes now)
 
 export interface HauntReply {
   id: string;
@@ -191,7 +185,8 @@ export interface HauntPost {
     avatar: string | null;
     reputationScore?: number;
   };
-  reactions: HauntReaction[];
+  likes: number;
+  likedBy: string[];
   replyCount: number;
   replies?: HauntReply[];
 }

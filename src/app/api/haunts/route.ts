@@ -45,7 +45,8 @@ export async function GET(request: NextRequest) {
         imageUrl: data.imageUrl,
         createdAt: data.createdAt,
         author: data.author,
-        reactions: data.reactions || [],
+        likes: data.likes || 0,
+        likedBy: data.likedBy || [],
         replyCount: data.replyCount || 0,
       };
     });
@@ -119,7 +120,8 @@ export async function POST(request: NextRequest) {
         avatar: userData.avatar || null,
         reputationScore: userData.reputationScore || profileData?.reputationScore || 0,
       },
-      reactions: [],
+      likes: 0,
+      likedBy: [],
       replyCount: 0,
     };
 
