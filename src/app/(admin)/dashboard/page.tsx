@@ -162,11 +162,29 @@ export default function AdminDashboard() {
 
   const handleGamificationOverride = async (action: string) => {
     if (!inspectUser) return;
+    
+    let amount;
+    if (action === "ADD_DUST") {
+      const input = prompt("Enter amount of Ghost Dust to add:");
+      if (!input) return;
+      amount = parseInt(input, 10);
+      if (isNaN(amount) || amount <= 0) {
+        alert("Invalid amount");
+        return;
+      }
+    }
+
     try {
-      const res = await fetch(`/api/admin/users/${inspectUser.id}`, {
+      // If it's ADD_DUST, we route it to the general users API since it's on the root user doc
+      const url = action === "ADD_DUST" ? "/api/admin/users" : `/api/admin/users/${inspectUser.id}`;
+      const payload = action === "ADD_DUST" 
+        ? { userId: inspectUser.id, action, amount }
+        : { action };
+
+      const res = await fetch(url, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (data.success) {
@@ -524,10 +542,15 @@ export default function AdminDashboard() {
             </div>
             
             <h3 className="text-white font-bold text-sm mb-4">God Mode Actions</h3>
-            <div className="flex gap-4">
+            <div className="flex gap-4 mb-4">
               <button onClick={() => handleGamificationOverride("GRANT_XP")} className="flex-1 py-3 bg-[#4c1d95] hover:bg-[#5b21b6] text-white font-bold rounded-lg shadow-lg text-sm transition-colors">Grant 1000 XP</button>
               <button onClick={() => handleGamificationOverride("FORCE_EVOLVE")} className="flex-1 py-3 bg-[#064e3b] hover:bg-[#047857] text-white font-bold rounded-lg shadow-lg text-sm transition-colors">Force Evolve Pet</button>
               <button onClick={() => handleGamificationOverride("RESET_STREAK")} className="flex-1 py-3 bg-[#7f1d1d] hover:bg-[#991b1b] text-white font-bold rounded-lg shadow-lg text-sm transition-colors">Reset Streak</button>
+            </div>
+            <div className="flex gap-4">
+              <button onClick={() => handleGamificationOverride("ADD_DUST")} className="flex-1 py-3 bg-[#1e1b4b] border border-[#a78bfa] hover:bg-[#2e1065] text-[#ddd6fe] font-bold rounded-lg shadow-lg text-sm transition-colors flex items-center justify-center gap-2">
+                <span>✦</span> Add Ghost Dust
+              </button>
             </div>
           </div>
         </div>
