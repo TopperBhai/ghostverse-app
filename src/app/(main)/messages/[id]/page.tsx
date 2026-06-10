@@ -265,7 +265,7 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
       {/* Ringing Overlay */}
       {isReceivingCall && (
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 animate-fade-in">
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-phantom-500/40 shadow-2xl mb-6 animate-pulse bg-ghost-800 flex items-center justify-center">
+          <div className="w-24 h-24 rounded-full border-4 border-phantom-500/40 shadow-2xl mb-6 animate-pulse bg-ghost-800 flex items-center justify-center">
             <UserAvatar 
               avatarUrl={otherUser?.avatar}
               displayName={otherUser?.displayName || "Someone"}
@@ -290,7 +290,7 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
       {(isCalling || callAccepted) && !isReceivingCall && (
         <div className="absolute top-0 left-0 right-0 bg-phantom-900/90 backdrop-blur-md border-b border-phantom-500/30 z-40 p-3 flex items-center justify-between animate-slide-down shadow-xl">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full overflow-hidden bg-ghost-800 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-ghost-800 flex items-center justify-center flex-shrink-0">
               <UserAvatar 
                 avatarUrl={otherUser?.avatar}
                 displayName={otherUser?.displayName || "User"}

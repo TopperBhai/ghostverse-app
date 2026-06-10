@@ -105,7 +105,7 @@ export default function RandomVoiceChatPage() {
             <div className="relative w-full flex flex-col items-center justify-center flex-1">
               {/* Stranger Avatar (Top, Larger) */}
               <div className="relative z-20 group">
-                <div className="w-40 h-40 rounded-full bg-ghost-900 border-4 border-phantom-500 shadow-[0_0_50px_rgba(139,92,246,0.3)] relative overflow-hidden flex items-center justify-center">
+                <div className="w-40 h-40 rounded-full bg-ghost-900 border-4 border-phantom-500 shadow-[0_0_50px_rgba(139,92,246,0.3)] relative flex items-center justify-center">
                   <UserAvatar 
                     avatarUrl={strangerProfile?.avatar}
                     displayName={strangerProfile?.displayName || "Stranger"}
@@ -138,7 +138,7 @@ export default function RandomVoiceChatPage() {
 
               {/* Your Avatar (Bottom Right, Smaller, Overlapping) */}
               <div className="absolute bottom-10 right-4 md:right-8 z-30">
-                <div className="w-20 h-20 rounded-full bg-ghost-950 border-4 border-ghost-900 shadow-xl overflow-hidden">
+                <div className="w-20 h-20 rounded-full bg-ghost-950 border-4 border-ghost-900 shadow-xl">
                   <UserAvatar 
                     avatarUrl={user?.avatar}
                     displayName={user?.displayName || "You"}

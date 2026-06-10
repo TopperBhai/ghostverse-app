@@ -191,7 +191,7 @@
     border-color: var(--border-subtle);
   }
   .avatar {
-    @apply flex items-center justify-center rounded-full bg-ghost-800 text-ghost-300 font-bold overflow-hidden shadow-inner uppercase border;
+    @apply flex items-center justify-center rounded-full bg-ghost-800 text-ghost-300 font-bold shadow-inner uppercase border;
     border-color: var(--border-medium);
   }
   .avatar-sm {

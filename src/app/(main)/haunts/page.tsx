@@ -137,7 +137,7 @@ function HauntCard({
       <div className="relative flex items-start gap-4 mb-4">
         <button
           onClick={() => onInspect({ userId: haunt.author.id, username: haunt.author.username, displayName: haunt.author.displayName, avatar: haunt.author.avatar })}
-          className={`relative flex-shrink-0 w-12 h-12 rounded-full overflow-hidden hover:scale-105 transition-transform shadow-lg ${level.color.includes('cyan') ? 'shadow-cyan-500/20 ring-2 ring-cyan-500/30' : level.color.includes('phantom') ? 'shadow-phantom-500/20 ring-2 ring-phantom-500/30' : level.color.includes('orange') ? 'shadow-orange-500/20 ring-2 ring-orange-500/30' : 'border border-white/10'}`}
+          className={`relative flex-shrink-0 w-12 h-12 rounded-full hover:scale-105 transition-transform shadow-lg ${level.color.includes('cyan') ? 'shadow-cyan-500/20 ring-2 ring-cyan-500/30' : level.color.includes('phantom') ? 'shadow-phantom-500/20 ring-2 ring-phantom-500/30' : level.color.includes('orange') ? 'shadow-orange-500/20 ring-2 ring-orange-500/30' : 'border border-white/10'}`}
         >
           <UserAvatar 
             avatarUrl={haunt.author.avatar}
@@ -254,7 +254,7 @@ function HauntCard({
                 <div key={reply.id} className="relative flex items-start gap-3">
                   <button
                     onClick={() => onInspect({ userId: reply.author.id, username: reply.author.username, displayName: reply.author.displayName, avatar: reply.author.avatar })}
-                    className="relative z-10 flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border border-white/10 hover:ring-2 hover:ring-phantom-500/50 transition-all shadow-md bg-ghost-900"
+                    className="relative z-10 flex-shrink-0 w-8 h-8 rounded-full border border-white/10 hover:ring-2 hover:ring-phantom-500/50 transition-all shadow-md bg-ghost-900"
                   >
                     <UserAvatar 
                       avatarUrl={reply.author.avatar}
