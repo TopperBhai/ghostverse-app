@@ -3,6 +3,7 @@ import { db } from "../../../../lib/firebase-admin";
 import { getAuthUser } from "../../../../lib/auth";
 import { v4 as uuidv4 } from "uuid";
 import type { ApiResponse } from "../../../../types";
+import { sendPushNotification } from "../../../../lib/notifications";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -95,8 +96,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       updatedAt: now,
     }, { merge: true });
 
-    // Optional: create notification for the other user
-    // (omitted for brevity, can be added later)
+    if (otherUserId) {
+      // Get sender's info for notification
+      const senderDoc = await db.collection("users").doc(authUser.userId).get();
+      const senderName = senderDoc.data()?.displayName || "Someone";
+      
+      await sendPushNotification(
+        otherUserId,
+        `New Message from ${senderName}`,
+        content.length > 50 ? content.substring(0, 50) + "..." : content,
+        `/messages/${conversationId}`,
+        senderDoc.data()?.avatar || undefined
+      );
+    }
 
     return NextResponse.json<ApiResponse>({
       success: true,

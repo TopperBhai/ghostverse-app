@@ -5,8 +5,9 @@ import { getAuthUser } from "../../../../../lib/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
 import type { ApiResponse, HauntReply } from "../../../../../types";
-import { extractMentions, notifyMentionedUsers } from "../../../../../lib/mentions";
+import { notifyMentionedUsers, extractMentions } from "../../../../../lib/mentions";
 import { updateGamification } from "../../../../../lib/gamification";
+import { sendPushNotification } from "../../../../../lib/notifications";
 
 // GET: Fetch replies for a haunt
 export async function GET(
@@ -135,6 +136,18 @@ export async function POST(
         "/haunts",
         content
       ).catch(err => console.error("Mention notification error in haunt replies:", err));
+    }
+
+    // Send push notification to Haunt author (if not self)
+    const hauntAuthorId = hauntDoc.data()?.author?.id;
+    if (hauntAuthorId && hauntAuthorId !== userData.id) {
+      sendPushNotification(
+        hauntAuthorId,
+        `New Reply from ${userData.displayName}`,
+        content.length > 50 ? content.substring(0, 50) + "..." : content,
+        `/haunts`,
+        userData.avatar || undefined
+      ).catch(err => console.error("Push notification error in haunt replies:", err));
     }
 
     // Update gamification for the echo

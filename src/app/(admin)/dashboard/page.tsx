@@ -26,6 +26,10 @@ export default function AdminDashboard() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [pushTitle, setPushTitle] = useState("");
+  const [pushBody, setPushBody] = useState("");
+  const [pushImage, setPushImage] = useState("");
+  const [isPushing, setIsPushing] = useState(false);
   const [inspectUser, setInspectUser] = useState<any>(null);
   const [isInspecting, setIsInspecting] = useState(false);
   const [confessions, setConfessions] = useState<any[]>([]);
@@ -145,6 +149,40 @@ export default function AdminDashboard() {
     });
     setBroadcastMessage("");
     alert("Broadcast sent to all online users!");
+  };
+
+  const handlePushBroadcast = async () => {
+    if (!pushTitle.trim() || !pushBody.trim()) {
+      alert("Push Title and Body are required.");
+      return;
+    }
+    
+    setIsPushing(true);
+    try {
+      const res = await fetch("/api/admin/broadcast", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          title: pushTitle, 
+          body: pushBody, 
+          imageUrl: pushImage || undefined 
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+        setPushTitle("");
+        setPushBody("");
+        setPushImage("");
+      } else {
+        alert("Push failed: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to send push broadcast");
+    } finally {
+      setIsPushing(false);
+    }
   };
 
   const handleInspectUser = async (userId: string) => {
@@ -458,26 +496,78 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === "BROADCAST" && (
-          <div className="bg-[#18181b] rounded-lg p-10 shadow-lg max-w-2xl mx-auto border border-red-500/20">
-            <h2 className="text-2xl font-black text-white mb-2 flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
-              Global System Broadcast
-            </h2>
-            <p className="text-gray-400 text-sm mb-8">Send an overriding system alert to all online users. This will appear as a highly visible [SYSTEM_ALERT] in the World Chat.</p>
-            
-            <textarea 
-              value={broadcastMessage}
-              onChange={(e) => setBroadcastMessage(e.target.value)}
-              placeholder="Enter your system announcement here..."
-              className="w-full h-32 bg-[#09090b] border border-[#27272a] rounded-lg p-4 text-white focus:outline-none focus:border-red-500 resize-none mb-6"
-            />
-            
-            <button 
-              onClick={handleBroadcast}
-              className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-black rounded-lg transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] active:scale-[0.98]"
-            >
-              SEND BROADCAST NOW
-            </button>
+          <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+            {/* World Chat Broadcast */}
+            <div className="bg-[#18181b] rounded-lg p-10 shadow-lg border border-red-500/20">
+              <h2 className="text-2xl font-black text-white mb-2 flex items-center gap-3">
+                <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+                World Chat System Alert
+              </h2>
+              <p className="text-gray-400 text-sm mb-8">Send an overriding system alert to all online users. This will appear as a highly visible [SYSTEM_ALERT] in the World Chat.</p>
+              
+              <textarea 
+                value={broadcastMessage}
+                onChange={(e) => setBroadcastMessage(e.target.value)}
+                placeholder="Enter your system announcement here..."
+                className="w-full h-32 bg-[#09090b] border border-[#27272a] rounded-lg p-4 text-white focus:outline-none focus:border-red-500 resize-none mb-6"
+              />
+              
+              <button 
+                onClick={handleBroadcast}
+                className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-black rounded-lg transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] active:scale-[0.98]"
+              >
+                SEND CHAT BROADCAST
+              </button>
+            </div>
+
+            {/* Push Notification Broadcast */}
+            <div className="bg-[#18181b] rounded-lg p-10 shadow-lg border border-phantom-500/20">
+              <h2 className="text-2xl font-black text-white mb-2 flex items-center gap-3">
+                <span className="w-3 h-3 rounded-full bg-phantom-500 animate-pulse"></span>
+                Global Push Notification
+              </h2>
+              <p className="text-gray-400 text-sm mb-8">Send a real system push notification (lock screen / desktop) to all users who have enabled notifications.</p>
+              
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Notification Title</label>
+                  <input 
+                    type="text"
+                    value={pushTitle}
+                    onChange={(e) => setPushTitle(e.target.value)}
+                    placeholder="e.g., Massive GhostVerse Update!"
+                    className="w-full bg-[#09090b] border border-[#27272a] rounded-lg p-3 text-white focus:outline-none focus:border-phantom-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Message Body</label>
+                  <textarea 
+                    value={pushBody}
+                    onChange={(e) => setPushBody(e.target.value)}
+                    placeholder="e.g., Check out the new avatar decorations in the shop!"
+                    className="w-full h-24 bg-[#09090b] border border-[#27272a] rounded-lg p-3 text-white focus:outline-none focus:border-phantom-500 resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Image URL (Optional)</label>
+                  <input 
+                    type="text"
+                    value={pushImage}
+                    onChange={(e) => setPushImage(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full bg-[#09090b] border border-[#27272a] rounded-lg p-3 text-white focus:outline-none focus:border-phantom-500"
+                  />
+                </div>
+              </div>
+              
+              <button 
+                onClick={handlePushBroadcast}
+                disabled={isPushing}
+                className="w-full py-4 bg-phantom-500 hover:bg-phantom-600 text-white font-black rounded-lg transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] active:scale-[0.98] disabled:opacity-50"
+              >
+                {isPushing ? "SENDING..." : "SEND PUSH NOTIFICATION"}
+              </button>
+            </div>
           </div>
         )}
 

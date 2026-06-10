@@ -3,6 +3,7 @@
 import { useAuth } from "../../../custom-hooks/use-auth";
 import { useState, useEffect } from "react";
 import { User, Lock, Save, AlertCircle, CheckCircle2 } from "lucide-react";
+import { PushNotificationManager } from "../../components/PushNotificationManager";
 
 export default function SettingsPage() {
   const { user, refreshUser } = useAuth();
@@ -102,6 +103,8 @@ export default function SettingsPage() {
       <div className="max-w-3xl mx-auto mt-8 animate-fade-in">
         <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Account Settings</h1>
         <p className="text-ghost-400 mb-8">Manage your account security and preferences.</p>
+
+        <PushNotificationManager />
 
         {/* Change Username Section */}
         <div className="glass-panel p-6 md:p-8 rounded-2xl border border-white/5 relative overflow-hidden mb-8">

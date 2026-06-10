@@ -56,6 +56,15 @@ export async function notifyMentionedUsers(
       }
     });
     
+    // Send Push Notification
+    const { sendPushNotification } = require("./notifications");
+    sendPushNotification(
+      targetUserId,
+      `${senderDisplayName} mentioned you`,
+      messagePreview.length > 50 ? messagePreview.substring(0, 47) + "..." : messagePreview,
+      contextUrl
+    ).catch((err: any) => console.error("Push notification error in mentions:", err));
+
     notificationsCreated++;
   }
 
