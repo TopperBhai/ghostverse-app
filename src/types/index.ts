@@ -35,6 +35,7 @@ export interface Gamification {
 export interface GhostCosmetics {
   activeHat: string | null;
   activeAura: string | null;
+  nameColor: string | null;
   unlockedItems: string[];
 }
 
@@ -140,6 +141,7 @@ export interface ChatMessage {
     reputationScore?: number;
     gamificationLevel?: number;
     clanTag?: string | null;
+    cosmetics?: GhostCosmetics;
   };
   isEdited?: boolean;
 }
@@ -197,6 +199,7 @@ export interface HauntReply {
     avatar: string | null;
     reputationScore?: number;
     clanTag?: string | null;
+    cosmetics?: GhostCosmetics;
   };
 }
 
@@ -212,6 +215,7 @@ export interface HauntPost {
     avatar: string | null;
     reputationScore?: number;
     clanTag?: string | null;
+    cosmetics?: GhostCosmetics;
   };
   likes: number;
   likedBy: string[];

@@ -114,6 +114,7 @@ export async function POST(
         avatar: userData.avatar || null,
         reputationScore: userData.reputationScore || 0,
         clanTag: userData.clanTag || null,
+        cosmetics: userData.cosmetics || { activeHat: null, activeAura: null, nameColor: null, unlockedItems: [] },
       },
     };
 

@@ -150,7 +150,7 @@ function HauntCard({
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => onInspect({ userId: haunt.author.id, username: haunt.author.username, displayName: haunt.author.displayName, avatar: haunt.author.avatar })}
-              className={`text-base font-black hover:underline transition-colors tracking-tight ${level.color}`}
+              className={`text-base font-black hover:underline transition-colors tracking-tight ${haunt.author.cosmetics?.nameColor || level.color}`}
             >
               {haunt.author.displayName}
               {haunt.author.clanTag && (
@@ -268,7 +268,7 @@ function HauntCard({
                     <div className="flex items-baseline gap-2 mb-1">
                       <button
                         onClick={() => onInspect({ userId: reply.author.id, username: reply.author.username, displayName: reply.author.displayName, avatar: reply.author.avatar })}
-                        className={`text-sm font-bold hover:underline ${getGhostLevel(reply.author.reputationScore || 0).color}`}
+                        className={`text-sm font-bold hover:underline ${reply.author.cosmetics?.nameColor || getGhostLevel(reply.author.reputationScore || 0).color}`}
                       >
                         {reply.author.displayName}
                         {reply.author.clanTag && (

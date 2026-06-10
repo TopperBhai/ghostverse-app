@@ -212,12 +212,19 @@ export function UserProfileCard({
         {/* Avatar and Actions Container */}
         <div className="px-4 pt-3 flex justify-between items-start relative">
           {/* Floating Avatar */}
-          <div className="w-[72px] h-[72px] rounded-full border-4 border-ghost-900 bg-ghost-800 flex items-center justify-center text-2xl font-black text-ghost-300 overflow-hidden shadow-xl absolute -top-9 left-4 z-10">
-            {avatar ? (
-              <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
-            ) : (
-              <span className="gradient-text">{displayName.charAt(0)}</span>
+          <div className="absolute -top-9 left-4 z-10">
+            {profile?.cosmetics?.activeHat && (
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-3xl z-20 drop-shadow-md">
+                {profile.cosmetics.activeHat}
+              </div>
             )}
+            <div className={`w-[72px] h-[72px] rounded-full border-4 border-ghost-900 bg-ghost-800 flex items-center justify-center text-2xl font-black text-ghost-300 shadow-xl ${profile?.cosmetics?.activeAura || ""}`}>
+              {avatar ? (
+                <img src={avatar} alt={displayName} className="w-full h-full object-cover rounded-full" />
+              ) : (
+                <span className="gradient-text">{displayName.charAt(0)}</span>
+              )}
+            </div>
           </div>
           
           {/* Spacer to push buttons right */}
@@ -272,7 +279,7 @@ export function UserProfileCard({
         <div className="px-4 pb-4 mt-1">
           <div className="mb-3">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-ghost-100">{displayName}</h2>
+              <h2 className={`text-base font-bold ${profile?.cosmetics?.nameColor || "text-ghost-100"}`}>{displayName}</h2>
               {isOwnProfile && (
                 <span className="text-[10px] bg-phantom-500/15 text-phantom-400 border border-phantom-500/30 px-1.5 py-0.5 rounded-full font-bold">You</span>
               )}

@@ -1,273 +1,184 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
-import { GhostPet } from "../../components/GhostPet";
-import { Ghost, Shield, Zap, Check, Lock, Star } from "lucide-react";
+import { Store, Sparkles, Loader2, Palette, Zap, Crown } from "lucide-react";
+import { SHOP_ITEMS, type CosmeticType } from "../../../lib/shop-items";
 
-interface ShopItem {
-  id: string;
-  name: string;
-  type: "hat" | "aura";
-  price: number;
-  icon: string;
-  color: string;
-}
-
-const SHOP_ITEMS: ShopItem[] = [
-  { id: "neon-green", name: "Neon Glow", type: "aura", price: 50, icon: "✨", color: "bg-green-500/20 text-green-400 border-green-500/30" },
-  { id: "infernal-red", name: "Infernal Aura", type: "aura", price: 150, icon: "🔥", color: "bg-red-500/20 text-red-400 border-red-500/30" },
-  { id: "void-purple", name: "Void Energy", type: "aura", price: 300, icon: "🌌", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
-  { id: "golden-halo", name: "Golden Halo", type: "aura", price: 500, icon: "😇", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
-  
-  { id: "halo", name: "Halo Ring", type: "hat", price: 100, icon: "⭕", color: "bg-yellow-500/10 text-yellow-200 border-yellow-500/20" },
-  { id: "wizard-hat", name: "Wizard Hat", type: "hat", price: 200, icon: "🧙‍♂️", color: "bg-indigo-500/10 text-indigo-300 border-indigo-500/30" },
-  { id: "demon-horns", name: "Demon Horns", type: "hat", price: 350, icon: "😈", color: "bg-red-900/30 text-red-400 border-red-900/50" },
-  { id: "crown", name: "King's Crown", type: "hat", price: 1000, icon: "👑", color: "bg-amber-500/20 text-amber-400 border-amber-500/40" },
-  { id: "cowboy", name: "Cowboy Hat", type: "hat", price: 250, icon: "🤠", color: "bg-amber-900/20 text-amber-600 border-amber-900/40" },
-];
-
-export default function SoulShopPage() {
+export default function ShopPage() {
   const { user, refreshUser } = useAuth();
-  const [loadingAction, setLoadingAction] = useState<string | null>(null);
-  
-  // Local state for instant preview without waiting for API
-  const [previewAura, setPreviewAura] = useState<string | null>(null);
-  const [previewHat, setPreviewHat] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<CosmeticType>("color");
+  const [processing, setProcessing] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user?.cosmetics) {
-      setPreviewAura(user.cosmetics.activeAura || null);
-      setPreviewHat(user.cosmetics.activeHat || null);
+  const ghostDust = user?.gamification?.ghostDust || 0;
+  const unlockedItems = user?.cosmetics?.unlockedItems || [];
+  const activeCosmetics = user?.cosmetics || { activeHat: null, activeAura: null, nameColor: null };
+
+  const handleBuy = async (itemId: string, price: number) => {
+    if (ghostDust < price) {
+      alert("Not enough Ghost Dust!");
+      return;
     }
-  }, [user]);
-
-  if (!user) return null;
-
-  const rep = user.profile?.reputationScore || 0;
-  const cosmetics = user.cosmetics || { activeHat: null, activeAura: null, unlockedItems: [] };
-  const unlocked = cosmetics.unlockedItems || [];
-
-  const handleAction = async (item: ShopItem) => {
-    const isUnlocked = unlocked.includes(item.id);
-    const action = isUnlocked ? "equip" : "buy";
-    
-    // Prevent buying if not enough rep
-    if (action === "buy" && rep < item.price) return;
-
-    setLoadingAction(item.id);
+    setProcessing(`buy-${itemId}`);
     try {
-      const res = await fetch("/api/shop", {
+      const res = await fetch("/api/shop/buy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId: item.id, type: item.type, action })
+        body: JSON.stringify({ itemId }),
       });
       const data = await res.json();
       if (data.success) {
-        if (action === "equip") {
-          if (item.type === "aura") setPreviewAura(item.id);
-          if (item.type === "hat") setPreviewHat(item.id);
-        }
-        await refreshUser();
+        refreshUser();
       } else {
         alert(data.error);
       }
-    } catch (err) {
-      alert("Something went wrong");
     } finally {
-      setLoadingAction(null);
+      setProcessing(null);
     }
   };
 
-  const handleUnequip = async (type: "hat" | "aura") => {
-    setLoadingAction(`unequip-${type}`);
+  const handleEquip = async (itemId: string | null, type: CosmeticType) => {
+    setProcessing(`equip-${itemId || type}`);
     try {
-      const res = await fetch("/api/shop", {
+      const res = await fetch("/api/shop/equip", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, action: "unequip" })
+        body: JSON.stringify({ itemId, type }), // If itemId is null, it's an unequip
       });
       const data = await res.json();
       if (data.success) {
-        if (type === "aura") setPreviewAura(null);
-        if (type === "hat") setPreviewHat(null);
-        await refreshUser();
+        refreshUser();
+      } else {
+        alert(data.error);
       }
     } finally {
-      setLoadingAction(null);
+      setProcessing(null);
     }
   };
 
-  return (
-    <div className="flex flex-col h-full overflow-y-auto">
-      {/* Header */}
-      <div className="glass-nav px-6 py-8 relative overflow-hidden flex-shrink-0">
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-phantom-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <Ghost className="w-8 h-8 text-phantom-400" />
-              <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md">The Soul Shop</h1>
-            </div>
-            <p className="text-ghost-300 max-w-md text-sm leading-relaxed">
-              Spend your hard-earned Reputation Points to customize your Ghost Pet with exclusive Auras and Hats. Stand out in the World Chat!
-            </p>
-          </div>
+  const tabs: { id: CosmeticType, label: string, icon: React.ElementType }[] = [
+    { id: "color", label: "Name Colors", icon: Palette },
+    { id: "aura", label: "Auras", icon: Zap },
+    { id: "hat", label: "Hats", icon: Crown },
+  ];
 
-          <div className="glass-card p-4 flex items-center gap-4 border border-phantom-500/30 bg-phantom-500/5 w-full md:w-auto">
-            <div className="w-12 h-12 rounded-xl bg-phantom-500/20 flex items-center justify-center border border-phantom-400/40">
-              <Star className="w-6 h-6 text-phantom-300" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-phantom-400 tracking-wider uppercase">Your Balance</p>
-              <p className="text-2xl font-black text-white">{rep} <span className="text-sm font-medium text-ghost-400">Rep</span></p>
-            </div>
+  const filteredItems = SHOP_ITEMS.filter(item => item.type === activeTab);
+
+  return (
+    <div className="max-w-5xl mx-auto p-4 md:p-6 pb-32">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+            <Store className="w-8 h-8 text-phantom-500" />
+            The Soul Shop
+          </h1>
+          <p className="text-sm text-ghost-400 mt-1">Spend your Ghost Dust to stand out.</p>
+        </div>
+        
+        <div className="glass-card px-5 py-3 rounded-2xl flex items-center gap-3 border border-phantom-500/30 shadow-[0_0_20px_rgba(168,85,247,0.15)]">
+          <Sparkles className="w-5 h-5 text-phantom-400" />
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-ghost-400 uppercase tracking-wider">Your Balance</span>
+            <span className="text-lg font-black text-white">{ghostDust} 🟣</span>
           </div>
         </div>
       </div>
 
-      <div className="p-6 flex-1 flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto w-full">
-        {/* Left Col: Preview */}
-        <div className="w-full lg:w-80 flex-shrink-0 flex flex-col gap-4">
-          <div className="glass-card p-8 flex flex-col items-center justify-center aspect-square relative overflow-hidden border border-white/10 group">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-ghost-900/50 pointer-events-none" />
-            
-            <div className="relative z-10">
-              <GhostPet 
-                status={user.gamification?.pet?.status || "HAPPY"} 
-                level={user.gamification?.pet?.level || 1} 
-                size="xl" 
-                aura={previewAura}
-                hat={previewHat}
-              />
-            </div>
-            
-            <div className="absolute bottom-4 left-0 right-0 text-center z-10">
-              <p className="text-sm font-bold text-ghost-100">{user.displayName}'s Ghost</p>
-              <p className="text-[10px] text-ghost-400 uppercase tracking-widest mt-0.5">Lv. {user.gamification?.pet?.level || 1}</p>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <button 
-              disabled={!previewAura || loadingAction === "unequip-aura"}
-              onClick={() => handleUnequip("aura")}
-              className="flex-1 py-2 text-xs font-semibold rounded-lg bg-ghost-900 border border-white/5 text-ghost-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+        {tabs.map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
+                isActive 
+                  ? "bg-phantom-500 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]" 
+                  : "bg-ghost-900 border border-white/5 text-ghost-400 hover:text-white hover:bg-ghost-800"
+              }`}
             >
-              Unequip Aura
+              <Icon className="w-4 h-4" />
+              {tab.label}
             </button>
-            <button 
-              disabled={!previewHat || loadingAction === "unequip-hat"}
-              onClick={() => handleUnequip("hat")}
-              className="flex-1 py-2 text-xs font-semibold rounded-lg bg-ghost-900 border border-white/5 text-ghost-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+          );
+        })}
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Unequip Card (if they have something equipped) */}
+        {((activeTab === "color" && activeCosmetics.nameColor) || 
+          (activeTab === "aura" && activeCosmetics.activeAura) || 
+          (activeTab === "hat" && activeCosmetics.activeHat)) && (
+          <div className="glass-card rounded-2xl p-5 border border-white/5 hover:border-white/10 flex flex-col items-center justify-center text-center gap-3 min-h-[160px]">
+            <p className="text-sm font-bold text-ghost-300">Default Style</p>
+            <button
+              onClick={() => handleEquip(null, activeTab)}
+              disabled={processing !== null}
+              className="px-4 py-2 w-full rounded-xl text-sm font-bold bg-ghost-800 text-white hover:bg-ghost-700 transition-colors"
             >
-              Unequip Hat
+              Unequip Current
             </button>
           </div>
-        </div>
+        )}
 
-        {/* Right Col: Store */}
-        <div className="flex-1 space-y-8">
-          
-          {/* Auras Section */}
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Zap className="w-5 h-5 text-yellow-400" />
-              Legendary Auras
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {SHOP_ITEMS.filter(i => i.type === "aura").map((item) => {
-                const isUnlocked = unlocked.includes(item.id);
-                const isEquipped = previewAura === item.id;
-                const canAfford = rep >= item.price;
-                const isLoading = loadingAction === item.id;
+        {filteredItems.map(item => {
+          const isOwned = unlockedItems.includes(item.id);
+          const isEquipped = 
+            (item.type === "color" && activeCosmetics.nameColor === item.value) ||
+            (item.type === "aura" && activeCosmetics.activeAura === item.value) ||
+            (item.type === "hat" && activeCosmetics.activeHat === item.value);
 
-                return (
-                  <div key={item.id} className={`rounded-2xl border p-4 transition-all duration-300 flex flex-col ${item.color} ${isEquipped ? "ring-2 ring-white/50" : "hover:scale-[1.02]"}`}>
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="text-3xl filter drop-shadow-md">{item.icon}</div>
-                      {!isUnlocked && (
-                        <div className="flex items-center gap-1 bg-black/40 px-2 py-1 rounded-md">
-                          <Star className="w-3 h-3 text-phantom-400" />
-                          <span className="text-xs font-bold text-white">{item.price}</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="text-base font-bold text-white mb-1">{item.name}</h3>
-                    <p className="text-xs opacity-80 mb-4 flex-1">Cosmetic glow effect for your pet.</p>
-                    
-                    <button
-                      onClick={() => handleAction(item)}
-                      disabled={isLoading || (!isUnlocked && !canAfford) || isEquipped}
-                      className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                        isEquipped 
-                          ? "bg-white/20 text-white cursor-default"
-                          : isUnlocked 
-                            ? "bg-white text-black hover:bg-gray-200" 
-                            : canAfford 
-                              ? "bg-phantom-500 text-white hover:bg-phantom-400" 
-                              : "bg-black/30 text-white/50 cursor-not-allowed"
-                      }`}
-                    >
-                      {isLoading ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : null}
-                      {isEquipped ? <><Check className="w-4 h-4" /> Equipped</> : isUnlocked ? "Equip" : canAfford ? "Purchase" : <><Lock className="w-4 h-4" /> Need Rep</>}
-                    </button>
-                  </div>
-                );
-              })}
+          return (
+            <div key={item.id} className={`glass-card rounded-2xl p-5 border flex flex-col gap-4 relative overflow-hidden transition-all ${isEquipped ? 'border-phantom-500 shadow-[0_0_20px_rgba(168,85,247,0.2)]' : 'border-white/5 hover:border-white/10'}`}>
+              
+              {/* Preview Box */}
+              <div className="h-20 rounded-xl bg-ghost-950 border border-white/5 flex items-center justify-center relative">
+                {item.type === "color" && (
+                  <span className={`text-lg font-black tracking-tight ${item.value}`}>Preview Name</span>
+                )}
+                {item.type === "aura" && (
+                  <div className={`w-10 h-10 rounded-full bg-ghost-800 ${item.value}`} />
+                )}
+                {item.type === "hat" && (
+                  <div className="text-4xl drop-shadow-lg">{item.value}</div>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-bold text-white text-lg leading-tight">{item.name}</h3>
+                <p className="text-phantom-300 font-semibold text-sm mt-0.5">{item.price} 🟣</p>
+              </div>
+
+              <div className="mt-auto">
+                {isEquipped ? (
+                  <button disabled className="w-full py-2.5 rounded-xl font-bold bg-phantom-500/20 text-phantom-400 border border-phantom-500/30 cursor-default">
+                    Equipped
+                  </button>
+                ) : isOwned ? (
+                  <button 
+                    onClick={() => handleEquip(item.id, item.type)}
+                    disabled={processing !== null}
+                    className="w-full py-2.5 rounded-xl font-bold bg-ghost-800 text-white hover:bg-ghost-700 transition-colors"
+                  >
+                    {processing === `equip-${item.id}` ? <Loader2 className="w-5 h-5 mx-auto animate-spin" /> : "Equip"}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => handleBuy(item.id, item.price)}
+                    disabled={processing !== null || ghostDust < item.price}
+                    className="w-full py-2.5 rounded-xl font-bold bg-white text-black hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {processing === `buy-${item.id}` ? <Loader2 className="w-5 h-5 mx-auto text-black animate-spin" /> : "Buy Item"}
+                  </button>
+                )}
+              </div>
+
             </div>
-          </section>
-
-          {/* Hats Section */}
-          <section>
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-400" />
-              Exclusive Hats
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {SHOP_ITEMS.filter(i => i.type === "hat").map((item) => {
-                const isUnlocked = unlocked.includes(item.id);
-                const isEquipped = previewHat === item.id;
-                const canAfford = rep >= item.price;
-                const isLoading = loadingAction === item.id;
-
-                return (
-                  <div key={item.id} className={`rounded-2xl border p-4 transition-all duration-300 flex flex-col ${item.color} ${isEquipped ? "ring-2 ring-white/50" : "hover:scale-[1.02]"}`}>
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="text-3xl filter drop-shadow-md">{item.icon}</div>
-                      {!isUnlocked && (
-                        <div className="flex items-center gap-1 bg-black/40 px-2 py-1 rounded-md">
-                          <Star className="w-3 h-3 text-phantom-400" />
-                          <span className="text-xs font-bold text-white">{item.price}</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="text-base font-bold text-white mb-1">{item.name}</h3>
-                    <p className="text-xs opacity-80 mb-4 flex-1">Unique headwear for your pet.</p>
-                    
-                    <button
-                      onClick={() => handleAction(item)}
-                      disabled={isLoading || (!isUnlocked && !canAfford) || isEquipped}
-                      className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                        isEquipped 
-                          ? "bg-white/20 text-white cursor-default"
-                          : isUnlocked 
-                            ? "bg-white text-black hover:bg-gray-200" 
-                            : canAfford 
-                              ? "bg-phantom-500 text-white hover:bg-phantom-400" 
-                              : "bg-black/30 text-white/50 cursor-not-allowed"
-                      }`}
-                    >
-                      {isLoading ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : null}
-                      {isEquipped ? <><Check className="w-4 h-4" /> Equipped</> : isUnlocked ? "Equip" : canAfford ? "Purchase" : <><Lock className="w-4 h-4" /> Need Rep</>}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-        </div>
+          );
+        })}
       </div>
     </div>
   );

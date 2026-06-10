@@ -109,7 +109,7 @@ export default function WorldChatPage() {
       id: `local-${Date.now()}`,
       content,
       createdAt: new Date(),
-      sender: { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar, reputationScore: user.profile?.reputationScore, gamificationLevel: user.gamification?.pet?.level || 1, clanTag: user.clanTag },
+      sender: { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar, reputationScore: user.profile?.reputationScore, gamificationLevel: user.gamification?.pet?.level || 1, clanTag: user.clanTag, cosmetics: user.cosmetics },
     };
     setMessages((prev) => [...prev, optimisticMsg]);
 
@@ -250,7 +250,7 @@ export default function WorldChatPage() {
                 {!isSequential && (
                   <div className={`flex items-center gap-1.5 px-1 ${isOwn ? "flex-row-reverse" : ""}`}>
                     <button
-                      className={`text-xs font-bold leading-none hover:underline cursor-pointer transition-colors ${level.color}`}
+                      className={`text-xs font-bold leading-none hover:underline cursor-pointer transition-colors ${msg.sender.cosmetics?.nameColor || level.color}`}
                       onClick={() => setSelectedUser({
                         userId: msg.sender.id,
                         username: msg.sender.username,

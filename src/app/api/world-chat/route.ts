@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
         reputationScore: user.reputationScore || 0,
         gamificationLevel: user.gamification?.pet?.level || 1,
         clanTag: user.clanTag || null,
+        cosmetics: user.cosmetics || { activeHat: null, activeAura: null, nameColor: null, unlockedItems: [] },
       },
     };
 

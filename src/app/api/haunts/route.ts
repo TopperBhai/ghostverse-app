@@ -120,6 +120,7 @@ export async function POST(request: NextRequest) {
         avatar: userData.avatar || null,
         reputationScore: userData.reputationScore || profileData?.reputationScore || 0,
         clanTag: userData.clanTag || null,
+        cosmetics: userData.cosmetics || { activeHat: null, activeAura: null, nameColor: null, unlockedItems: [] },
       },
       likes: 0,
       likedBy: [],
