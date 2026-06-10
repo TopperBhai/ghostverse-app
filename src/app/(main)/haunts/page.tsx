@@ -8,7 +8,7 @@ import { UserProfileCard } from "../../components/UserProfileCard";
 import { GhostPet } from "../../components/GhostPet";
 import {
   Ghost, MessageCircle, Send, X, Plus,
-  Loader2, Sparkles, RefreshCw, Trash2, ImagePlus
+  Loader2, Sparkles, RefreshCw, Trash2, ImagePlus, Heart
 } from "lucide-react";
 import Link from "next/link";
 import { MentionInput } from "../../components/MentionInput";
@@ -191,38 +191,39 @@ function HauntCard({
         )}
       </div>
 
-      {/* Reactions row */}
-      <div className="relative flex items-center gap-3 flex-wrap mb-4 pl-16">
-        <button
-          onClick={handleLike}
-          disabled={pendingLike}
-          className={`group/like flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 active:scale-90 ${
-            hasLiked
-              ? "bg-white/10 text-orange-400 shadow-[0_0_15px_rgba(239,68,68,0.5)] border border-white/20 scale-105"
-              : "bg-ghost-900/60 border border-ghost-800/80 text-ghost-500 hover:border-white/20 hover:text-white hover:bg-ghost-800/60 hover:scale-105"
-          } ${pendingLike ? "opacity-50" : ""}`}
-          title="Like"
-        >
-          <span className={`text-base leading-none transition-transform duration-300 ${hasLiked ? 'scale-110' : 'group-hover/like:scale-110 group-hover/like:-rotate-6'}`}>🔥</span>
-          {(haunt.likes > 0) && (
-            <span className={hasLiked ? "text-orange-400" : "text-ghost-400"}>{haunt.likes}</span>
-          )}
-        </button>
-      </div>
-
       {/* Action Row */}
       <div className="relative flex items-center justify-between pt-3 pl-16 pr-4 border-t border-white/5">
-        <button
-          onClick={toggleReplies}
-          className="flex items-center gap-2 text-xs font-bold text-ghost-500 hover:text-phantom-300 transition-colors group/reply"
-        >
-          <div className="w-7 h-7 rounded-full bg-ghost-900 flex items-center justify-center group-hover/reply:bg-phantom-500/20 transition-colors">
-            <MessageCircle className="w-3.5 h-3.5" />
-          </div>
-          {haunt.replyCount > 0
-            ? `${haunt.replyCount} Echo${haunt.replyCount !== 1 ? "es" : ""}`
-            : "Write an Echo..."}
-        </button>
+        <div className="flex items-center gap-6">
+          {/* Like Button */}
+          <button
+            onClick={handleLike}
+            disabled={pendingLike}
+            className={`group/like flex items-center gap-2 text-sm font-bold transition-all duration-300 active:scale-95 ${
+              hasLiked
+                ? "text-neon-red drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] scale-105"
+                : "text-ghost-500 hover:text-ghost-300"
+            } ${pendingLike ? "opacity-50" : ""}`}
+            title={hasLiked ? "Unlike" : "Like"}
+          >
+            <Heart 
+              className={`w-5 h-5 transition-transform duration-300 ${hasLiked ? 'fill-current' : 'group-hover/like:scale-110'}`} 
+            />
+            {(haunt.likes > 0) && (
+              <span className={hasLiked ? "text-neon-red" : "text-ghost-400"}>{haunt.likes}</span>
+            )}
+          </button>
+
+          {/* Reply Button */}
+          <button
+            onClick={toggleReplies}
+            className="group/reply flex items-center gap-2 text-sm font-bold text-ghost-500 hover:text-phantom-300 transition-colors"
+          >
+            <MessageCircle className="w-5 h-5 transition-transform duration-300 group-hover/reply:scale-110" />
+            {haunt.replyCount > 0
+              ? `${haunt.replyCount}`
+              : "Echo"}
+          </button>
+        </div>
         <Link href={`/profile/${haunt.author.username}`} className="text-[10px] uppercase tracking-widest font-bold text-ghost-600 hover:text-phantom-400 transition-colors">
           View Profile →
         </Link>
