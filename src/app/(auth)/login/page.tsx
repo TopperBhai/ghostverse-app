@@ -23,7 +23,7 @@ export default function LoginPage() {
     const result = await login(username, password);
 
     if (result.success) {
-      router.push("/world-chat");
+      window.location.href = "/world-chat";
     } else {
       setError(result.error || "Login failed");
     }

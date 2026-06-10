@@ -63,7 +63,7 @@ export default function RegisterPage() {
     });
 
     if (result.success) {
-      router.push("/world-chat");
+      window.location.href = "/world-chat";
     } else {
       setError(result.error || "Registration failed");
     }
