@@ -5,6 +5,9 @@ import { Trophy, Flame, Ghost, Medal } from "lucide-react";
 import { getGhostLevel } from "../../../lib/levels";
 import Link from "next/link";
 
+import type { GhostCosmetics } from "../../../types";
+import { UserAvatar } from "../../components/UserAvatar";
+
 interface LeaderboardUser {
   id: string;
   username: string;
@@ -12,6 +15,7 @@ interface LeaderboardUser {
   avatar: string | null;
   reputationScore: number;
   hauntStreak: number;
+  cosmetics?: GhostCosmetics | null;
 }
 
 type Tab = "reputation" | "streak";
@@ -85,8 +89,14 @@ export default function LeaderboardPage() {
               <div className="flex flex-col items-center w-1/3 animate-slide-up" style={{ animationDelay: "100ms" }}>
                 <div className="relative mb-4">
                   <div className="absolute -inset-1 bg-gradient-to-b from-gray-300 to-transparent rounded-full opacity-50 blur-sm" />
-                  <img src={users[1]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"} alt={users[1]?.displayName} className="w-20 h-20 rounded-full border-4 border-gray-300 object-cover relative z-10" />
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gray-300 text-gray-900 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-ghost-950 z-20 shadow-lg">2</div>
+                  <UserAvatar 
+                    avatarUrl={users[1]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"}
+                    displayName={users[1]?.displayName}
+                    cosmetics={users[1]?.cosmetics}
+                    size="w-20 h-20"
+                    className="relative z-10 mx-auto"
+                  />
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gray-300 text-gray-900 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-ghost-950 z-30 shadow-lg">2</div>
                 </div>
                 <Link href={`/profile/${users[1]?.username}`} className="font-bold text-white text-lg hover:underline truncate w-full text-center">{users[1]?.displayName}</Link>
                 <span className="text-sm text-gray-300 flex items-center gap-1 font-semibold mt-1">
@@ -99,8 +109,14 @@ export default function LeaderboardPage() {
             <div className="flex flex-col items-center w-1/3 animate-slide-up z-10" style={{ transform: "translateY(-2rem)" }}>
               <div className="relative mb-4">
                 <div className={`absolute -inset-2 bg-gradient-to-b ${isRep ? 'from-yellow-400' : 'from-orange-500'} to-transparent rounded-full opacity-60 blur-md animate-pulse`} />
-                <img src={users[0]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"} alt={users[0]?.displayName} className={`w-28 h-28 rounded-full border-4 ${isRep ? 'border-yellow-400' : 'border-orange-500'} object-cover relative z-10`} />
-                <div className={`absolute -bottom-4 left-1/2 -translate-x-1/2 ${isRep ? 'bg-yellow-400 text-yellow-950 border-yellow-400' : 'bg-gradient-to-br from-orange-500 to-red-600 text-white border-orange-500'} w-10 h-10 rounded-full flex items-center justify-center font-black text-xl border-4 border-ghost-950 z-20 shadow-[0_0_15px_rgba(250,204,21,0.5)]`}>1</div>
+                <UserAvatar 
+                  avatarUrl={users[0]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"}
+                  displayName={users[0]?.displayName}
+                  cosmetics={users[0]?.cosmetics}
+                  size="w-28 h-28"
+                  className="relative z-10 mx-auto"
+                />
+                <div className={`absolute -bottom-4 left-1/2 -translate-x-1/2 ${isRep ? 'bg-yellow-400 text-yellow-950 border-yellow-400' : 'bg-gradient-to-br from-orange-500 to-red-600 text-white border-orange-500'} w-10 h-10 rounded-full flex items-center justify-center font-black text-xl border-4 border-ghost-950 z-30 shadow-[0_0_15px_rgba(250,204,21,0.5)]`}>1</div>
               </div>
               <Link href={`/profile/${users[0]?.username}`} className={`font-bold text-xl hover:underline truncate w-full text-center ${isRep ? 'text-yellow-400' : 'text-orange-400'}`}>{users[0]?.displayName}</Link>
               <div className="flex flex-col items-center mt-1">
@@ -116,8 +132,14 @@ export default function LeaderboardPage() {
               <div className="flex flex-col items-center w-1/3 animate-slide-up" style={{ animationDelay: "200ms" }}>
                 <div className="relative mb-4">
                   <div className="absolute -inset-1 bg-gradient-to-b from-amber-700 to-transparent rounded-full opacity-50 blur-sm" />
-                  <img src={users[2]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"} alt={users[2]?.displayName} className="w-20 h-20 rounded-full border-4 border-amber-700 object-cover relative z-10" />
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-amber-700 text-amber-50 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-ghost-950 z-20 shadow-lg">3</div>
+                  <UserAvatar 
+                    avatarUrl={users[2]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"}
+                    displayName={users[2]?.displayName}
+                    cosmetics={users[2]?.cosmetics}
+                    size="w-20 h-20"
+                    className="relative z-10 mx-auto"
+                  />
+                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-amber-700 text-amber-50 w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-ghost-950 z-30 shadow-lg">3</div>
                 </div>
                 <Link href={`/profile/${users[2]?.username}`} className="font-bold text-white text-lg hover:underline truncate w-full text-center">{users[2]?.displayName}</Link>
                 <span className="text-sm text-amber-600 flex items-center gap-1 font-semibold mt-1">
@@ -151,7 +173,12 @@ export default function LeaderboardPage() {
                     <div className="w-8 text-center font-bold text-ghost-500">{rank}</div>
                     
                     <Link href={`/profile/${u.username}`} className="flex items-center gap-4 flex-1 min-w-0">
-                      <img src={u.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"} alt={u.displayName} className={`w-12 h-12 rounded-full object-cover group-hover:ring-2 transition-all ${isRep ? 'ring-yellow-500' : 'ring-orange-500'}`} />
+                      <UserAvatar 
+                        avatarUrl={u.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"}
+                        displayName={u.displayName}
+                        cosmetics={u.cosmetics}
+                        size="w-12 h-12"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2">
                           <h3 className={`text-white font-bold truncate transition-colors ${isRep ? 'group-hover:text-yellow-400' : 'group-hover:text-orange-400'}`}>{u.displayName}</h3>

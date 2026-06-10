@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { MentionInput } from "../../components/MentionInput";
 import { FormattedText } from "../../components/FormattedText";
+import { UserAvatar } from "../../components/UserAvatar";
 
 function formatRelativeTime(date: Date | string): string {
   const d = new Date(date);
@@ -138,13 +139,12 @@ function HauntCard({
           onClick={() => onInspect({ userId: haunt.author.id, username: haunt.author.username, displayName: haunt.author.displayName, avatar: haunt.author.avatar })}
           className={`relative flex-shrink-0 w-12 h-12 rounded-full overflow-hidden hover:scale-105 transition-transform shadow-lg ${level.color.includes('cyan') ? 'shadow-cyan-500/20 ring-2 ring-cyan-500/30' : level.color.includes('phantom') ? 'shadow-phantom-500/20 ring-2 ring-phantom-500/30' : level.color.includes('orange') ? 'shadow-orange-500/20 ring-2 ring-orange-500/30' : 'border border-white/10'}`}
         >
-          {haunt.author.avatar ? (
-            <img src={haunt.author.avatar} alt={haunt.author.displayName} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-ghost-800 flex items-center justify-center text-ghost-300 font-black text-lg">
-              {haunt.author.displayName.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <UserAvatar 
+            avatarUrl={haunt.author.avatar}
+            displayName={haunt.author.displayName}
+            cosmetics={haunt.author.cosmetics}
+            size="w-12 h-12"
+          />
         </button>
         <div className="flex-1 min-w-0 pt-0.5">
           <div className="flex items-center gap-2 flex-wrap">
@@ -256,13 +256,12 @@ function HauntCard({
                     onClick={() => onInspect({ userId: reply.author.id, username: reply.author.username, displayName: reply.author.displayName, avatar: reply.author.avatar })}
                     className="relative z-10 flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border border-white/10 hover:ring-2 hover:ring-phantom-500/50 transition-all shadow-md bg-ghost-900"
                   >
-                    {reply.author.avatar ? (
-                      <img src={reply.author.avatar} alt={reply.author.displayName} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-ghost-400 text-xs font-black">
-                        {reply.author.displayName.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <UserAvatar 
+                      avatarUrl={reply.author.avatar}
+                      displayName={reply.author.displayName}
+                      cosmetics={reply.author.cosmetics}
+                      size="w-8 h-8"
+                    />
                   </button>
                   <div className="flex-1 min-w-0 bg-ghost-900/40 rounded-2xl p-3 border border-white/5">
                     <div className="flex items-baseline gap-2 mb-1">

@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { Phone, User, MessageSquare, Check, CheckCheck, Mic, Trash2, Send, Pencil } from "lucide-react";
 import type { ApiResponse } from "../../../../types";
 import { UserProfileCard } from "../../../components/UserProfileCard";
+import { UserAvatar } from "../../../components/UserAvatar";
+import type { GhostCosmetics } from "../../../../types";
 
 interface Message {
   id: string;
@@ -42,8 +44,8 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
   const [isTyping, setIsTyping] = useState(false);
   const [hoveredMsg, setHoveredMsg] = useState<string | null>(null);
   const [editingMsg, setEditingMsg] = useState<{ id: string; content: string } | null>(null);
-  const [selectedUser, setSelectedUser] = useState<{ userId: string; username: string; displayName: string; avatar: string | null } | null>(null);
-  const [otherUser, setOtherUser] = useState<{ displayName: string; username: string; avatar: string | null } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<{ userId: string; username: string; displayName: string; avatar: string | null; cosmetics?: GhostCosmetics | null } | null>(null);
+  const [otherUser, setOtherUser] = useState<{ displayName: string; username: string; avatar: string | null; cosmetics?: GhostCosmetics | null } | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>(null);
@@ -103,6 +105,7 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
               displayName: data.data.displayName,
               username: data.data.username,
               avatar: data.data.avatar,
+              cosmetics: data.data.cosmetics,
             });
           }
         }
@@ -263,11 +266,12 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
       {isReceivingCall && (
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 animate-fade-in">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-phantom-500/40 shadow-2xl mb-6 animate-pulse bg-ghost-800 flex items-center justify-center">
-            {otherUser?.avatar ? (
-              <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-4xl font-black text-ghost-300">{otherUser?.displayName?.charAt(0).toUpperCase()}</span>
-            )}
+            <UserAvatar 
+              avatarUrl={otherUser?.avatar}
+              displayName={otherUser?.displayName || "Someone"}
+              cosmetics={otherUser?.cosmetics}
+              size="w-full h-full"
+            />
           </div>
           <h2 className="text-2xl font-bold text-white mb-1">{otherUser?.displayName ?? "Someone"}</h2>
           <p className="text-ghost-400 mb-10">Incoming voice call...</p>
@@ -287,11 +291,12 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
         <div className="absolute top-0 left-0 right-0 bg-phantom-900/90 backdrop-blur-md border-b border-phantom-500/30 z-40 p-3 flex items-center justify-between animate-slide-down shadow-xl">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full overflow-hidden bg-ghost-800 flex items-center justify-center flex-shrink-0">
-              {otherUser?.avatar ? (
-                <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-sm font-bold text-ghost-300">{otherUser?.displayName?.charAt(0).toUpperCase()}</span>
-              )}
+              <UserAvatar 
+                avatarUrl={otherUser?.avatar}
+                displayName={otherUser?.displayName || "User"}
+                cosmetics={otherUser?.cosmetics}
+                size="w-full h-full"
+              />
             </div>
             <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${callAccepted ? "bg-green-500 animate-pulse" : "bg-yellow-400 animate-pulse"}`} />
             <div>
@@ -327,13 +332,12 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
               }
             }}
           >
-            {otherUser?.avatar ? (
-              <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full rounded-full object-cover" />
-            ) : (
-              <div className="w-full h-full rounded-full bg-ghost-800 flex items-center justify-center text-xs font-bold text-ghost-300">
-                {otherUser?.displayName?.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <UserAvatar 
+              avatarUrl={otherUser?.avatar}
+              displayName={otherUser?.displayName || "User"}
+              cosmetics={otherUser?.cosmetics}
+              size="w-full h-full"
+            />
           </button>
           <div>
             <h1 className="text-sm font-bold text-ghost-100">{otherUser?.displayName ?? "Private Chat"}</h1>
@@ -375,13 +379,12 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
                       }
                     }}
                   >
-                    {otherUser?.avatar ? (
-                      <img src={otherUser.avatar} alt={otherUser.displayName} className="w-full h-full object-cover rounded-full" />
-                    ) : (
-                      <div className="w-full h-full rounded-full bg-ghost-800 flex items-center justify-center text-lg font-bold text-ghost-300">
-                        {otherUser?.displayName?.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    <UserAvatar 
+                      avatarUrl={otherUser?.avatar}
+                      displayName={otherUser?.displayName || "User"}
+                      cosmetics={otherUser?.cosmetics}
+                      size="w-full h-full"
+                    />
                   </button>
                 )}
                 <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>

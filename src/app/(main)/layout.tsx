@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { UserAvatar } from "../components/UserAvatar";
 import { useTheme } from "../../custom-hooks/use-theme";
 import { WebRTCProvider } from "../../custom-hooks/WebRTCContext";
 import { FloatingCallWidget } from "../components/FloatingCallWidget";
@@ -157,18 +158,13 @@ export default function MainLayout({
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-all duration-200"
           >
-            <div className="relative">
-              <div className="avatar avatar-sm">
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt={user.displayName}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="gradient-text font-black">{user.displayName.charAt(0)}</span>
-                )}
-              </div>
+              <div className="relative">
+                <UserAvatar 
+                  avatarUrl={user.avatar}
+                  displayName={user.displayName}
+                  cosmetics={user.cosmetics}
+                  size="w-8 h-8"
+                />
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success rounded-full border-2 border-ghost-950" />
             </div>
             <div className="flex-1 text-left min-w-0">
@@ -280,13 +276,12 @@ export default function MainLayout({
         {/* Desktop top bar */}
         <header className="hidden md:flex sticky top-0 z-30 bg-ghost-950 border-b border-white/5 px-6 py-3 items-center justify-end gap-4">
           <div className="flex items-center gap-3 bg-ghost-900/50 rounded-full pl-1 pr-3 py-1 border border-white/5">
-            <div className="avatar avatar-sm">
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.displayName} className="w-full h-full rounded-full object-cover" />
-              ) : (
-                <span className="gradient-text font-black">{user.displayName.charAt(0)}</span>
-              )}
-            </div>
+            <UserAvatar 
+              avatarUrl={user.avatar}
+              displayName={user.displayName}
+              cosmetics={user.cosmetics}
+              size="w-8 h-8"
+            />
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-ghost-100">{user.profile?.reputationScore || 0} Rep</span>
             </div>

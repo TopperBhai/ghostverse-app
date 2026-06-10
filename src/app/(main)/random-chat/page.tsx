@@ -4,7 +4,9 @@ import { useWebRTC } from "../../../custom-hooks/use-webrtc";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import { Mic, Radio, Ghost, SkipForward, PhoneOff, User as UserIcon } from "lucide-react";
 import { useState } from "react";
+import type { ApiResponse, GhostCosmetics } from "../../../types";
 import { UserProfileCard } from "../../components/UserProfileCard";
+import { UserAvatar } from "../../components/UserAvatar";
 
 export default function RandomVoiceChatPage() {
   const { user } = useAuth();
@@ -17,7 +19,7 @@ export default function RandomVoiceChatPage() {
     strangerProfile
   } = useWebRTC();
 
-  const [inspectUser, setInspectUser] = useState<any | null>(null);
+  const [inspectUser, setInspectUser] = useState<{ userId: string; username: string; displayName: string; avatar: string | null; cosmetics?: GhostCosmetics | null } | null>(null);
 
   const handleNext = () => {
     if (callAccepted) {
@@ -103,18 +105,23 @@ export default function RandomVoiceChatPage() {
             <div className="relative w-full flex flex-col items-center justify-center flex-1">
               {/* Stranger Avatar (Top, Larger) */}
               <div className="relative z-20 group">
-                <div className="w-40 h-40 rounded-full bg-ghost-900 border-4 border-phantom-500 flex items-center justify-center shadow-[0_0_50px_rgba(139,92,246,0.3)] relative overflow-hidden">
-                   {strangerProfile?.avatar ? (
-                    <img src={strangerProfile.avatar} alt={strangerProfile.displayName} className="w-full h-full object-cover" />
-                  ) : strangerProfile?.displayName ? (
-                    <span className="text-5xl font-black text-ghost-300">{strangerProfile.displayName.charAt(0).toUpperCase()}</span>
-                  ) : (
-                    <Ghost className="w-16 h-16 text-phantom-400" />
-                  )}
+                <div className="w-40 h-40 rounded-full bg-ghost-900 border-4 border-phantom-500 shadow-[0_0_50px_rgba(139,92,246,0.3)] relative overflow-hidden flex items-center justify-center">
+                  <UserAvatar 
+                    avatarUrl={strangerProfile?.avatar}
+                    displayName={strangerProfile?.displayName || "Stranger"}
+                    cosmetics={strangerProfile?.cosmetics}
+                    size="w-full h-full"
+                  />
                   {/* Inspect Overlay */}
                   {strangerProfile && (
                     <button 
-                      onClick={() => setInspectUser(strangerProfile)}
+                      onClick={() => setInspectUser({
+                        userId: strangerProfile.userId,
+                        username: strangerProfile.username,
+                        displayName: strangerProfile.displayName,
+                        avatar: strangerProfile.avatar,
+                        cosmetics: strangerProfile.cosmetics,
+                      })}
                       className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <UserIcon className="w-8 h-8 text-white mb-2" />
@@ -131,12 +138,13 @@ export default function RandomVoiceChatPage() {
 
               {/* Your Avatar (Bottom Right, Smaller, Overlapping) */}
               <div className="absolute bottom-10 right-4 md:right-8 z-30">
-                <div className="w-20 h-20 rounded-full bg-ghost-950 border-4 border-ghost-900 flex items-center justify-center shadow-xl overflow-hidden">
-                  {user?.avatar ? (
-                    <img src={user.avatar} alt="You" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-2xl font-black text-ghost-400">{user?.displayName?.charAt(0).toUpperCase()}</span>
-                  )}
+                <div className="w-20 h-20 rounded-full bg-ghost-950 border-4 border-ghost-900 shadow-xl overflow-hidden">
+                  <UserAvatar 
+                    avatarUrl={user?.avatar}
+                    displayName={user?.displayName || "You"}
+                    cosmetics={user?.cosmetics}
+                    size="w-full h-full"
+                  />
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-ghost-800 px-2 py-0.5 rounded-md border border-white/10 text-[10px] font-bold text-ghost-400">You</div>
               </div>

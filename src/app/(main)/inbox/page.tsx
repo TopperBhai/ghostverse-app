@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import Link from "next/link";
 import { MessageSquare, Users, Inbox as InboxIcon, Send, Plus, X, Check, Ghost, Edit } from "lucide-react";
-import type { ApiResponse } from "../../../types";
+import { useSocket } from "../../../custom-hooks/use-socket";
+import { UserAvatar } from "../../components/UserAvatar";
+import type { ApiResponse, GhostCosmetics } from "../../../types";
 import { UserProfileCard } from "../../components/UserProfileCard";
 
 interface Conversation {
@@ -15,10 +17,12 @@ interface Conversation {
     displayName: string;
     avatar: string | null;
     status: string;
+    cosmetics?: GhostCosmetics | null;
   };
   lastMessage: {
     content: string;
     createdAt: string;
+    senderId: string;
   } | null;
   unreadCount: number;
   updatedAt: string;
@@ -249,13 +253,12 @@ export default function InboxPage() {
                     key={conv.id}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left border-b border-white/[0.02]"
                   >
-                    <div className={`avatar avatar-md flex-shrink-0 ${conv.otherUser.status === "online" ? "avatar-online" : ""}`}>
-                      {conv.otherUser.avatar ? (
-                        <img src={conv.otherUser.avatar} alt={conv.otherUser.displayName} className="w-full h-full rounded-full object-cover" />
-                      ) : (
-                        conv.otherUser.displayName.charAt(0)
-                      )}
-                    </div>
+                    <UserAvatar 
+                      avatarUrl={conv.otherUser.avatar}
+                      displayName={conv.otherUser.displayName}
+                      cosmetics={conv.otherUser.cosmetics}
+                      size="w-12 h-12"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
                         <span className="text-sm font-medium text-ghost-100 truncate pr-2">
@@ -338,15 +341,13 @@ export default function InboxPage() {
                         <div key={friend.friendshipId} className="p-3 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors">
                           <button 
                             onClick={() => setSelectedUser({ userId: friend.id, username: friend.username, displayName: friend.displayName, avatar: friend.avatar })}
-                            className={`avatar avatar-md relative flex-shrink-0 hover:ring-2 hover:ring-phantom-500/60 transition-all ${friend.status === "online" && activeFriendTab === "friends" ? "avatar-online" : ""}`}
+                            className={`relative flex-shrink-0 hover:ring-2 hover:ring-phantom-500/60 transition-all rounded-full ${friend.status === "online" && activeFriendTab === "friends" ? "avatar-online" : ""}`}
                           >
-                            {friend.avatar ? (
-                              <img src={friend.avatar} alt={friend.displayName} className="w-full h-full rounded-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full bg-ghost-800 flex items-center justify-center text-ghost-300 font-bold text-lg">
-                                {friend.displayName.charAt(0).toUpperCase()}
-                              </div>
-                            )}
+                            <UserAvatar 
+                              avatarUrl={friend.avatar}
+                              displayName={friend.displayName}
+                              size="w-10 h-10"
+                            />
                           </button>
                           <div className="flex-1 min-w-0">
                             <button 

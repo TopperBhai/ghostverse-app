@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         avatar: data.avatar || null,
         reputationScore: data.reputationScore || 0,
         hauntStreak: data.gamification?.hauntStreak || 0,
+        cosmetics: data.cosmetics || { activeHat: null, activeAura: null, nameColor: null, unlockedItems: [] },
       };
     });
 

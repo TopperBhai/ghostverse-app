@@ -13,6 +13,8 @@ const ICE_SERVERS = {
   ],
 };
 
+import type { GhostCosmetics } from "../types";
+
 interface WebRTCContextType {
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
@@ -25,7 +27,7 @@ interface WebRTCContextType {
   answerCall: () => void;
   declineCall: () => void;
   endCall: () => void;
-  strangerProfile: { displayName: string; username: string; avatar: string | null; userId: string } | null;
+  strangerProfile: { displayName: string; username: string; avatar: string | null; userId: string; cosmetics?: GhostCosmetics | null } | null;
   isSearching: boolean;
   startSearch: () => void;
   stopSearch: () => void;
@@ -51,7 +53,7 @@ export function WebRTCProvider({ children }: { children: ReactNode }) {
   
   // Random Voice Matchmaking specific state
   const [isSearching, setIsSearching] = useState(false);
-  const [strangerProfile, setStrangerProfile] = useState<{ displayName: string; username: string; avatar: string | null; userId: string } | null>(null);
+  const [strangerProfile, setStrangerProfile] = useState<{ displayName: string; username: string; avatar: string | null; userId: string; cosmetics?: GhostCosmetics | null } | null>(null);
 
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);

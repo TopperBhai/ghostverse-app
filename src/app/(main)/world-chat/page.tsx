@@ -10,6 +10,7 @@ import { getGhostLevel } from "../../../lib/levels";
 import { MentionInput } from "../../components/MentionInput";
 import { FormattedText } from "../../components/FormattedText";
 import { getDailyChaosEvent } from "../../../lib/chaos-events";
+import { UserAvatar } from "../../components/UserAvatar";
 
 export default function WorldChatPage() {
   const { user, refreshUser } = useAuth();
@@ -240,10 +241,15 @@ export default function WorldChatPage() {
                     }
                   }}
                 >
-                  {!isGhostDay && msg.sender.avatar ? (
-                    <img src={msg.sender.avatar} alt={msg.sender.displayName} className="w-full h-full rounded-full object-cover" />
+                  {!isGhostDay ? (
+                    <UserAvatar 
+                      avatarUrl={msg.sender.avatar} 
+                      displayName={msg.sender.displayName} 
+                      cosmetics={msg.sender.cosmetics}
+                      size="w-8 h-8"
+                    />
                   ) : (
-                    isGhostDay ? "👻" : msg.sender.displayName.charAt(0)
+                    "👻"
                   )}
                 </button>
               ) : (
