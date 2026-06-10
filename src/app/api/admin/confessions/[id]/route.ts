@@ -5,7 +5,7 @@ import type { ApiResponse } from "../../../../../types";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authUser = await getAuthUser();
@@ -16,7 +16,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     await db.collection("confessions").doc(id).delete();
 
     return NextResponse.json<ApiResponse>({

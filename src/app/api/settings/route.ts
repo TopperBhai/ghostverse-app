@@ -1,7 +1,7 @@
 // GhostVerse — Public Settings API
 import { NextResponse } from "next/server";
-import { db } from "../../../../lib/firebase-admin";
-import type { ApiResponse } from "../../../../types";
+import { db } from "../../../lib/firebase-admin";
+import type { ApiResponse } from "../../../types";
 
 export async function GET() {
   try {

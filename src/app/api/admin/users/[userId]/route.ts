@@ -5,7 +5,7 @@ import type { ApiResponse } from "../../../../../types";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const authUser = await getAuthUser();
@@ -16,7 +16,7 @@ export async function GET(
       );
     }
 
-    const { userId } = params;
+    const { userId } = await params;
     const userDoc = await db.collection("users").doc(userId).get();
 
     if (!userDoc.exists) {
@@ -52,7 +52,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const authUser = await getAuthUser();
@@ -63,7 +63,7 @@ export async function PATCH(
       );
     }
 
-    const { userId } = params;
+    const { userId } = await params;
     const body = await request.json();
     const { action } = body;
 
