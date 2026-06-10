@@ -8,7 +8,7 @@ import { UserProfileCard } from "../../components/UserProfileCard";
 import { GhostPet } from "../../components/GhostPet";
 import {
   Ghost, MessageCircle, Send, X, Plus,
-  Loader2, Sparkles, RefreshCw, Trash2
+  Loader2, Sparkles, RefreshCw, Trash2, ImagePlus
 } from "lucide-react";
 import Link from "next/link";
 import { MentionInput } from "../../components/MentionInput";
@@ -189,9 +189,21 @@ function HauntCard({
       </div>
 
       {/* Content */}
-      <p className="relative text-ghost-100 text-[15px] leading-relaxed mb-5 pl-16 pr-4 tracking-wide">
-        <FormattedText content={haunt.content} onInspect={onInspect} />
-      </p>
+      <div className="relative text-ghost-100 text-[15px] leading-relaxed mb-5 pl-16 pr-4 tracking-wide space-y-4">
+        <p>
+          <FormattedText content={haunt.content} onInspect={onInspect} />
+        </p>
+        {haunt.imageUrl && (
+          <div className="relative w-full max-h-[400px] rounded-2xl overflow-hidden border border-white/10 group/img">
+            <img 
+              src={haunt.imageUrl} 
+              alt="Haunt attachment" 
+              className="w-full h-full object-cover bg-ghost-950"
+              loading="lazy"
+            />
+          </div>
+        )}
+      </div>
 
       {/* Reactions row */}
       <div className="relative flex items-center gap-3 flex-wrap mb-4 pl-16">
@@ -323,9 +335,10 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => { textareaRef.current?.focus(); }, []);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -333,16 +346,69 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
     return () => document.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image must be less than 5MB");
+        return;
+      }
+      setImageFile(file);
+      const url = URL.createObjectURL(file);
+      setImagePreview(url);
+      setError("");
+    }
+  };
+
+  const uploadToImgBB = async (file: File): Promise<string | null> => {
+    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    if (!apiKey) {
+      throw new Error("ImgBB API key is not configured.");
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: "POST",
+      body: formData,
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      return data.data.url;
+    }
+    throw new Error(data.error?.message || "Failed to upload image");
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() || submitting) return;
+    if (!content.trim() && !imageFile) return;
+    if (submitting || uploadingImage) return;
+    
     setSubmitting(true);
     setError("");
+    
     try {
+      let imageUrl = undefined;
+      
+      if (imageFile) {
+        setUploadingImage(true);
+        try {
+          imageUrl = await uploadToImgBB(imageFile);
+        } catch (err: any) {
+          setError(err.message || "Failed to upload image.");
+          setSubmitting(false);
+          setUploadingImage(false);
+          return;
+        }
+        setUploadingImage(false);
+      }
+
       const res = await fetch("/api/haunts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: content.trim() }),
+        body: JSON.stringify({ content: content.trim() || " ", imageUrl }),
       });
       const data = await res.json();
       if (data.success && data.data) {
@@ -354,7 +420,10 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
     } catch {
       setError("Something went wrong. Try again.");
     }
-    finally { setSubmitting(false); }
+    finally { 
+      setSubmitting(false); 
+      setUploadingImage(false);
+    }
   };
 
   const charsLeft = 280 - content.length;
@@ -392,7 +461,7 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
               value={content}
               onChange={setContent}
               maxLength={280}
-              rows={5}
+              rows={4}
               placeholder="What's haunting your thoughts?"
               className="w-full bg-black/20 border border-white/5 text-white text-lg md:text-xl rounded-2xl px-5 py-4 focus:outline-none focus:border-phantom-500/50 focus:bg-black/40 transition-all resize-none placeholder:text-ghost-600 leading-relaxed font-medium"
               onSubmit={() => {
@@ -400,6 +469,20 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
                 submit(e);
               }}
             />
+            
+            {/* Image Preview */}
+            {imagePreview && (
+              <div className="mt-3 relative w-32 h-32 rounded-xl overflow-hidden border border-white/10 group">
+                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => { setImageFile(null); setImagePreview(null); }}
+                  className="absolute top-1 right-1 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
 
           {error && (
@@ -407,20 +490,39 @@ function ComposeModal({ onClose, onPost }: { onClose: () => void; onPost: (haunt
           )}
 
           <div className="flex items-center justify-between pt-2 border-t border-white/5">
-            <span className={`text-sm font-black tabular-nums ${isNearLimit ? (charsLeft <= 0 ? "text-neon-red" : "text-amber-400") : "text-ghost-600"}`}>
-              {charsLeft}
-            </span>
+            <div className="flex items-center gap-4">
+              <span className={`text-sm font-black tabular-nums ${isNearLimit ? (charsLeft <= 0 ? "text-neon-red" : "text-amber-400") : "text-ghost-600"}`}>
+                {charsLeft}
+              </span>
+              
+              {/* Image Upload Button */}
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageSelect} 
+                accept="image/*" 
+                className="hidden" 
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-10 h-10 rounded-full bg-white/5 hover:bg-phantom-500/20 text-ghost-400 hover:text-phantom-300 transition-all flex items-center justify-center border border-transparent hover:border-phantom-500/30"
+                title="Attach Image"
+              >
+                <ImagePlus className="w-5 h-5" />
+              </button>
+            </div>
             <div className="flex items-center gap-3">
               <button type="button" onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-ghost-400 hover:text-white transition-colors">
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={!content.trim() || charsLeft < 0 || submitting}
+                disabled={(!content.trim() && !imageFile) || charsLeft < 0 || submitting || uploadingImage}
                 className="btn-primary text-sm px-6 py-2.5 gap-2 shadow-lg shadow-phantom-500/25 disabled:opacity-50 disabled:shadow-none transition-all hover:scale-105 active:scale-95"
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                {submitting ? "Summoning..." : "Post Haunt"}
+                {(submitting || uploadingImage) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {uploadingImage ? "Uploading..." : submitting ? "Summoning..." : "Post Haunt"}
               </button>
             </div>
           </div>

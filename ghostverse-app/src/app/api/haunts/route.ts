@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
       return {
         id: doc.id,
         content: data.content,
+        imageUrl: data.imageUrl,
         createdAt: data.createdAt,
         author: data.author,
         reactions: data.reactions || [],
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { content } = body;
+    const { content, imageUrl } = body;
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json<ApiResponse>(
@@ -109,6 +110,7 @@ export async function POST(request: NextRequest) {
     const haunt: HauntPost = {
       id: hauntId,
       content: content.trim(),
+      ...(imageUrl && { imageUrl }),
       createdAt: now as any,
       author: {
         id: userData.id,

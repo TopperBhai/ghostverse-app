@@ -1,105 +1,28 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useSocket } from "../../../custom-hooks/use-socket";
-import { useAuth } from "../../../custom-hooks/use-auth";
 import { useWebRTC } from "../../../custom-hooks/use-webrtc";
-import { Mic, Radio, User as UserIcon, Ghost, SkipForward } from "lucide-react";
+import { useAuth } from "../../../custom-hooks/use-auth";
+import { Mic, Radio, Ghost, SkipForward, PhoneOff, User as UserIcon } from "lucide-react";
+import { useState } from "react";
+import { UserProfileCard } from "../../components/UserProfileCard";
 
 export default function RandomVoiceChatPage() {
-  const { socket } = useSocket();
   const { user } = useAuth();
   const {
-    remoteStream,
     callAccepted,
+    isSearching,
+    startSearch,
+    stopSearch,
     endCall,
-    callUser,
-    answerCall,
-    isReceivingCall
+    strangerProfile
   } = useWebRTC();
 
-  const [isSearching, setIsSearching] = useState(false);
-  const [matchFound, setMatchFound] = useState(false);
-  const [peerId, setPeerId] = useState<string | null>(null);
-  const [strangerProfile, setStrangerProfile] = useState<{ displayName: string; username: string; avatar: string | null } | null>(null);
-  
-  const audioRef = useRef<HTMLAudioElement>(null);
-
-  useEffect(() => {
-    if (audioRef.current && remoteStream) {
-      audioRef.current.srcObject = remoteStream;
-    }
-  }, [remoteStream]);
-
-  // Handle Matchmaking
-  useEffect(() => {
-    if (!socket || !user) return;
-
-    const handleMatch = (data: { peerId: string, isCaller: boolean }) => {
-      setIsSearching(false);
-      setMatchFound(true);
-      setPeerId(data.peerId);
-
-      if (data.isCaller) {
-        // We initiate the call automatically
-        setTimeout(() => {
-          callUser(data.peerId);
-        }, 1000); // Wait a sec to ensure both are ready
-      }
-    };
-
-    socket.on("random-voice:match", handleMatch);
-
-    return () => {
-      socket.off("random-voice:match", handleMatch);
-    };
-  }, [socket, user, callUser]);
-
-  // Fetch stranger's profile when matched
-  useEffect(() => {
-    if (!peerId) return;
-    const fetchStranger = async () => {
-      try {
-        const res = await fetch(`/api/users/by-id/${peerId}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success) {
-            setStrangerProfile(data.data);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch stranger:", err);
-      }
-    };
-    fetchStranger();
-  }, [peerId]);
-
-  // When receiving the automatic call from the caller
-  useEffect(() => {
-    if (isReceivingCall && matchFound) {
-      answerCall();
-    }
-  }, [isReceivingCall, matchFound, answerCall]);
-
-  const startSearch = () => {
-    if (!socket || !user) return;
-    setIsSearching(true);
-    socket.emit("random-voice:join", { userId: user.id });
-  };
-
-  const stopSearch = () => {
-    if (!socket || !user) return;
-    setIsSearching(false);
-    socket.emit("random-voice:leave", { userId: user.id });
-  };
+  const [inspectUser, setInspectUser] = useState<any | null>(null);
 
   const handleNext = () => {
     if (callAccepted) {
       endCall();
     }
-    setMatchFound(false);
-    setPeerId(null);
-    setStrangerProfile(null);
     startSearch(); // immediately search again
   };
 
@@ -107,17 +30,12 @@ export default function RandomVoiceChatPage() {
     if (callAccepted) {
       endCall();
     }
-    setMatchFound(false);
-    setPeerId(null);
-    setStrangerProfile(null);
     stopSearch();
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-56px)] md:h-screen w-full relative bg-ghost-950 overflow-hidden">
-      {/* Remote Audio Player */}
-      <audio ref={audioRef} autoPlay />
-
+    <div className="flex flex-col h-[calc(100vh-56px)] md:h-[calc(100vh-80px)] w-full relative bg-ghost-950 overflow-hidden">
+      
       {/* Decorative Background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-phantom-900/20 via-ghost-950 to-ghost-950 pointer-events-none" />
       
@@ -127,120 +45,137 @@ export default function RandomVoiceChatPage() {
           <h1 className="text-xl font-bold gradient-text">Random Voice</h1>
           <p className="text-xs text-ghost-400">Connect with strangers anonymously</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-ghost-900/50 px-3 py-1.5 rounded-full border border-white/5">
           <div className={`w-2.5 h-2.5 rounded-full ${callAccepted ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : isSearching ? 'bg-yellow-500 shadow-[0_0_10px_#eab308] animate-pulse' : 'bg-red-500 shadow-[0_0_10px_#ef4444]'}`} />
-          <span className="text-xs font-medium text-ghost-300">
+          <span className="text-xs font-bold tracking-wide text-ghost-200 uppercase">
             {callAccepted ? "Connected" : isSearching ? "Searching..." : "Idle"}
           </span>
         </div>
       </div>
 
       {/* Main Area */}
-      <div className="flex-1 relative z-10 flex flex-col items-center justify-center p-6">
+      <div className="flex-1 relative z-10 flex flex-col items-center justify-center p-6 w-full max-w-md mx-auto">
         
-        {!isSearching && !matchFound && (
-          <div className="text-center animate-fade-in max-w-md">
-            <div className="w-32 h-32 mx-auto bg-phantom-500/10 rounded-full flex items-center justify-center mb-8 border border-phantom-500/30">
-              <Mic className="w-16 h-16 text-phantom-500 animate-pulse" />
+        {!isSearching && !callAccepted && (
+          <div className="text-center animate-fade-in w-full">
+            <div className="w-32 h-32 mx-auto bg-phantom-500/10 rounded-full flex items-center justify-center mb-8 border border-phantom-500/30 relative">
+              <div className="absolute inset-0 rounded-full border border-phantom-400/20 animate-[ping_3s_ease-out_infinite]" />
+              <Mic className="w-16 h-16 text-phantom-500" />
             </div>
-            <h2 className="text-3xl font-black text-white mb-4">Ready to talk?</h2>
-            <p className="text-ghost-400 mb-8 leading-relaxed">
-              You will be matched with a random stranger for an anonymous voice call. Please be respectful.
+            <h2 className="text-3xl font-black text-white mb-4 tracking-tight">Ready to talk?</h2>
+            <p className="text-ghost-400 mb-10 leading-relaxed font-medium">
+              You will be matched with a random stranger for an anonymous voice call.
             </p>
             <button 
               onClick={startSearch}
-              className="w-full py-4 bg-phantom-600 hover:bg-phantom-500 text-white font-bold rounded-2xl shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-all active:scale-[0.98]"
+              className="w-full py-4 bg-gradient-to-r from-phantom-600 to-purple-600 hover:from-phantom-500 hover:to-purple-500 text-white font-black text-lg rounded-3xl shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-all active:scale-95"
             >
               Start Searching
             </button>
           </div>
         )}
 
-        {isSearching && !matchFound && (
-          <div className="text-center animate-fade-in">
-            <div className="relative w-40 h-40 mx-auto mb-8">
-              <div className="absolute inset-0 border-4 border-phantom-500/30 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]" />
-              <div className="absolute inset-4 border-4 border-phantom-400/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite_0.5s]" />
-              <div className="absolute inset-8 bg-phantom-500/20 backdrop-blur-md rounded-full flex items-center justify-center border border-phantom-400">
-                <Radio className="w-10 h-10 text-phantom-400" />
+        {isSearching && !callAccepted && (
+          <div className="text-center animate-fade-in w-full">
+            <div className="relative w-48 h-48 mx-auto mb-10 flex items-center justify-center">
+              <div className="absolute inset-0 border-2 border-phantom-500/30 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]" />
+              <div className="absolute inset-4 border-2 border-phantom-400/50 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite_0.5s]" />
+              <div className="absolute inset-8 border-2 border-purple-400/40 rounded-full animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite_1s]" />
+              <div className="relative z-10 w-24 h-24 bg-gradient-to-br from-phantom-500 to-purple-600 rounded-full flex items-center justify-center shadow-2xl">
+                <Radio className="w-10 h-10 text-white animate-pulse" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Looking for a match...</h2>
-            <p className="text-ghost-400 mb-8">This usually takes a few seconds.</p>
+            <h2 className="text-2xl font-black text-white mb-3">Looking for match...</h2>
+            <p className="text-ghost-400 mb-12 font-medium">Please wait while we connect you.</p>
             <button 
-              onClick={stopSearch}
-              className="px-8 py-3 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold rounded-xl transition-all"
+              onClick={handleStop}
+              className="px-10 py-3.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white font-bold rounded-2xl transition-all active:scale-95 border border-red-500/20"
             >
               Cancel Search
             </button>
           </div>
         )}
 
-        {matchFound && (
-          <div className="text-center animate-fade-in w-full max-w-md">
-            <div className="flex items-center justify-center gap-8 mb-12">
-              {/* You */}
-              <div className="flex flex-col items-center">
-                <div className="w-20 h-20 rounded-full bg-ghost-800 border-2 border-phantom-500 flex items-center justify-center mb-3 overflow-hidden">
+        {callAccepted && (
+          <div className="text-center animate-fade-in w-full flex flex-col h-full justify-between pb-8 pt-4">
+            
+            {/* Avatars Stack (Phone Style) */}
+            <div className="relative w-full flex flex-col items-center justify-center flex-1">
+              {/* Stranger Avatar (Top, Larger) */}
+              <div className="relative z-20 group">
+                <div className="w-40 h-40 rounded-full bg-ghost-900 border-4 border-phantom-500 flex items-center justify-center shadow-[0_0_50px_rgba(139,92,246,0.3)] relative overflow-hidden">
+                   {strangerProfile?.avatar ? (
+                    <img src={strangerProfile.avatar} alt={strangerProfile.displayName} className="w-full h-full object-cover" />
+                  ) : strangerProfile?.displayName ? (
+                    <span className="text-5xl font-black text-ghost-300">{strangerProfile.displayName.charAt(0).toUpperCase()}</span>
+                  ) : (
+                    <Ghost className="w-16 h-16 text-phantom-400" />
+                  )}
+                  {/* Inspect Overlay */}
+                  {strangerProfile && (
+                    <button 
+                      onClick={() => setInspectUser(strangerProfile)}
+                      className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <UserIcon className="w-8 h-8 text-white mb-2" />
+                      <span className="text-xs font-bold text-white uppercase tracking-wider">Inspect</span>
+                    </button>
+                  )}
+                </div>
+                <div className="absolute -inset-4 border-2 border-phantom-500/20 rounded-full animate-[ping_2s_ease-out_infinite]" />
+                <h2 className="text-2xl font-black text-white mt-6 drop-shadow-md">
+                  {strangerProfile?.displayName ?? "Stranger"}
+                </h2>
+                <p className="text-sm text-green-400 font-bold uppercase tracking-wider mt-1">In Call</p>
+              </div>
+
+              {/* Your Avatar (Bottom Right, Smaller, Overlapping) */}
+              <div className="absolute bottom-10 right-4 md:right-8 z-30">
+                <div className="w-20 h-20 rounded-full bg-ghost-950 border-4 border-ghost-900 flex items-center justify-center shadow-xl overflow-hidden">
                   {user?.avatar ? (
                     <img src={user.avatar} alt="You" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-2xl font-black text-ghost-300">{user?.displayName?.charAt(0).toUpperCase()}</span>
+                    <span className="text-2xl font-black text-ghost-400">{user?.displayName?.charAt(0).toUpperCase()}</span>
                   )}
                 </div>
-                <span className="text-sm font-bold text-ghost-200">You</span>
-              </div>
-
-              {/* Connection Line */}
-              <div className="flex-1 h-0.5 bg-gradient-to-r from-phantom-500 via-fuchsia-500 to-phantom-500 relative">
-                <div className={`absolute inset-0 bg-white shadow-[0_0_10px_#fff] ${callAccepted ? 'animate-[ping_2s_ease-in-out_infinite]' : 'opacity-0'}`} />
-              </div>
-
-              {/* Stranger */}
-              <div className="flex flex-col items-center">
-                <div className="w-20 h-20 rounded-full bg-ghost-800 border-2 border-fuchsia-500 flex items-center justify-center mb-3 relative overflow-hidden">
-                  {callAccepted && (
-                    <div className="absolute -inset-2 border-2 border-fuchsia-500/50 rounded-full animate-[ping_1.5s_ease-in-out_infinite]" />
-                  )}
-                  {strangerProfile?.avatar ? (
-                    <img src={strangerProfile.avatar} alt={strangerProfile.displayName} className="w-full h-full object-cover" />
-                  ) : strangerProfile?.displayName ? (
-                    <span className="text-2xl font-black text-ghost-300">{strangerProfile.displayName.charAt(0).toUpperCase()}</span>
-                  ) : (
-                    <Ghost className="w-8 h-8 text-fuchsia-400" />
-                  )}
-                </div>
-                <span className="text-sm font-bold text-ghost-200">{strangerProfile?.displayName ?? "Stranger"}</span>
+                <div className="absolute -bottom-2 -right-2 bg-ghost-800 px-2 py-0.5 rounded-md border border-white/10 text-[10px] font-bold text-ghost-400">You</div>
               </div>
             </div>
 
-            <div className="bg-ghost-900/50 backdrop-blur-sm border border-ghost-800 rounded-3xl p-6 mb-8">
-              <h3 className="text-xl font-bold text-white mb-1">
-                {callAccepted ? "Call Connected!" : "Connecting..."}
-              </h3>
-              <p className="text-sm text-ghost-400">
-                {callAccepted ? "Say hello!" : "Establishing secure P2P connection..."}
-              </p>
-            </div>
-
-            <div className="flex gap-4">
-              <button 
-                onClick={handleStop}
-                className="flex-1 py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white font-bold rounded-2xl transition-all shadow-[0_0_20px_rgba(239,68,68,0)] hover:shadow-[0_0_20px_rgba(239,68,68,0.3)]"
-              >
-                Stop
-              </button>
-              <button 
-                onClick={handleNext}
-                className="flex-[2] py-4 bg-phantom-600 hover:bg-phantom-500 text-white font-bold rounded-2xl shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:shadow-[0_0_40px_rgba(139,92,246,0.5)] transition-all flex items-center justify-center gap-2"
-              >
-                Skip to Next <SkipForward className="w-5 h-5" />
-              </button>
+            {/* Controls (Phone Style) */}
+            <div className="w-full mt-auto">
+              <div className="flex items-center justify-center gap-6">
+                <button 
+                  onClick={handleStop}
+                  className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.5)] transition-all active:scale-90 group"
+                  title="End Call"
+                >
+                  <PhoneOff className="w-7 h-7 group-hover:scale-110 transition-transform" />
+                </button>
+                <button 
+                  onClick={handleNext}
+                  className="w-20 h-20 rounded-full bg-white flex items-center justify-center text-phantom-600 hover:bg-gray-100 shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all active:scale-90 group"
+                  title="Skip to Next"
+                >
+                  <div className="flex flex-col items-center">
+                    <SkipForward className="w-8 h-8 group-hover:translate-x-1 transition-transform" />
+                    <span className="text-[10px] font-black uppercase mt-1">Skip</span>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         )}
 
       </div>
+
+      {/* Profile Inspector Modal */}
+      {inspectUser && (
+        <UserProfileCard
+          {...inspectUser}
+          onClose={() => setInspectUser(null)}
+        />
+      )}
     </div>
   );
 }

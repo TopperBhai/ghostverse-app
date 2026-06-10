@@ -8,6 +8,8 @@ import { Globe, Dices, MessageSquare, Users, VenetianMask, Bell, Ghost, Settings
 import { NotificationDropdown } from "../components/NotificationDropdown";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { useTheme } from "../../custom-hooks/use-theme";
+import { WebRTCProvider } from "../../custom-hooks/WebRTCContext";
+import { FloatingCallWidget } from "../components/FloatingCallWidget";
 
 const NAV_ITEMS = [
   { href: "/world-chat", icon: Globe, label: "World Chat" },
@@ -76,7 +78,8 @@ export default function MainLayout({
   };
 
   return (
-    <div className="min-h-screen bg-ghost-950 flex">
+    <WebRTCProvider>
+      <div className="min-h-screen bg-ghost-950 flex">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -311,6 +314,10 @@ export default function MainLayout({
           </div>
         </nav>
       </main>
+      
+      {/* Global Floating Call Widget */}
+      <FloatingCallWidget />
     </div>
+    </WebRTCProvider>
   );
 }

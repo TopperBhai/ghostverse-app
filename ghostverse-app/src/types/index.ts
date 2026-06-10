@@ -182,6 +182,7 @@ export interface HauntReply {
 export interface HauntPost {
   id: string;
   content: string;
+  imageUrl?: string;
   createdAt: Date;
   author: {
     id: string;
