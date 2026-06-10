@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { password, username, displayName } = body;
+    const { password, username, displayName, avatar } = body;
 
     if (!password || !username || !displayName) {
       return NextResponse.json<ApiResponse>(
@@ -56,8 +56,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-
-
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
@@ -73,6 +71,7 @@ export async function POST(request: NextRequest) {
       id: userId,
       username: lowercaseUsername,
       displayName,
+      avatar: avatar && typeof avatar === 'string' && avatar.length < 150000 ? avatar : null,
       passwordHash,
       role: isFirstUser ? "ADMIN" : "USER",
       status: "ACTIVE",

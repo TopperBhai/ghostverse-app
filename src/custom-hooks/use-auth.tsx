@@ -11,6 +11,7 @@ interface AuthContextType {
     password: string;
     username: string;
     displayName: string;
+    avatar?: string;
   }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -67,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string;
     username: string;
     displayName: string;
+    avatar?: string;
   }) => {
     try {
       const res = await fetch("/api/auth/register", {

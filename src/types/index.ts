@@ -238,7 +238,7 @@ export interface ServerToClientEvents {
   "mystery:revealed": (data: { matchId: string; user: SafeUser }) => void;
 
   // WebRTC Signaling
-  "webrtc:call-request": (data: { callerId: string }) => void;
+  "webrtc:call-request": (data: { callerId: string; isRandom?: boolean }) => void;
   "webrtc:call-accept": (data: { callerId: string }) => void;
   "webrtc:call-decline": (data: { callerId: string }) => void;
   "webrtc:end-call": () => void;
@@ -290,7 +290,7 @@ export interface ClientToServerEvents {
   "user:offline": (data?: { userId: string }) => void;
 
   // WebRTC Signaling
-  "webrtc:call-request": (data: { receiverId: string; callerId: string }) => void;
+  "webrtc:call-request": (data: { receiverId: string; callerId: string; isRandom?: boolean }) => void;
   "webrtc:call-accept": (data: { callerId: string; receiverId: string }) => void;
   "webrtc:call-decline": (data: { callerId: string; receiverId: string }) => void;
   "webrtc:end-call": (data: { peerId: string }) => void;

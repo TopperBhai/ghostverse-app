@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "../../../custom-hooks/use-auth";
-import { Ghost, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Ghost, Eye, EyeOff, AlertCircle, Camera, X } from "lucide-react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -17,8 +17,54 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { register } = useAuth();
   const router = useRouter();
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 150;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const base64Str = canvas.toDataURL('image/jpeg', 0.8);
+          setAvatarPreview(base64Str);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -60,6 +106,7 @@ export default function RegisterPage() {
       password: formData.password,
       username: formData.username,
       displayName: formData.displayName,
+      avatar: avatarPreview || undefined,
     });
 
     if (result.success) {
@@ -106,6 +153,44 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center justify-center mb-6 relative">
+              <div 
+                className="w-24 h-24 rounded-full bg-zinc-900 border-2 border-dashed border-zinc-700 flex flex-col items-center justify-center cursor-pointer hover:border-phantom-500 hover:bg-zinc-800 transition-all relative overflow-hidden group"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {avatarPreview ? (
+                  <>
+                    <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <Camera className="w-6 h-6 text-white" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-8 h-8 text-zinc-500 group-hover:text-phantom-400 mb-1 transition-colors" />
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider group-hover:text-phantom-400 transition-colors">Optional</span>
+                  </>
+                )}
+              </div>
+              {avatarPreview && (
+                <button 
+                  type="button" 
+                  onClick={(e) => { e.stopPropagation(); setAvatarPreview(null); if(fileInputRef.current) fileInputRef.current.value = ""; }}
+                  className="absolute top-0 right-1/2 translate-x-10 translate-y-1 bg-zinc-800 border border-zinc-700 p-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-red-500 hover:border-red-500 transition-all shadow-xl z-20"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/jpeg, image/png, image/webp" 
+                onChange={handleImageSelect}
+              />
+            </div>
+            
             <div className="space-y-1.5">
               <label htmlFor="username" className="text-sm font-medium text-zinc-300 block">
                 Username

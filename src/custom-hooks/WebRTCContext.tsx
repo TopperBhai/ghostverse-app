@@ -29,6 +29,10 @@ interface WebRTCContextType {
   isSearching: boolean;
   startSearch: () => void;
   stopSearch: () => void;
+  isMuted: boolean;
+  isDeafened: boolean;
+  toggleMute: () => void;
+  toggleDeafen: () => void;
 }
 
 const WebRTCContext = createContext<WebRTCContextType | undefined>(undefined);
@@ -48,6 +52,9 @@ export function WebRTCProvider({ children }: { children: ReactNode }) {
   // Random Voice Matchmaking specific state
   const [isSearching, setIsSearching] = useState(false);
   const [strangerProfile, setStrangerProfile] = useState<{ displayName: string; username: string; avatar: string | null; userId: string } | null>(null);
+
+  const [isMuted, setIsMuted] = useState(false);
+  const [isDeafened, setIsDeafened] = useState(false);
 
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const iceCandidateQueue = useRef<RTCIceCandidateInit[]>([]);
@@ -120,10 +127,23 @@ export function WebRTCProvider({ children }: { children: ReactNode }) {
   }, [socket, user]);
 
   const cleanup = useCallback(() => {
-    peerRef.current?.close();
-    peerRef.current = null;
+    if (peerRef.current) {
+      peerRef.current.onicecandidate = null;
+      peerRef.current.ontrack = null;
+      peerRef.current.onconnectionstatechange = null;
+      peerRef.current.close();
+      peerRef.current = null;
+    }
     iceCandidateQueue.current = [];
-    localStream?.getTracks().forEach((t) => t.stop());
+    if (localStream) {
+      localStream.getTracks().forEach((t) => {
+        t.stop();
+        t.enabled = false;
+      });
+    }
+    if (audioRef.current) {
+      audioRef.current.srcObject = null;
+    }
     setLocalStream(null);
     setRemoteStream(null);
     setIsCalling(false);
@@ -133,6 +153,8 @@ export function WebRTCProvider({ children }: { children: ReactNode }) {
     setPeerId(null);
     setIsSearching(false);
     setStrangerProfile(null);
+    setIsMuted(false);
+    setIsDeafened(false);
   }, [localStream]);
 
   // Fetch stranger's profile when matched/connected
@@ -167,7 +189,7 @@ export function WebRTCProvider({ children }: { children: ReactNode }) {
         setTimeout(() => {
           if (!socket || !user) return;
           setIsCalling(true);
-          socket.emit("webrtc:call-request", { receiverId: data.peerId, callerId: user.id });
+          socket.emit("webrtc:call-request", { receiverId: data.peerId, callerId: user.id, isRandom: true });
         }, 1000);
       }
     };
@@ -261,12 +283,19 @@ export function WebRTCProvider({ children }: { children: ReactNode }) {
     });
 
     socket.on("webrtc:call-request", (data: any) => {
-      // Auto-answer for random voice
       if (!socket || !user) return;
-      setIsReceivingCall(false);
-      setCallAccepted(true);
-      setPeerId(data.callerId);
-      socket.emit("webrtc:call-accept", { callerId: user.id, receiverId: data.callerId });
+      
+      if (data.isRandom) {
+        // Auto-answer for random voice
+        setIsReceivingCall(false);
+        setCallAccepted(true);
+        setPeerId(data.callerId);
+        socket.emit("webrtc:call-accept", { callerId: user.id, receiverId: data.callerId });
+      } else {
+        // Show ringing modal for direct calls
+        setCallerId(data.callerId);
+        setIsReceivingCall(true);
+      }
     });
 
     socket.on("webrtc:call-decline", () => {
@@ -318,7 +347,7 @@ export function WebRTCProvider({ children }: { children: ReactNode }) {
   };
 
   const startSearch = () => {
-    if (!socket || !user) return;
+    if (!socket || !user || isSearching) return;
     setIsSearching(true);
     socket.emit("random-voice:join", { userId: user.id });
   };
@@ -328,6 +357,22 @@ export function WebRTCProvider({ children }: { children: ReactNode }) {
     setIsSearching(false);
     socket.emit("random-voice:leave", { userId: user.id });
   };
+
+  const toggleMute = useCallback(() => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = !track.enabled;
+      });
+      setIsMuted(prev => !prev);
+    }
+  }, [localStream]);
+
+  const toggleDeafen = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = !audioRef.current.muted;
+      setIsDeafened(!audioRef.current.muted);
+    }
+  }, []);
 
   return (
     <WebRTCContext.Provider
@@ -346,7 +391,11 @@ export function WebRTCProvider({ children }: { children: ReactNode }) {
         strangerProfile,
         isSearching,
         startSearch,
-        stopSearch
+        stopSearch,
+        isMuted,
+        isDeafened,
+        toggleMute,
+        toggleDeafen
       }}
     >
       {children}
