@@ -15,6 +15,14 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
+    // If running inside the mobile app wrapper, skip landing page
+    if (typeof window !== 'undefined' && (window as any).Capacitor?.isNativePlatform()) {
+      if (!loading && !user) {
+        router.push("/register");
+        return;
+      }
+    }
+
     if (!loading && user) {
       router.push("/world-chat");
     }
