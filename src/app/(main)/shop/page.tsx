@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 import { Store, Sparkles, Loader2, Palette, Zap, Crown } from "lucide-react";
 import { SHOP_ITEMS, type CosmeticType } from "../../../lib/shop-items";
+import { CosmeticHat } from "../../components/CosmeticHat";
 
 export default function ShopPage() {
   const { user, refreshUser } = useAuth();
@@ -143,7 +144,7 @@ export default function ShopPage() {
                   <div className={`w-10 h-10 rounded-full bg-ghost-800 ${item.value}`} />
                 )}
                 {item.type === "hat" && (
-                  <div className="text-4xl drop-shadow-lg">{item.value}</div>
+                  <CosmeticHat value={item.value} className="w-12 h-12 text-yellow-400 drop-shadow-lg" />
                 )}
               </div>
 

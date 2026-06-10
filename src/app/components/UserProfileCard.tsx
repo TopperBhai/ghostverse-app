@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { getGhostLevel } from "../../lib/levels";
 import { GhostPet } from "./GhostPet";
+import { CosmeticHat } from "./CosmeticHat";
 
 interface ProfileCardProps {
   username: string;
@@ -214,8 +215,8 @@ export function UserProfileCard({
           {/* Floating Avatar */}
           <div className="absolute -top-9 left-4 z-10">
             {profile?.cosmetics?.activeHat && (
-              <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-3xl z-20 drop-shadow-md">
-                {profile.cosmetics.activeHat}
+              <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20 drop-shadow-md">
+                <CosmeticHat value={profile.cosmetics.activeHat} className="w-8 h-8 text-yellow-400" />
               </div>
             )}
             <div className={`w-[72px] h-[72px] rounded-full border-4 border-ghost-900 bg-ghost-800 flex items-center justify-center text-2xl font-black text-ghost-300 shadow-xl ${profile?.cosmetics?.activeAura || ""}`}>

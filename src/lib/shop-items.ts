@@ -22,10 +22,10 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "aura_cursed", name: "Cursed Flames", type: "aura", price: 600, value: "shadow-[0_0_30px_rgba(239,68,68,0.5)] ring-2 ring-red-500/50" },
   { id: "aura_void", name: "Void Resonance", type: "aura", price: 1000, value: "shadow-[0_0_50px_rgba(168,85,247,0.6)] ring-2 ring-phantom-500/80 animate-pulse" },
 
-  // HATS (Emojis for now to keep it simple, or URLs)
-  { id: "hat_crown", name: "King's Crown", type: "hat", price: 1500, value: "👑" },
-  { id: "hat_halo", name: "Angel Halo", type: "hat", price: 1200, value: "😇" },
-  { id: "hat_horns", name: "Devil Horns", type: "hat", price: 1200, value: "😈" },
-  { id: "hat_cowboy", name: "Cowboy Hat", type: "hat", price: 500, value: "🤠" },
-  { id: "hat_alien", name: "Alien Antenna", type: "hat", price: 700, value: "👽" },
+  // HATS (Emojis mapped to Lucide SVGs)
+  { id: "hat_crown", name: "King's Crown", type: "hat", price: 1500, value: "crown" },
+  { id: "hat_halo", name: "Angel Halo", type: "hat", price: 1200, value: "halo" },
+  { id: "hat_horns", name: "Devil Horns", type: "hat", price: 1200, value: "demon-horns" },
+  { id: "hat_wizard", name: "Wizard Hat", type: "hat", price: 900, value: "wizard-hat" },
+  { id: "hat_cowboy", name: "Cowboy Hat", type: "hat", price: 500, value: "cowboy" },
 ];
