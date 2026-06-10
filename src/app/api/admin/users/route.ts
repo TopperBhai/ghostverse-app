@@ -93,7 +93,7 @@ export async function PATCH(request: NextRequest) {
         );
       }
       await db.collection("users").doc(userId).update({
-        ghostDust: FieldValue.increment(dustAmount)
+        "gamification.ghostDust": FieldValue.increment(dustAmount)
       });
       return NextResponse.json<ApiResponse>({
         success: true,
