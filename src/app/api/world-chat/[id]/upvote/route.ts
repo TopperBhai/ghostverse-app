@@ -33,16 +33,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check Daily (IST Midnight) rate limit on voter
+    // Check 8-hour rate limit on voter
     const voterDoc = await db.collection("users").doc(authUser.userId).get();
     const voterData = voterDoc.data();
     if (voterData?.lastUpvoteGivenAt) {
-      const todayStr = getISTDateString(Date.now());
-      const lastVoteStr = getISTDateString(voterData.lastUpvoteGivenAt);
+      const EIGHT_HOURS_MS = 8 * 60 * 60 * 1000;
+      const timeSinceLastVote = Date.now() - new Date(voterData.lastUpvoteGivenAt).getTime();
       
-      if (todayStr === lastVoteStr) {
+      if (timeSinceLastVote < EIGHT_HOURS_MS) {
+        const remainingHours = Math.ceil((EIGHT_HOURS_MS - timeSinceLastVote) / (1000 * 60 * 60));
         return NextResponse.json<ApiResponse>(
-          { success: false, error: "You can only give 1 reputation point per day. Resets at midnight (IST)." },
+          { success: false, error: `You can give reputation again in ${remainingHours} hour(s).` },
           { status: 429 }
         );
       }

@@ -79,7 +79,7 @@ export function GhostPet({ status, level, className = "", size = "md", aura, hat
 
   return (
     <div className={`relative flex items-center justify-center ${sizeMap[size]} ${className}`}>
-      
+
       {/* Dynamic Aura Accessory */}
       {aura === "neon-green" && (
         <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse" />
@@ -93,7 +93,7 @@ export function GhostPet({ status, level, className = "", size = "md", aura, hat
       {aura === "golden-halo" && (
         <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl animate-pulse" />
       )}
-      
+
       {/* Background Particles for Specific Statuses */}
       {status === "CELESTIAL" && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-full">
@@ -104,7 +104,7 @@ export function GhostPet({ status, level, className = "", size = "md", aura, hat
           <div className="absolute top-2 right-8 w-6 h-0.5 bg-gradient-to-l from-transparent to-cyan-300 rotate-45 animate-pulse" />
         </div>
       )}
-      
+
       {status === "BLAZING" && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-full">
           <div className="absolute bottom-1 left-2 w-2 h-3 bg-orange-500 rounded-t-full animate-pulse opacity-80" />
@@ -138,7 +138,7 @@ export function GhostPet({ status, level, className = "", size = "md", aura, hat
                 <circle cx="8" cy="18" r="1.2" fill="#bae6fd" opacity="0.7" className="animate-pulse" style={{ animationDelay: '1s' }} />
               </pattern>
             )}
-            
+
             {/* Cape Gradient */}
             <linearGradient id="cape-grad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#b91c1c" />
@@ -153,7 +153,7 @@ export function GhostPet({ status, level, className = "", size = "md", aura, hat
           </defs>
 
           {/* BACKGROUND ACCESSORIES */}
-          
+
           {/* Hats! Rendered behind if they are a halo, but usually hats are rendered on top. Wait, let's put hats in the foreground later. */}
           {hat === "halo" && (
             <ellipse cx="50" cy="15" rx="20" ry="5" fill="none" stroke="#fbbf24" strokeWidth="3" className="animate-pulse" />
@@ -184,9 +184,9 @@ export function GhostPet({ status, level, className = "", size = "md", aura, hat
                    Q 45 80, 40 90 
                    Q 35 80, 30 90 
                    Q 25 80, 20 90 
-                   Z" 
-                className={vars.fill} 
-                fill={isCosmic ? "url(#cosmic-pattern)" : "currentColor"} 
+                   Z"
+            className={vars.fill}
+            fill={isCosmic ? "url(#cosmic-pattern)" : "currentColor"}
           />
 
           {/* FOREGROUND ACCESSORIES */}
@@ -208,7 +208,7 @@ export function GhostPet({ status, level, className = "", size = "md", aura, hat
           )}
 
           {/* FACIAL EXPRESSIONS & CHEEKS */}
-          
+
           {/* Level 5+: Cute Blush / Cheeks (Only if not faded/dead) */}
           {level >= 5 && vars.expression !== "dead" && (
             <g opacity="0.4">
@@ -233,7 +233,7 @@ export function GhostPet({ status, level, className = "", size = "md", aura, hat
               <path d="M 45 55 Q 50 60, 55 55" stroke={vars.eyeColor} strokeWidth="2.5" fill="none" strokeLinecap="round" />
             </>
           )}
-          
+
           {vars.expression === "sad" && (
             <>
               {/* Sad Eyes */}
@@ -245,7 +245,7 @@ export function GhostPet({ status, level, className = "", size = "md", aura, hat
               <path d="M 32 55 Q 35 60, 35 62 Q 35 65, 32 65 Q 29 65, 29 62 Q 29 60, 32 55" fill="#60a5fa" opacity="0.8" className="animate-pulse" />
             </>
           )}
-          
+
           {vars.expression === "dead" && (
             <>
               {/* Dead X Eyes */}
