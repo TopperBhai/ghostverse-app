@@ -1,0 +1,10 @@
+{
+  "appId": "com.ghostverse.app",
+  "appName": "GhostVerse",
+  "webDir": "public",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://ghostverse-app.vercel.app",
+    "cleartext": true
+  }
+}
