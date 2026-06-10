@@ -283,6 +283,12 @@ body {
   color: var(--color-ghost-100);
   min-height: 100vh;
   overflow-x: hidden;
+  
+  /* Native App Feel Optimizations */
+  overscroll-behavior-y: none; /* Prevents pull-to-refresh bounce */
+  overscroll-behavior-x: none; /* Prevents swipe back history */
+  -webkit-tap-highlight-color: transparent; /* Removes blue tap box on mobile */
+  -webkit-touch-callout: none; /* Disables default callout shown when you touch and hold a touch target */
 }
 
 /* Smooth theme transformations */

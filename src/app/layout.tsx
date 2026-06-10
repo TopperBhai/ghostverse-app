@@ -2,6 +2,16 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "../custom-hooks/use-auth";
 import { ThemeProvider } from "../custom-hooks/use-theme";
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#000000",
+};
 
 export const metadata: Metadata = {
   title: "GhostVerse — Anonymous Social Platform",
