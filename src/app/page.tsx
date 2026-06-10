@@ -4,8 +4,8 @@ import { useAuth } from "../custom-hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
-import { 
-  Ghost, User as UserIcon, MessageSquare, 
+import {
+  Ghost, User as UserIcon, MessageSquare,
   Globe, Shield, Star, Smartphone, Lock, Activity, Download
 } from "lucide-react";
 import { ThemeToggle } from "./components/ThemeToggle";
@@ -40,7 +40,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-phantom-500/30">
-      
+
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-black/80 backdrop-blur-md border-b border-white/5 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -79,7 +79,7 @@ export default function HomePage() {
               <p className="text-xl text-ghost-400 mb-10 leading-relaxed max-w-xl mx-auto lg:mx-0">
                 Meet strangers, confess secrets, and build streaks. Experience true freedom without revealing your identity on the most secure social platform.
               </p>
-              
+
               {/* App Store Style CTAs */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
                 <Link
@@ -103,7 +103,7 @@ export default function HomePage() {
                   </div>
                 </Link>
               </div>
-              
+
               <div className="mt-8 flex items-center justify-center lg:justify-start gap-2 text-sm text-ghost-500 font-medium">
                 <Shield className="w-4 h-4" /> 100% Anonymous & Secure
               </div>
@@ -116,7 +116,7 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-black flex flex-col">
                   <div className="bg-ghost-900 p-4 pt-8 flex items-center justify-between border-b border-white/5">
                     <h3 className="font-bold">World Chat</h3>
-                    <div className="w-8 h-8 rounded-full bg-phantom-500 flex items-center justify-center"><Ghost className="w-4 h-4"/></div>
+                    <div className="w-8 h-8 rounded-full bg-phantom-500 flex items-center justify-center"><Ghost className="w-4 h-4" /></div>
                   </div>
                   <div className="flex-1 p-4 space-y-4 overflow-hidden">
                     <div className="flex items-start gap-3">
@@ -145,29 +145,37 @@ export default function HomePage() {
         {/* Screenshots / Features Carousel Style */}
         <section className="bg-ghost-950 border-y border-white/5 py-24 mb-24">
           <div className="max-w-7xl mx-auto px-6">
-            <h2 className="text-3xl font-black mb-12 text-center">Everything you need. <br/><span className="text-ghost-500">Nothing you don't.</span></h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-black p-8 rounded-3xl border border-white/5">
+            <h2 className="text-3xl font-black mb-12 text-center">Everything you need. <br /><span className="text-ghost-500">Nothing you don't.</span></h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-black p-8 rounded-3xl border border-white/5 hover:border-phantom-500/30 transition-colors">
                 <div className="w-12 h-12 rounded-xl bg-phantom-500/10 flex items-center justify-center mb-6">
                   <Globe className="w-6 h-6 text-phantom-500" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">World Chat</h3>
                 <p className="text-ghost-400">Join the massive global lobby. Connect with hundreds of anonymous users instantly in real-time.</p>
               </div>
-              <div className="bg-black p-8 rounded-3xl border border-white/5">
+              <div className="bg-black p-8 rounded-3xl border border-white/5 hover:border-phantom-500/30 transition-colors">
                 <div className="w-12 h-12 rounded-xl bg-phantom-500/10 flex items-center justify-center mb-6">
                   <Activity className="w-6 h-6 text-phantom-500" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">Random Voice</h3>
                 <p className="text-ghost-400">Match with strangers globally for 1-on-1 encrypted voice chats. Skip anytime if the vibe isn't right.</p>
               </div>
-              <div className="bg-black p-8 rounded-3xl border border-white/5">
+              <div className="bg-black p-8 rounded-3xl border border-white/5 hover:border-phantom-500/30 transition-colors">
                 <div className="w-12 h-12 rounded-xl bg-phantom-500/10 flex items-center justify-center mb-6">
                   <Lock className="w-6 h-6 text-phantom-500" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">Secret Confessions</h3>
                 <p className="text-ghost-400">Spill your deepest secrets 100% anonymously. Read, upvote, and comment on others' confessions.</p>
+              </div>
+              <div className="bg-black p-8 rounded-3xl border border-white/5 hover:border-phantom-500/30 transition-colors relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-phantom-500/10 rounded-full blur-[50px] group-hover:bg-phantom-500/20 transition-all"></div>
+                <div className="w-12 h-12 rounded-xl bg-phantom-500/20 border border-phantom-500/30 flex items-center justify-center mb-6 relative z-10">
+                  <Ghost className="w-6 h-6 text-phantom-400 animate-[float_3s_ease-in-out_infinite]" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-phantom-400 to-neon-red bg-clip-text text-transparent relative z-10">Ghost Pet Evolution</h3>
+                <p className="text-ghost-400 relative z-10">Your anonymous identity is tied to a living Ghost Pet. Earn XP, maintain streaks, and watch it evolve based on your karma.</p>
               </div>
             </div>
           </div>
@@ -180,8 +188,8 @@ export default function HomePage() {
               <Star key={star} className="w-8 h-8 fill-phantom-500 text-phantom-500" />
             ))}
           </div>
-          <h2 className="text-4xl md:text-5xl font-black mb-16 tracking-tight">"The most liberating social<br/>experience on the web."</h2>
-          
+          <h2 className="text-4xl md:text-5xl font-black mb-16 tracking-tight">"The most liberating social<br />experience on the web."</h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
             <div className="p-6 bg-ghost-900 rounded-2xl border border-white/5">
               <div className="flex gap-1 mb-3">
