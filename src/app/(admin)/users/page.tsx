@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Ban, VolumeX, Trash2, CheckCircle, Loader2 } from "lucide-react";
+import { Users, Ban, VolumeX, Trash2, CheckCircle, Loader2, Sparkles } from "lucide-react";
 import { useAuth } from "../../../custom-hooks/use-auth";
 
 type AdminUser = {
@@ -42,18 +42,31 @@ export default function AdminUsersPage() {
       return;
     }
     
+    let amount;
+    if (action === "ADD_DUST") {
+      const input = prompt("Enter amount of Ghost Dust to add:");
+      if (!input) return;
+      amount = parseInt(input, 10);
+      if (isNaN(amount) || amount <= 0) {
+        alert("Invalid amount");
+        return;
+      }
+    }
+
     setActionLoading(userId);
     try {
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, action }),
+        body: JSON.stringify({ userId, action, amount }),
       });
       const data = await res.json();
       
       if (data.success) {
         if (action === "DELETE") {
           setUsers(prev => prev.filter(u => u.id !== userId));
+        } else if (action === "ADD_DUST") {
+          alert(data.message);
         } else {
           setUsers(prev => prev.map(u => {
             if (u.id === userId) {
@@ -131,6 +144,14 @@ export default function AdminUsersPage() {
                     <td className="px-6 py-4 text-right space-x-2">
                       {u.role !== "ADMIN" && (
                         <>
+                          <button
+                            onClick={() => handleAction(u.id, "ADD_DUST")}
+                            disabled={actionLoading === u.id}
+                            className="p-2 rounded-lg bg-phantom-500/10 text-phantom-400 hover:bg-phantom-500/20 transition-colors"
+                            title="Add Ghost Dust"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => handleAction(u.id, u.status === "MUTED" ? "UNMUTE" : "MUTE")}
                             disabled={actionLoading === u.id}

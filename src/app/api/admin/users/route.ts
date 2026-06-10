@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../../lib/firebase-admin";
 import { getAuthUser } from "../../../../lib/auth";
+import { FieldValue } from "firebase-admin/firestore";
 import type { ApiResponse } from "../../../../types";
 
 export async function GET(request: NextRequest) {
@@ -52,7 +53,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    let { userId, action, targetUsername } = body;
+    let { userId, action, targetUsername, amount } = body;
 
     if (!action) {
       return NextResponse.json<ApiResponse>(
@@ -82,6 +83,23 @@ export async function PATCH(request: NextRequest) {
     let newStatus = "ACTIVE";
     if (action === "BAN") newStatus = "BANNED";
     if (action === "MUTE") newStatus = "MUTED";
+
+    if (action === "ADD_DUST") {
+      const dustAmount = parseInt(amount, 10);
+      if (isNaN(dustAmount) || dustAmount <= 0) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: "Valid positive amount is required" },
+          { status: 400 }
+        );
+      }
+      await db.collection("users").doc(userId).update({
+        ghostDust: FieldValue.increment(dustAmount)
+      });
+      return NextResponse.json<ApiResponse>({
+        success: true,
+        message: `Added ${dustAmount} Ghost Dust to user`,
+      });
+    }
 
     if (action === "DELETE") {
       // Clean up the user entirely
